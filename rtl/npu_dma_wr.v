@@ -30,6 +30,14 @@ module npu_dma_wr #(
     localparam ST_WAIT = 3'd2;
     localparam ST_DONE = 3'd3;
 
+
+
+    reg data_latched;              // 数据已锁存标志
+    reg [ADDR_WIDTH-1:0] latched_addr;
+    reg [DATA_WIDTH-1:0] latched_data;
+
+
+
     reg [2:0] state;
     wire [2:0] state_out;  // 输出状态供调试
     assign state_out = state;
@@ -57,6 +65,7 @@ module npu_dma_wr #(
                 ST_IDLE: begin
                     busy      <= 1'b0;
                     cmd_valid <= 1'b0;
+                    data_latched <= 1'b0;
                     if (start) begin
                         busy   <= 1'b1;
                         wr_cnt <= 16'd0;
@@ -66,21 +75,26 @@ module npu_dma_wr #(
 
                 ST_CMD: begin
                     cmd_write <= 1'b1;
-                    // 修正握手协议：在ST_CMD状态无条件表示准备好接收数据
-                    // 这样发送端可以在任何时候提供数据，避免死锁
                     data_in_ready <= 1'b1;
-                    
-                    if (data_in_valid) begin
-                        // 收到有效数据，立即发送AXI命令
+
+
+                    // 第一步：锁存输入数据（单周期完成）
+                    if (data_in_valid && !data_latched) begin
+                        latched_data <= data_in;
+                        latched_addr <= base_addr + {wr_cnt, 2'b00};
+                        data_latched <= 1'b1;
+                    end
+                      // 第二步：等待AXI就绪后发送（可以跨多个周期）
+                    if (data_latched) begin
                         cmd_valid <= 1'b1;
-                        cmd_addr  <= base_addr + {wr_cnt, 2'b00};
-                        cmd_wdata <= data_in;
+                        cmd_addr  <= latched_addr;
+                        cmd_wdata <= latched_data;
                         cmd_wstrb <= {DATA_WIDTH/8{1'b1}};
-                        
+
                         if (cmd_ready) begin
-                            // AXI总线已接受命令
-                            cmd_valid <= 1'b0;
-                            state     <= ST_WAIT;
+                            cmd_valid    <= 1'b0;
+                            data_latched <= 1'b0;  // 清除锁存标志
+                            state        <= ST_WAIT;
                         end
                     end
                 end

@@ -413,6 +413,7 @@ module npu_top (
     // B矩阵加载状态管理
     reg b_load_phase;        // 是否处于B矩阵加载阶段
     reg [15:0] b_load_cnt;   // B矩阵加载计数器
+    reg [15:0] b_expected_words;  // 新增：B矩阵预期加载字数（动态计算）
     reg [4:0]  b_tile_idx;   // 当前正在加载的Tile索引
     reg [3:0]  b_word_idx;   // Tile内字的索引（0-15，共16个字）
     
@@ -515,15 +516,17 @@ module npu_top (
             if (a_load_complete && !b_load_phase && rd_data_valid) begin
                 b_load_phase <= 1'b1;
                 b_load_cnt <= 16'd0;
+                 b_expected_words <= rd_word_count;  // 缓存B矩阵的预期字数
                 current_tile_for_weight <= 5'd0;  // 重置组索引，准备加载第0组权重
                 a_load_complete <= 1'b0;
             end
             
             // B矩阵加载完成后，重置阶段标志
-            // 注意：这里假设B矩阵加载也是通过DMA完成的，当rd_done再次拉高时意味着B加载结束
-            if (b_load_phase && rd_done) begin
+            // 使用动态计算的字数判断加载是否完成（支持任意规模的矩阵）
+            if (b_load_phase && b_load_cnt >= b_expected_words) begin
                 b_load_phase <= 1'b0;
                 b_load_cnt <= 16'd0;
+                b_expected_words <= 16'd0;  // 清除预期字数
                 current_tile_for_weight <= 5'd0;  // 重置组索引，为下次计算做准备
             end
 
