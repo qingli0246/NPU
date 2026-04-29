@@ -199,6 +199,11 @@ module npu_top (
     // 分组宽总线：4组×8Tile，总宽度 = 4 * 512 = 2048 bits
     // rdata_group[group_id*512 +: 512] 对应第group_id组的权重
     wire [4*`NPU_TILE_B_BITS-1:0] cache_rdata_group;
+
+    // - 权重共享模式:固定读取mem[0](B矩阵存放位置)
+    // - 独立权重模式:raddr参数无用(使用rdata_group),设为任意值即可
+    wire [4:0] cache_raddr_sel;
+    assign cache_raddr_sel = 5'd0;  // 始终指向mem[0]
     
     npu_weight_cache u_cache (
         .clk            (clk),
@@ -206,7 +211,7 @@ module npu_top (
         .we             (cache_we_final),
         .waddr          (cache_waddr_final),
         .wdata          (cache_wdata_final),
-        .raddr          (reg_tile_mask[4:0]),
+        .raddr          (cache_raddr_sel),
         .rdata          (cache_rdata),
         .rdata_group    (cache_rdata_group),  // 新增：分组多端口输出
         .valid_bits     (cache_valid_bits)
@@ -513,7 +518,7 @@ module npu_top (
             end
             
             // 当A矩阵加载完成且收到新的有效数据时，切换到B矩阵加载阶段
-            if (a_load_complete && !b_load_phase && rd_data_valid) begin
+            if (a_load_complete && !b_load_phase ) begin
                 b_load_phase <= 1'b1;
                 b_load_cnt <= 16'd0;
                  b_expected_words <= rd_word_count;  // 缓存B矩阵的预期字数
