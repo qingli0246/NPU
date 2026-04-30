@@ -128,6 +128,34 @@ module npu_tile #(
                 end
 
                 ST_RUN: begin
+                    // 先打印输入数据摘要
+                    $display("\n[%0t] [TILE%0d] ===== START COMPUTATION =====", $time, TILE_ID);
+                    $display("[%0t] [TILE%0d] Mode: %s, Split: %b", 
+                            $time, TILE_ID, 
+                            (top_mode==2'd0)?"INDEP":(top_mode==2'd1)?"SPLIT":"MERGE",
+                            split_mode);
+                    
+                    // 打印 A 矩阵的前两行（简化显示）
+                    $display("[%0t] [TILE%0d] A[0][0:7] = ", $time, TILE_ID);
+                    for (ci = 0; ci < 8; ci = ci + 1) begin
+                        $write("%3d ", a_lat[((0 * 8 + ci) * 8) +: 8]);
+                    end
+                    $display("");
+                    
+                    $display("[%0t] [TILE%0d] A[1][0:7] = ", $time, TILE_ID);
+                    for (ci = 0; ci < 8; ci = ci + 1) begin
+                        $write("%3d ", a_lat[((1 * 8 + ci) * 8) +: 8]);
+                    end
+                    $display("");
+                    
+                    // 打印 B 矩阵的前两列
+                    $display("[%0t] [TILE%0d] B[0:7][0] = ", $time, TILE_ID);
+                    for (ri = 0; ri < 8; ri = ri + 1) begin
+                        $write("%3d ", b_lat[((ri * 8 + 0) * 8) +: 8]);
+                    end
+                    $display("");
+
+
                     // 这里采用"骨架式"计算：一次性算完整个 Tile 输出，便于先把层次结构跑通。
                     for (ri = 0; ri < 8; ri = ri + 1) begin
                         for (ci = 0; ci < 8; ci = ci + 1) begin
@@ -136,6 +164,10 @@ module npu_tile #(
                             dot_val = dot_block(a_lat, b_lat, row_sel, col_sel, split_mode);
                             c_flat[((ri * 8 + ci) * 16) +: 16] <= dot_val[15:0];
                             
+                            if (ri == 0 || ci == 0) begin
+                                $display("[%0t] [TILE%0d] C[%0d][%0d] = %5d (0x%04x)", 
+                                        $time, TILE_ID, ri, ci, dot_val, dot_val[15:0]);
+                            end
                             // 调试：捕获C[0][0]的计算过程
                             if (ri == 0 && ci == 0) begin
                                 // 手动展开C[0][0]的计算以便调试
@@ -174,6 +206,7 @@ module npu_tile #(
                             end
                         end
                     end
+                    $display("[%0t] [TILE%0d] ===== COMPUTATION COMPLETE =====\n", $time, TILE_ID);
                     state <= ST_DONE;
                 end
 

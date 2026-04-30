@@ -424,7 +424,8 @@ module npu_top (
     
     // A矩阵加载完成标志（从控制器同步）
     reg a_load_complete;
-    
+    integer words_per_tile_temp;  // 每个Tile需要的字数（保留用于兼容）
+    reg [31:0] words_per_tile_cache;  // 每个Tile需要的字数（CFG阶段预计算，LOAD阶段使用）
     // B矩阵缓存写入缓冲（用于累积一个字的所有32bit片段）
     reg [`NPU_TILE_B_BITS-1:0] cache_wdata_buffer;
     reg [3:0] cache_word_cnt;  // 当前Tile内已接收的字数（0-15）
@@ -505,6 +506,9 @@ module npu_top (
                 k_cache <= reg_k;
                 b_static_cache <= reg_mode[2];  // 缓存B矩阵静态标志
                 b_independent_cache <= reg_mode[3];  // 缓存B矩阵独立权重标志
+
+                // 预计算每个Tile需要的字数（CFG阶段完成，LOAD阶段直接使用）
+                words_per_tile_cache <= (8 * reg_k + 3) / 4;
             end
 
             // ================================================================
@@ -541,42 +545,77 @@ module npu_top (
                     // A 矩阵加载阶段
                     // ============================================================
                     case (mode_cache)
-                        `NPU_MODE_INDEP: begin
-                            // INDEP 模式：A 矩阵均匀分配到所有 32 个 Tile
-                            // 轮转分配：word#j 分配到 Tile#(j % 32) 的位置 (j / 32) * 32
-                            tile_id_temp = rd_data_index % `NPU_NUM_TILES;
-                            word_offset_temp = (rd_data_index / `NPU_NUM_TILES);
-                            // A 矩阵每个 Tile 部分占 NPU_TILE_A_BITS = 512 bit
-                            // 对应 16 个 32bit 字
+                    `NPU_MODE_INDEP: begin
+                        // INDEP 模式：A 矩阵按行条带连续分配给 Tile
+                        //
+                        // 硬件设计原则：
+                        // - 每个 Tile 固定处理 A 矩阵的 8 行（Tile是8×8结构）
+                        // - Tile#i 需要 A[8i : 8i+7, :]（A的第8i到8i+7行）
+                        // - 外部存储器中 A 矩阵按行主序存放
+                        //
+                        // 数据布局示例（M=256, K=8）：
+                        // 字0-15  → Tile#0 (A[0:7, 0:7])
+                        // 字16-31 → Tile#1 (A[8:15, 0:7])
+                        // 字32-47 → Tile#2 (A[16:23, 0:7])
+                        // ...
+                        //
+                        // 计算公式：
+                        // - 每个Tile需要的字数 = ceil(8 × K / 4) = (8×K + 3) / 4
+                        // - tile_id = rd_data_index / words_per_tile
+                        // - word_offset = rd_data_index % words_per_tile
+                        
+                        // 使用CFG阶段预计算的 words_per_tile_cache，避免运行时计算
+                        
+                        // 分发计算（使用预计算值）
+                        tile_id_temp = rd_data_index / words_per_tile_cache;
+                        word_offset_temp = rd_data_index % words_per_tile_cache;
+                        
+                        // 安全检查
+                        if (tile_id_temp < `NPU_NUM_TILES && word_offset_temp < words_per_tile_cache) begin
                             tile_a_bus_reg[tile_id_temp * `NPU_TILE_A_BITS + word_offset_temp * 32 +: 32] <= rd_data_word;
                         end
+                    end
 
-                        `NPU_MODE_MERGE: begin
-                            // MERGE 模式：A 矩阵分散到主 Tile，通过脉动级联传播
-                            // 简化方案：分发到所有标记为 group_master 的 Tile
+                    `NPU_MODE_MERGE: begin
+                        // MERGE 模式：A 矩阵只分发给主 Tile
+                        // 从 Tile 通过脉动级联网络接收数据
+                        //
+                        // 硬件设计原则：
+                        // - 只有标记为 group_master 的 Tile 接收外部数据
+                        // - 主 Tile 计算完成后，通过级联端口传递数据给从 Tile
+                        
+                        if (rd_data_index < 16) begin
                             for (i_temp = 0; i_temp < `NPU_NUM_TILES; i_temp = i_temp + 1) begin
                                 if (pool_cfg_group_master[i_temp]) begin
-                                    // 这是一个主 Tile，分发数据给它
-                                    tile_a_bus_reg[i_temp * `NPU_TILE_A_BITS + (rd_data_index % 16) * 32 +: 32] <= rd_data_word;
+                                    tile_a_bus_reg[i_temp * `NPU_TILE_A_BITS + rd_data_index * 32 +: 32] <= rd_data_word;
+                                    // 只分发给第一个主 Tile
+                                    break;
                                 end
                             end
                         end
+                    end
 
-                        `NPU_MODE_SPLIT: begin
-                            // SPLIT 模式：每个 Tile 内部拆分为 4 个 4x4 子阵列
-                            // A 数据分发策略与 INDEP 类似，但 Tile 内部会做拆分处理
-                            tile_id_temp = rd_data_index % `NPU_NUM_TILES;
-                            word_offset_temp = (rd_data_index / `NPU_NUM_TILES);
+                    `NPU_MODE_SPLIT: begin
+                        // SPLIT 模式：与 INDEP 相同的连续分配策略
+                        // Tile 内部会将 8×8 拆分为 4 个 4×4 子阵列
+                        tile_id_temp = rd_data_index / words_per_tile_cache;
+                        word_offset_temp = rd_data_index % words_per_tile_cache;
+                        
+                        if (tile_id_temp < `NPU_NUM_TILES && word_offset_temp < words_per_tile_cache) begin
                             tile_a_bus_reg[tile_id_temp * `NPU_TILE_A_BITS + word_offset_temp * 32 +: 32] <= rd_data_word;
                         end
+                    end
 
-                        default: begin
-                            // 默认按 INDEP 处理
-                            tile_id_temp = rd_data_index % `NPU_NUM_TILES;
-                            word_offset_temp = (rd_data_index / `NPU_NUM_TILES);
+                    default: begin
+                        // 默认按 INDEP 处理，使用预计算值
+                        tile_id_temp = rd_data_index / words_per_tile_cache;
+                        word_offset_temp = rd_data_index % words_per_tile_cache;
+                        
+                        if (tile_id_temp < `NPU_NUM_TILES && word_offset_temp < words_per_tile_cache) begin
                             tile_a_bus_reg[tile_id_temp * `NPU_TILE_A_BITS + word_offset_temp * 32 +: 32] <= rd_data_word;
                         end
-                    endcase
+                    end
+                endcase
                 end else begin
                     // ============================================================
                     // B 矩阵加载阶段（仅在动态权重模式下）

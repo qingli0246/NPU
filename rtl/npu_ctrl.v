@@ -68,28 +68,51 @@ module npu_ctrl (
         input [31:0] m;
         input [31:0] n;
         input [31:0] k;
-        reg [63:0] a_elems;
-        reg [63:0] words;
+        input [31:0] tile_mask;  // 新增参数
+        reg [63:0] a_elems_per_tile;
+        reg [63:0] words_per_tile;
+        reg [31:0] enabled_count;
+        reg [63:0] total_words;
+        integer i;
         begin
-            // A 矩阵大小为 M×K（8bit 元素）
-            // INDEP/MERGE/SPLIT 模式下都需要完整的 A 矩阵
+            // 每个 Tile 处理 8 行，需要 8×K 个元素
+            a_elems_per_tile = 8 * k;
+            words_per_tile = (a_elems_per_tile * 8 + 31) >> 5;  // ceil(8*K*8 / 32)
+            
+            // 计算启用的 Tile 数量
+            enabled_count = 0;
+            for (i = 0; i < 32; i = i + 1) begin
+                if (tile_mask[i]) begin
+                    enabled_count = enabled_count + 1;
+                end
+            end
+            
+            // 根据模式计算总字数
             case (mode)
-                `NPU_MODE_INDEP: a_elems = m * k;
-                `NPU_MODE_MERGE: a_elems = m * k;
-                `NPU_MODE_SPLIT: a_elems = m * k;
-                default:         a_elems = m * k;
+                `NPU_MODE_INDEP: begin
+                    // 每个 Tile 需要 8×K 的数据
+                    total_words = words_per_tile * enabled_count;
+                end
+                `NPU_MODE_MERGE: begin
+                    // 只有主 Tile 需要外部数据（假设 1 个主 Tile）
+                    total_words = words_per_tile;
+                end
+                `NPU_MODE_SPLIT: begin
+                    // 每个 Tile 需要 8×K 的数据
+                    total_words = words_per_tile * enabled_count;
+                end
+                default: begin
+                    total_words = words_per_tile * enabled_count;
+                end
             endcase
-
-            // 转换为 32bit 字（A 矩阵每个元素 8bit）
-            words = (a_elems * 8 + 31) >> 5;  // ceil((a_elems * 8) / 32)
-
-            // 防止 word_count 为 0；同时对 16bit 计数做饱和
-            if (words == 0) begin
+            
+            // 返回值保护
+            if (total_words == 0) begin
                 calc_rd_word_count = 16'd1;
-            end else if (words > 16'hFFFF) begin
+            end else if (total_words > 16'hFFFF) begin
                 calc_rd_word_count = 16'hFFFF;
             end else begin
-                calc_rd_word_count = words[15:0];
+                calc_rd_word_count = total_words[15:0];
             end
         end
     endfunction
@@ -256,7 +279,13 @@ module npu_ctrl (
                         b_weight_independent  <= cfg_b_independent;
                         
                         // A 矩阵总是需要读取（激活数据每次都变）
-                        rd_word_count         <= calc_rd_word_count(cfg_mode, cfg_matrix_m, cfg_matrix_n, cfg_matrix_k);
+                        rd_word_count <= calc_rd_word_count(
+                            cfg_mode, 
+                            cfg_matrix_m, 
+                            cfg_matrix_n, 
+                            cfg_matrix_k,
+                            {cfg_tile_mask_hi, cfg_tile_mask_lo}  // 传入完整的 32 位 tile_mask
+                        );
                         
                         // C 矩阵写回字数（结果矩阵）
                         wr_word_count         <= calc_c_wr_word_count(cfg_mode, cfg_matrix_m, cfg_matrix_n);
