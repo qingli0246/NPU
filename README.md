@@ -530,33 +530,20 @@ npu_compute_pool (Tile内部分裂完成)
 ## 🧪 仿真测试
 
 ### 测试文件
-- **tb_npu_top.v** - 顶层测试平台（包含两个测试用例）
-- **tb_memory_model.v** - 存储器模型（模拟外部DDR）
-- **TEST_GUIDE.md** - 详细测试指南
+- **TB/tb_npu_top_test.v** - 当前唯一的顶层集成测试平台
+- **quick_test.ps1** - 当前唯一的仿真启动脚本
+- **TEST_GUIDE.md** - 唯一保留的仿真说明文档
 
 ### 快速开始
 
 #### PowerShell方式（推荐）
 ```
-# 方法1：快速测试
 .\quick_test.ps1
-
-# 方法2：选择工具
-.\run_test.ps1 -Tool iverilog
-.\run_test.ps1 -Tool modelsim
-.\run_test.ps1 -Tool vivado
-```
-
-#### CMD方式（兼容旧版）
-```
-quick_test.bat
-run_simple_test.bat
-run_test.bat iverilog
 ```
 
 ### 测试用例
-1. **动态+权重共享模式**：验证8x8矩阵乘法的完整数据流
-2. **静态+权重共享模式**：验证权重复用机制
+1. **当前集成测试**：验证 `TB/tb_npu_top_test.v` 的完整数据流
+2. **手动扩展**：可在测试平台中替换 A/B 数据后重新运行
 
 详见 [TEST_GUIDE.md](TEST_GUIDE.md)
 

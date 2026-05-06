@@ -55,6 +55,7 @@ module npu_ctrl (
     // Tile启动掩码发送标志（用于产生一个周期的start脉冲）
     reg tile_start_mask_sent;
     reg [`NPU_NUM_TILES-1:0] tile_start_mask_value;
+    reg [1:0] run_start_delay;
 
     // A 矩阵读取字数计算：取决于工作模式
     // A 矩阵大小：M×K，每个元素 8bit
@@ -166,10 +167,10 @@ module npu_ctrl (
         reg [63:0] c_elems;
         reg [63:0] total_words;
         begin
-            // C 矩阵大小：M×N × 16bit 元素（根据NPU_TILE_C_BITS定义）
-            // 转换为 32bit 字：ceil((M*N*16) / 32) = ceil(M*N/2)
+            // C 矩阵大小：M×N × 32bit 元素（根据NPU_TILE_C_BITS定义）
+            // 转换为 32bit 字：M*N（每个元素占1个word）
             c_elems = m * n;
-            total_words = (c_elems * 16 + 31) >> 5;
+            total_words = c_elems;
             
             if (total_words == 0) begin
                 calc_c_wr_word_count = 16'd1;
@@ -182,8 +183,8 @@ module npu_ctrl (
     endfunction
 
     // C 矩阵写回字数计算
-    // 结果矩阵 C 默认按 16bit/元素存储；AXI 数据宽度为 32bit，所以每个 word 可装 2 个元素。
-    // wr_word_count = ceil((M*N) / 2)。
+    // 结果矩阵 C 按 32bit/元素存储；AXI 数据宽度为 32bit，所以每个 word 存 1 个元素。
+    // wr_word_count = M*N。
     function [15:0] calc_wr_word_count;
         input [1:0]  mode;
         input [31:0] m;
@@ -200,7 +201,7 @@ module npu_ctrl (
                 default:         c_elems = m * n;
             endcase
 
-            words = (c_elems + 1) >> 1;
+            words = c_elems;
 
             // 防止 word_count 为 0 触发 DMA 比较下溢；同时对 16bit 计数做饱和。
             if (words == 0) begin
@@ -237,6 +238,7 @@ module npu_ctrl (
             a_load_done_flag      <= 1'b0;
             tile_start_mask_sent  <= 1'b0;
             tile_start_mask_value <= {`NPU_NUM_TILES{1'b0}};
+            run_start_delay       <= 2'd0;
         end else begin
             rd_start     <= 1'b0;
             wr_start     <= 1'b0;
@@ -292,6 +294,7 @@ module npu_ctrl (
                         
                         // 保存Tile启动掩码，供RUN状态使用
                         tile_start_mask_value <= {{(`NPU_NUM_TILES-10){1'b0}}, cfg_tile_mask_hi, cfg_tile_mask_lo};
+                        run_start_delay       <= 2'd0;
                         
                         state                 <= `NPU_ST_CFG;
                         global_busy           <= 1'b1;
@@ -331,18 +334,23 @@ module npu_ctrl (
                         end
                         if (rd_done) begin
                             // B矩阵加载完成，进入RUN阶段
+                            run_start_delay <= 2'd2;
                             state <= `NPU_ST_RUN;
                         end
                     end else begin
                         // 静态模式：A矩阵加载完成后直接进入RUN阶段
                         a_load_done_flag <= 1'b0;  // 清除标志，为下次计算做准备
+                        run_start_delay <= 2'd2;
                         state <= `NPU_ST_RUN;
                     end
                 end
 
                 `NPU_ST_RUN: begin
-                    // 简化方案：进入RUN状态时设置start_mask，计算完成后清除
-                    if (!tile_start_mask_sent) begin
+                    // 等待B矩阵广播稳定后，再触发Tile开始计算
+                    if (run_start_delay != 2'd0) begin
+                        run_start_delay <= run_start_delay - 1'b1;
+                        pool_tile_start_mask <= {`NPU_NUM_TILES{1'b0}};
+                    end else if (!tile_start_mask_sent) begin
                         pool_tile_start_mask <= tile_start_mask_value;  // 周期1：设置start
                         tile_start_mask_sent <= 1'b1;
                     end else if (pool_done) begin

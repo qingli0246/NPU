@@ -37,7 +37,15 @@ module npu_tile #(
     reg [`NPU_TILE_B_BITS-1:0] b_lat;
     wire split_mode;
     wire merge_mode;
-
+    reg start_d;
+    wire start_pulse = start & ~start_d;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            start_d <= 1'b0;
+        end else if (clk_en) begin
+            start_d <= start;
+        end
+    end
     assign split_mode = (top_mode == `NPU_MODE_SPLIT);
     assign merge_mode = (top_mode == `NPU_MODE_MERGE);
 
@@ -99,8 +107,8 @@ module npu_tile #(
             case (state)
                 ST_IDLE: begin
                     busy <= 1'b0;
-                    // 简化：使用电平触发
-                    if (start) begin
+                    // 修改：使用上升沿触发
+                    if (start_pulse) begin
                         // 启动时锁存输入，后续计算不再受外部数据抖动影响。
                         a_lat <= a_flat;
                         b_lat <= b_flat;
@@ -148,12 +156,15 @@ module npu_tile #(
                     end
                     $display("");
                     
-                    // 打印 B 矩阵的前两列
-                    $display("[%0t] [TILE%0d] B[0:7][0] = ", $time, TILE_ID);
+                    // 打印完整 B 矩阵（8x8）
+                    $display("[%0t] [TILE%0d] B Matrix (8x8):", $time, TILE_ID);
                     for (ri = 0; ri < 8; ri = ri + 1) begin
-                        $write("%3d ", b_lat[((ri * 8 + 0) * 8) +: 8]);
+                        $write("[%0t] [TILE%0d] B[%d][0:7] = ", $time, TILE_ID, ri);
+                        for (ci = 0; ci < 8; ci = ci + 1) begin
+                            $write("%3d ", b_lat[((ri * 8 + ci) * 8) +: 8]);
+                        end
+                        $display("");
                     end
-                    $display("");
 
 
                     // 这里采用"骨架式"计算：一次性算完整个 Tile 输出，便于先把层次结构跑通。
@@ -162,11 +173,11 @@ module npu_tile #(
                             row_sel = ri[2:0];
                             col_sel = ci[2:0];
                             dot_val = dot_block(a_lat, b_lat, row_sel, col_sel, split_mode);
-                            c_flat[((ri * 8 + ci) * 16) +: 16] <= dot_val[15:0];
+                            c_flat[((ri * 8 + ci) * 32) +: 32] <= dot_val;
                             
                             if (ri == 0 || ci == 0) begin
-                                $display("[%0t] [TILE%0d] C[%0d][%0d] = %5d (0x%04x)", 
-                                        $time, TILE_ID, ri, ci, dot_val, dot_val[15:0]);
+                                $display("[%0t] [TILE%0d] C[%0d][%0d] = %5d (0x%08x)", 
+                                        $time, TILE_ID, ri, ci, dot_val, dot_val);
                             end
                             // 调试：捕获C[0][0]的计算过程
                             if (ri == 0 && ci == 0) begin

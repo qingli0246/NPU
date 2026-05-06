@@ -449,8 +449,9 @@ module npu_top (
     reg [31:0] wr_data_word;  // 当前要写入的字（32 bits）
     reg wr_data_ready_flag;   // 数据准备好标志
     reg [4:0] wr_tile_idx;    // 当前正在收集的Tile索引
-    reg [4:0] wr_word_in_tile; // Tile内字的索引
+    reg [5:0] wr_word_in_tile; // Tile内字的索引
     reg wr_data_ready_prev;   // wr_data_ready上一周期状态（用于上升沿检测）
+    localparam integer C_WORDS_PER_TILE = (`NPU_TILE_C_BITS / 32);
 
     // ============================================================
     // 信号连接：将内部寄存器连接到输出总线
@@ -495,7 +496,7 @@ module npu_top (
             wr_data_word <= 32'd0;
             wr_data_ready_flag <= 1'b0;
             wr_tile_idx <= 5'd0;
-            wr_word_in_tile <= 5'd0;
+            wr_word_in_tile <= 6'd0;
             break_found <= 1'b0;
         end else begin
             // 缓存当前模式和矩阵参数，供A数据分发逻辑使用
@@ -588,8 +589,8 @@ module npu_top (
                             for (i_temp = 0; i_temp < `NPU_NUM_TILES; i_temp = i_temp + 1) begin
                                 if (pool_cfg_group_master[i_temp]) begin
                                     tile_a_bus_reg[i_temp * `NPU_TILE_A_BITS + rd_data_index * 32 +: 32] <= rd_data_word;
-                                    // 只分发给第一个主 Tile
-                                    break;
+                                    // 只分发给第一个主 Tile，使用 disable 替代 break
+                                    i_temp = `NPU_NUM_TILES;  // Force loop exit
                                 end
                             end
                         end
@@ -636,11 +637,11 @@ module npu_top (
                     // 计算当前是第几个字（0-15，对应一个8x8矩阵的16个32bit字）
                     word_in_tile_temp = b_load_cnt % 16;
                     
-                    // 累积B矩阵数据到缓冲区
-                    cache_wdata_buffer[word_in_tile_temp * 32 +: 32] <= rd_data_word;
+                    // 累积B矩阵数据到缓冲区（使用阻塞赋值确保立即生效）
+                    cache_wdata_buffer[word_in_tile_temp * 32 +: 32] = rd_data_word;
                     cache_word_cnt <= cache_word_cnt + 1;
                     
-                    // 每接收16个字（一个完整的8x8矩阵），写入缓存
+                    // 当累积满16个字后，写入缓存
                     if (cache_word_cnt == 4'd15) begin
                         if (!b_independent_cache) begin
                             // 权重共享模式：写入cache[0]，所有Tile共享
@@ -754,7 +755,7 @@ module npu_top (
                 c_wr_phase <= 1'b1;
                 c_wr_cnt <= 16'd0;
                 wr_tile_idx <= 5'd0;
-                wr_word_in_tile <= 5'd0;
+                wr_word_in_tile <= 6'd0;
                 wr_data_word <= 32'd0;
                 wr_data_ready_flag <= 1'b0;
                 $display("[%0t] [NPU_TOP] C matrix collection started! wr_start=%b, wr_word_count=%d", 
@@ -775,12 +776,12 @@ module npu_top (
                     `NPU_MODE_INDEP: begin
                         // INDEP模式：轮转收集所有Tile的结果
                         // 计算当前应该从哪个Tile的哪个位置读取数据
-                        wr_tile_idx = c_wr_cnt / 32;  // Tile索引（假设每Tile最多32字）
-                        wr_word_in_tile = c_wr_cnt % 32;  // Tile内字的索引
+                        wr_tile_idx = c_wr_cnt / C_WORDS_PER_TILE;
+                        wr_word_in_tile = c_wr_cnt % C_WORDS_PER_TILE;
                         
                         // 只有当DMA准备好接收数据时，才提供新数据
                         // 使用上升沿检测，确保每次DMA准备好接收时只递增一次
-                        if (wr_data_ready && !wr_data_ready_prev && wr_tile_idx < `NPU_NUM_TILES && wr_word_in_tile < 32) begin
+                        if (wr_data_ready && !wr_data_ready_prev && wr_tile_idx < `NPU_NUM_TILES && wr_word_in_tile < C_WORDS_PER_TILE) begin
                             // 从对应Tile读取一个字（32bit）
                             wr_data_word <= tile_c_bus[wr_tile_idx * `NPU_TILE_C_BITS + wr_word_in_tile * 32 +: 32];
                             wr_data_ready_flag <= 1'b1;
@@ -809,7 +810,7 @@ module npu_top (
                             break_found <= 1'b0;
                             for (i_temp = 0; i_temp < `NPU_NUM_TILES; i_temp = i_temp + 1) begin
                                 if (pool_cfg_group_master[i_temp] && !break_found) begin
-                                    wr_data_word <= tile_c_bus[i_temp * `NPU_TILE_C_BITS + (c_wr_cnt % 32) * 32 +: 32];
+                                    wr_data_word <= tile_c_bus[i_temp * `NPU_TILE_C_BITS + (c_wr_cnt % C_WORDS_PER_TILE) * 32 +: 32];
                                     wr_data_ready_flag <= 1'b1;
                                     c_wr_cnt <= c_wr_cnt + 1;
                                     break_found <= 1'b1;  // 设置标志，后续迭代不再执行
@@ -827,10 +828,10 @@ module npu_top (
                     `NPU_MODE_SPLIT: begin
                         // SPLIT模式：收集拆分后的子结果
                         // 与INDEP类似，使用上升沿检测
-                        wr_tile_idx = c_wr_cnt / 32;
-                        wr_word_in_tile = c_wr_cnt % 32;
+                        wr_tile_idx = c_wr_cnt / C_WORDS_PER_TILE;
+                        wr_word_in_tile = c_wr_cnt % C_WORDS_PER_TILE;
                         
-                        if (wr_data_ready && !wr_data_ready_prev && wr_tile_idx < `NPU_NUM_TILES && wr_word_in_tile < 32) begin
+                        if (wr_data_ready && !wr_data_ready_prev && wr_tile_idx < `NPU_NUM_TILES && wr_word_in_tile < C_WORDS_PER_TILE) begin
                             wr_data_word <= tile_c_bus[wr_tile_idx * `NPU_TILE_C_BITS + wr_word_in_tile * 32 +: 32];
                             wr_data_ready_flag <= 1'b1;
                             c_wr_cnt <= c_wr_cnt + 1;
@@ -844,10 +845,10 @@ module npu_top (
 
                     default: begin
                         // 默认按INDEP处理，使用上升沿检测
-                        wr_tile_idx = c_wr_cnt / 32;
-                        wr_word_in_tile = c_wr_cnt % 32;
+                        wr_tile_idx = c_wr_cnt / C_WORDS_PER_TILE;
+                        wr_word_in_tile = c_wr_cnt % C_WORDS_PER_TILE;
                         
-                        if (wr_data_ready && !wr_data_ready_prev && wr_tile_idx < `NPU_NUM_TILES && wr_word_in_tile < 32) begin
+                        if (wr_data_ready && !wr_data_ready_prev && wr_tile_idx < `NPU_NUM_TILES && wr_word_in_tile < C_WORDS_PER_TILE) begin
                             wr_data_word <= tile_c_bus[wr_tile_idx * `NPU_TILE_C_BITS + wr_word_in_tile * 32 +: 32];
                             wr_data_ready_flag <= 1'b1;
                             c_wr_cnt <= c_wr_cnt + 1;

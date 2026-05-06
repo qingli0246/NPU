@@ -1,100 +1,87 @@
 # ============================================================
-# NPU快速测试脚本（PowerShell）- 使用Icarus Verilog进行基本功能验证
+# NPU快速测试脚本（PowerShell）- 当前唯一仿真入口
 # ============================================================
+
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location $scriptDir
+
+$outputFile = "TB\npu_top_integrated.vvp"
+$testbench = "TB\tb_npu_top_test.v"
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "NPU Quick Test (Icarus Verilog)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 检查iverilog是否安装
 try {
     $null = Get-Command iverilog -ErrorAction Stop
-    Write-Host "[INFO] Icarus Verilog found." -ForegroundColor Green
+    $null = Get-Command vvp -ErrorAction Stop
 } catch {
-    Write-Host "[ERROR] Icarus Verilog not found!" -ForegroundColor Red
-    Write-Host "Please install Icarus Verilog from: http://iverilog.icarus.com/" -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "Or use other tools:" -ForegroundColor Yellow
-    Write-Host "  .\run_test.ps1 -Tool modelsim" -ForegroundColor White
-    Write-Host "  .\run_test.ps1 -Tool vivado" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Press any key to continue..."
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    Write-Host "[ERROR] Icarus Verilog or vvp not found." -ForegroundColor Red
+    Write-Host "Install Icarus Verilog first, then rerun this script." -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host ""
-
-# 检查文件是否存在
-if (-not (Test-Path "rtl\npu_top.v")) {
-    Write-Host "[ERROR] rtl\npu_top.v not found!" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Press any key to continue..."
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    exit 1
-}
-
-if (-not (Test-Path "tb_npu_top.v")) {
-    Write-Host "[ERROR] tb_npu_top.v not found!" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Press any key to continue..."
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    exit 1
-}
-
-Write-Host "[STEP 1] Compiling all modules..." -ForegroundColor Cyan
-Write-Host ""
-
-# 编译所有文件
-$sources = @(
-    "-Irtl",
-    "rtl\npu_defs.vh",
-    "rtl\npu_tile.v",
-    "rtl\npu_compute_pool.v",
-    "rtl\npu_weight_cache.v",
+foreach ($file in @(
+    "TB\tb_npu_top_test.v",
+    "rtl\npu_top.v",
     "rtl\npu_ctrl.v",
+    "rtl\npu_compute_pool.v",
+    "rtl\npu_tile.v",
     "rtl\npu_dma_rd.v",
     "rtl\npu_dma_wr.v",
+    "rtl\npu_weight_cache.v",
     "rtl\npu_axi4_bridge.v",
+    "rtl\npu_defs.vh"
+)) {
+    if (-not (Test-Path $file)) {
+        Write-Host "[ERROR] Missing file: $file" -ForegroundColor Red
+        exit 1
+    }
+}
+
+Remove-Item $outputFile, "TB\npu_top_test.vcd" -ErrorAction SilentlyContinue
+
+Write-Host "[STEP 1] Compiling current integrated testbench..." -ForegroundColor Cyan
+Write-Host ""
+
+$compileArgs = @(
+    "-g2012",
+    "-Irtl",
+    "-o", $outputFile,
+    $testbench,
     "rtl\npu_top.v",
-    "tb_memory_model.v",
-    "tb_npu_top.v"
+    "rtl\npu_ctrl.v",
+    "rtl\npu_compute_pool.v",
+    "rtl\npu_tile.v",
+    "rtl\npu_dma_rd.v",
+    "rtl\npu_dma_wr.v",
+    "rtl\npu_weight_cache.v",
+    "rtl\npu_axi4_bridge.v"
 )
 
-& iverilog -o npu_sim.exe @sources
+& iverilog @compileArgs
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "[ERROR] Compilation failed! Check the errors above." -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Press any key to continue..."
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    Write-Host "[ERROR] Compilation failed." -ForegroundColor Red
     exit 1
 }
 
-Write-Host "[INFO] Compilation successful." -ForegroundColor Green
+Write-Host "[INFO] Compilation successful: $outputFile" -ForegroundColor Green
 Write-Host ""
-
 Write-Host "[STEP 2] Running simulation..." -ForegroundColor Cyan
-Write-Host "This may take a few minutes..." -ForegroundColor Yellow
 Write-Host ""
 
-& vvp npu_sim.exe
+& vvp $outputFile
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "[ERROR] Simulation failed!" -ForegroundColor Red
-} else {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Green
-    Write-Host "[SUCCESS] Test completed successfully!" -ForegroundColor Green
-    Write-Host "========================================" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "To view waveforms (if generated):" -ForegroundColor Yellow
-    Write-Host "  gtkwave dump.vcd" -ForegroundColor White
+    Write-Host "[ERROR] Simulation failed." -ForegroundColor Red
+    exit 1
 }
 
 Write-Host ""
-Write-Host "Press any key to continue..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "[SUCCESS] Simulation completed." -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Green

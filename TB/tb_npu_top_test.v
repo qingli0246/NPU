@@ -291,24 +291,24 @@ module tb_npu_top_test;
         // 读取C矩阵的前几个元素
         // 使用层次化引用访问 BRAM 模型中的存储器
         $display("Reading C matrix from address 0x300...");
-        $display("C[0][3:0] = 0x%h (期望包含 A[0][0]=1)", u_axi4_bram_model.axi4_mem[192]);
-        $display("C[0][7:4] = 0x%h", u_axi4_bram_model.axi4_mem[193]);
+        $display("C[0][0] = 0x%h", u_axi4_bram_model.axi4_mem[192]);
+        $display("C[0][1] = 0x%h", u_axi4_bram_model.axi4_mem[193]);
         
         // 验证C[0][0]
         verify_total = verify_total + 1;
-        if (u_axi4_bram_model.axi4_mem[192][7:0] == 8'h01) begin
+        if (u_axi4_bram_model.axi4_mem[192] == 32'h00000001) begin
             $display("[PASS] C[0][0] = 1 (correct!)");
         end else begin
-            $display("[FAIL] C[0][0] = %d (expected 1)", u_axi4_bram_model.axi4_mem[192][7:0]);
+            $display("[FAIL] C[0][0] = %d (expected 1)", u_axi4_bram_model.axi4_mem[192]);
             verify_errors = verify_errors + 1;
         end
         
         // 验证C[0][1]
         verify_total = verify_total + 1;
-        if (u_axi4_bram_model.axi4_mem[192][15:8] == 8'h02) begin
+        if (u_axi4_bram_model.axi4_mem[193] == 32'h00000002) begin
             $display("[PASS] C[0][1] = 2 (correct!)");
         end else begin
-            $display("[FAIL] C[0][1] = %d (expected 2)", u_axi4_bram_model.axi4_mem[192][15:8]);
+            $display("[FAIL] C[0][1] = %d (expected 2)", u_axi4_bram_model.axi4_mem[193]);
             verify_errors = verify_errors + 1;
         end
         
@@ -422,33 +422,31 @@ module axi4_bram_model (
         
         // B矩阵数据（8x8矩阵，单位矩阵，基地址0x200 -> Word Addr 128）
         // B = I (Identity Matrix)
-        // Diagonal elements are 1.
-        // Assuming 4 elements per word.
-        // B[0][0] is at bit [7:0] of word 0 (addr 128). Value 1.
-        // B[1][1] is at bit [15:8] of word 0 (addr 128)? No, depends on packing.
-        // Let's assume standard packing: Element[j] is in byte[j%4] of Word[i/4].
-        // Identity matrix: B[i][j] = 1 if i==j else 0.
+        // Linear indexing: idx = i*8 + j, then word_idx = idx/4, byte_idx = idx%4
+        // 直接赋值，避免位操作问题
         
-        // Clear B matrix first
+        // 清零所有B矩阵word
         for (i = 0; i < 16; i = i + 1) begin
             axi4_mem[128 + i] = 32'h00000000;
         end
         
-        // Set diagonal elements to 1 using module-level integer variables
-        for (i = 0; i < 8; i = i + 1) begin
-            // Set B[i][i] = 1
-            // Linear index of B[i][i] in row-major order for 8x8 is i*8 + i.
-            idx = i * 8 + i;
-            word_idx = idx / 4;
-            byte_idx = idx % 4;
-            
-            case (byte_idx)
-                0: axi4_mem[128 + word_idx] = (axi4_mem[128 + word_idx] & 32'hFFFFFF00) | 32'h00000001;
-                1: axi4_mem[128 + word_idx] = (axi4_mem[128 + word_idx] & 32'hFFFF00FF) | 32'h00000100;
-                2: axi4_mem[128 + word_idx] = (axi4_mem[128 + word_idx] & 32'hFF00FFFF) | 32'h00010000;
-                3: axi4_mem[128 + word_idx] = (axi4_mem[128 + word_idx] & 32'h00FFFFFF) | 32'h01000000;
-            endcase
-        end
+        // 设置对角线元素为1
+        // i=0: idx=0,  word=0,  byte=0 → axi4_mem[128]
+        axi4_mem[128] = 32'h00000001;
+        // i=1: idx=9,  word=2,  byte=1 → axi4_mem[130]
+        axi4_mem[130] = 32'h00000100;
+        // i=2: idx=18, word=4,  byte=2 → axi4_mem[132]
+        axi4_mem[132] = 32'h00010000;
+        // i=3: idx=27, word=6,  byte=3 → axi4_mem[134]
+        axi4_mem[134] = 32'h01000000;
+        // i=4: idx=36, word=9,  byte=0 → axi4_mem[137]
+        axi4_mem[137] = 32'h00000001;
+        // i=5: idx=45, word=11, byte=1 → axi4_mem[139]
+        axi4_mem[139] = 32'h00000100;
+        // i=6: idx=54, word=13, byte=2 → axi4_mem[141]
+        axi4_mem[141] = 32'h00010000;
+        // i=7: idx=63, word=15, byte=3 → axi4_mem[143]
+        axi4_mem[143] = 32'h01000000;
 
         // C矩阵区域清零（基地址0x300 -> Word Addr 192）
         for (i = 0; i < 16; i = i + 1) begin

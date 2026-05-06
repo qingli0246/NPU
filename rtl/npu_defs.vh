@@ -16,7 +16,7 @@
 // Tile 内部矩阵展开宽度
 `define NPU_TILE_A_BITS     (8*8*8)
 `define NPU_TILE_B_BITS     (8*8*8)
-`define NPU_TILE_C_BITS     (8*8*16)
+`define NPU_TILE_C_BITS     (8*8*32)
 `define TILE_PORT_W         (8*8)
 
 // 工作模式编码
