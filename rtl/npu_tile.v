@@ -140,28 +140,25 @@ module npu_tile #(
                     $display("\n[%0t] [TILE%0d] ===== START COMPUTATION =====", $time, TILE_ID);
                     $display("[%0t] [TILE%0d] Mode: %s, Split: %b", 
                             $time, TILE_ID, 
-                            (top_mode==2'd0)?"INDEP":(top_mode==2'd1)?"SPLIT":"MERGE",
+                            (top_mode==2'd0)?"INDEP":(top_mode==2'd1)?"MERGE":"SPLIT",
                             split_mode);
                     
-                    // 打印 A 矩阵的前两行（简化显示）
-                    $display("[%0t] [TILE%0d] A[0][0:7] = ", $time, TILE_ID);
-                    for (ci = 0; ci < 8; ci = ci + 1) begin
-                        $write("%3d ", a_lat[((0 * 8 + ci) * 8) +: 8]);
+                    // 打印完整 A 矩阵（8x8）
+                    $display("[%0t] [TILE%0d] ===== Input Matrix A (8x8) =====", $time, TILE_ID);
+                    for (ri = 0; ri < 8; ri = ri + 1) begin
+                        $write("[%0t] [TILE%0d] A[%d][0:7] = ", $time, TILE_ID, ri);
+                        for (ci = 0; ci < 8; ci = ci + 1) begin
+                            $write("%4d ", a_lat[((ri * 8 + ci) * 8) +: 8]);
+                        end
+                        $display("");
                     end
-                    $display("");
-                    
-                    $display("[%0t] [TILE%0d] A[1][0:7] = ", $time, TILE_ID);
-                    for (ci = 0; ci < 8; ci = ci + 1) begin
-                        $write("%3d ", a_lat[((1 * 8 + ci) * 8) +: 8]);
-                    end
-                    $display("");
                     
                     // 打印完整 B 矩阵（8x8）
-                    $display("[%0t] [TILE%0d] B Matrix (8x8):", $time, TILE_ID);
+                    $display("[%0t] [TILE%0d] ===== Input Matrix B (8x8) =====", $time, TILE_ID);
                     for (ri = 0; ri < 8; ri = ri + 1) begin
                         $write("[%0t] [TILE%0d] B[%d][0:7] = ", $time, TILE_ID, ri);
                         for (ci = 0; ci < 8; ci = ci + 1) begin
-                            $write("%3d ", b_lat[((ri * 8 + ci) * 8) +: 8]);
+                            $write("%4d ", b_lat[((ri * 8 + ci) * 8) +: 8]);
                         end
                         $display("");
                     end
@@ -175,48 +172,17 @@ module npu_tile #(
                             dot_val = dot_block(a_lat, b_lat, row_sel, col_sel, split_mode);
                             c_flat[((ri * 8 + ci) * 32) +: 32] <= dot_val;
                             
-                            if (ri == 0 || ci == 0) begin
-                                $display("[%0t] [TILE%0d] C[%0d][%0d] = %5d (0x%08x)", 
-                                        $time, TILE_ID, ri, ci, dot_val, dot_val);
+                            // 同时打印C矩阵元素（使用dot_val而非c_flat）
+                            if (ci == 0) begin
+                                $write("[%0t] [TILE%0d] C[%d][0:7] = ", $time, TILE_ID, ri);
                             end
-                            // 调试：捕获C[0][0]的计算过程
-                            if (ri == 0 && ci == 0) begin
-                                // 手动展开C[0][0]的计算以便调试
-                                debug_c00_sum = 0;
-                                debug_c00_a_val_0 = a_lat[((0 * 8 + 0) * 8) +: 8];
-                                debug_c00_b_val_0 = b_lat[((0 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_0 * debug_c00_b_val_0;
-                                
-                                debug_c00_a_val_1 = a_lat[((0 * 8 + 1) * 8) +: 8];
-                                debug_c00_b_val_1 = b_lat[((1 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_1 * debug_c00_b_val_1;
-                                
-                                debug_c00_a_val_2 = a_lat[((0 * 8 + 2) * 8) +: 8];
-                                debug_c00_b_val_2 = b_lat[((2 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_2 * debug_c00_b_val_2;
-                                
-                                debug_c00_a_val_3 = a_lat[((0 * 8 + 3) * 8) +: 8];
-                                debug_c00_b_val_3 = b_lat[((3 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_3 * debug_c00_b_val_3;
-                                
-                                debug_c00_a_val_4 = a_lat[((0 * 8 + 4) * 8) +: 8];
-                                debug_c00_b_val_4 = b_lat[((4 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_4 * debug_c00_b_val_4;
-                                
-                                debug_c00_a_val_5 = a_lat[((0 * 8 + 5) * 8) +: 8];
-                                debug_c00_b_val_5 = b_lat[((5 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_5 * debug_c00_b_val_5;
-                                
-                                debug_c00_a_val_6 = a_lat[((0 * 8 + 6) * 8) +: 8];
-                                debug_c00_b_val_6 = b_lat[((6 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_6 * debug_c00_b_val_6;
-                                
-                                debug_c00_a_val_7 = a_lat[((0 * 8 + 7) * 8) +: 8];
-                                debug_c00_b_val_7 = b_lat[((7 * 8 + 0) * 8) +: 8];
-                                debug_c00_sum = debug_c00_sum + debug_c00_a_val_7 * debug_c00_b_val_7;
+                            $write("%4d ", dot_val);
+                            if (ci == 7) begin
+                                $display("");
                             end
                         end
                     end
+                    
                     $display("[%0t] [TILE%0d] ===== COMPUTATION COMPLETE =====\n", $time, TILE_ID);
                     state <= ST_DONE;
                 end
