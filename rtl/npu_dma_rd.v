@@ -55,6 +55,7 @@ module npu_dma_rd #(
                     busy      <= 1'b0;
                     cmd_valid <= 1'b0;
                     if (start) begin
+                        $display("[%0t] [DMA_RD] IDLE->CMD: 启动DMA读, base=0x%h, count=%d", $time, base_addr, word_count);
                         busy   <= 1'b1;
                         rd_cnt <= 16'd0;
                         state  <= ST_CMD;
@@ -79,6 +80,7 @@ module npu_dma_rd #(
                         data_word  <= rsp_rdata;
                         data_index <= rd_cnt;
                         if (rd_cnt == word_count - 1'b1) begin
+                            $display("[%0t] [DMA_RD] WAIT->DONE: 读取完成, 共读取 %d 个字", $time, rd_cnt + 1);
                             state <= ST_DONE;
                         end else begin
                             rd_cnt <= rd_cnt + 1'b1;

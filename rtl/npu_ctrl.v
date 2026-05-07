@@ -10,8 +10,7 @@ module npu_ctrl (
     input  wire [1:0]               cfg_mode,
     input  wire                     cfg_b_static,      // B矩阵静态权重标志（来自reg_mode[2]）
     input  wire                     cfg_b_independent, // B矩阵独立权重标志（来自reg_mode[3]）
-    input  wire [4:0]               cfg_tile_mask_lo,
-    input  wire [4:0]               cfg_tile_mask_hi,
+    input  wire [31:0]              cfg_tile_mask,     // 完整的 32 位 Tile 使能掩码
     input  wire [31:0]              cfg_a_base,
     input  wire [31:0]              cfg_b_base,
     input  wire [31:0]              cfg_c_base,
@@ -254,13 +253,18 @@ module npu_ctrl (
                     pool_tile_clk_en_mask <= {`NPU_NUM_TILES{1'b0}};
                     pool_mode             <= cfg_mode;
                     a_load_done_flag      <= 1'b0;  // 确保在IDLE状态清除
-                    
+                    tile_start_mask_sent  <= 1'b0;  // 重置Tile启动标志，为下次计算做准备
+
                     if (cfg_start_pulse) begin
+                        $display("[%0t] [CTRL] IDLE->CFG: 启动计算", $time);
+                        $display("[%0t] [CTRL] 配置: mode=%b, m=%d, n=%d, k=%d", $time, cfg_mode, cfg_matrix_m, cfg_matrix_n, cfg_matrix_k);
+                        $display("[%0t] [CTRL] 配置: tile_mask=0x%h, b_static=%b, b_independent=%b", $time, cfg_tile_mask, cfg_b_static, cfg_b_independent);
+                        
                         // 启动时把 CPU 配置锁存下来，后续流程完全由状态机推进。
                         pool_mode             <= cfg_mode;
                         
                         // 根据cfg_tile_mask配置启用的Tile
-                        // cfg_tile_mask_lo[4:0]对应Tile#0-4, cfg_tile_mask_hi[9:5]对应Tile#5-9
+                        // cfg_tile_mask[31:0]对应所有32个Tile
                         // 对于32个Tile，需要扩展掩码
                         pool_tile_clk_en_mask <= {`NPU_NUM_TILES{1'b1}};  // 所有Tile时钟使能
                         
@@ -286,14 +290,18 @@ module npu_ctrl (
                             cfg_matrix_m, 
                             cfg_matrix_n, 
                             cfg_matrix_k,
-                            {cfg_tile_mask_hi, cfg_tile_mask_lo}  // 传入完整的 32 位 tile_mask
+                            cfg_tile_mask  // 直接使用完整的 32 位掩码
                         );
+                        
+                        $display("[%0t] [CTRL] 计算: rd_word_count=%d, wr_word_count=%d", $time, 
+                                 calc_rd_word_count(cfg_mode, cfg_matrix_m, cfg_matrix_n, cfg_matrix_k, cfg_tile_mask),
+                                 calc_c_wr_word_count(cfg_mode, cfg_matrix_m, cfg_matrix_n));
                         
                         // C 矩阵写回字数（结果矩阵）
                         wr_word_count         <= calc_c_wr_word_count(cfg_mode, cfg_matrix_m, cfg_matrix_n);
                         
                         // 保存Tile启动掩码，供RUN状态使用
-                        tile_start_mask_value <= {{(`NPU_NUM_TILES-10){1'b0}}, cfg_tile_mask_hi, cfg_tile_mask_lo};
+                        tile_start_mask_value <= cfg_tile_mask[`NPU_NUM_TILES-1:0];  // 直接使用完整的掩码
                         run_start_delay       <= 2'd0;
                         
                         state                 <= `NPU_ST_CFG;
@@ -302,6 +310,7 @@ module npu_ctrl (
                 end
 
                 `NPU_ST_CFG: begin
+                    $display("[%0t] [CTRL] CFG->LOAD: 配置完成，进入加载阶段", $time);
                     // CFG阶段：只配置参数，不写入权重缓存
                     // 权重缓存在LOAD阶段通过DMA加载
                     
@@ -318,7 +327,7 @@ module npu_ctrl (
                     
                     if (!a_load_done_flag) begin
                         // 第一阶段：加载A矩阵
-                        if (!rd_busy) begin
+                        if (!rd_busy && !rd_done) begin
                             rd_start <= 1'b1;  // 启动DMA读取A矩阵
                         end
                         if (rd_done) begin
@@ -327,7 +336,7 @@ module npu_ctrl (
                     end else if (!b_matrix_static) begin
                         // 第二阶段：加载B矩阵（仅动态模式）
                         // 切换到B矩阵基地址和字数
-                        if (!rd_busy) begin
+                        if (!rd_busy && !rd_done) begin
                             rd_base_addr <= cfg_b_base;
                             rd_word_count <= calc_b_rd_word_count(cfg_matrix_k, cfg_matrix_n, b_matrix_static, b_weight_independent);
                             rd_start <= 1'b1;  // 启动DMA读取B矩阵
@@ -346,14 +355,22 @@ module npu_ctrl (
                 end
 
                 `NPU_ST_RUN: begin
+                    // ← 在这里添加调试输出
+                    if (run_start_delay == 2'd2) begin  // 只在第一次进入时输出
+                        $display("[%0t] [CTRL] RUN: 进入RUN状态, tile_start_mask_sent=%b, tile_mask_value=0x%h", 
+                                $time, tile_start_mask_sent, tile_start_mask_value);
+                    end
+    
                     // 等待B矩阵广播稳定后，再触发Tile开始计算
                     if (run_start_delay != 2'd0) begin
                         run_start_delay <= run_start_delay - 1'b1;
                         pool_tile_start_mask <= {`NPU_NUM_TILES{1'b0}};
                     end else if (!tile_start_mask_sent) begin
+                        $display("[%0t] [CTRL] RUN: 启动Tile计算, tile_mask=0x%h", $time, tile_start_mask_value);
                         pool_tile_start_mask <= tile_start_mask_value;  // 周期1：设置start
                         tile_start_mask_sent <= 1'b1;
                     end else if (pool_done) begin
+                        $display("[%0t] [CTRL] RUN: Tile计算完成，进入STORE阶段", $time);
                         pool_tile_start_mask <= {`NPU_NUM_TILES{1'b0}};  // 计算完成，清除start
                         tile_start_mask_sent <= 1'b0;
                         state <= `NPU_ST_STORE;
@@ -363,17 +380,20 @@ module npu_ctrl (
                 `NPU_ST_STORE: begin
                     // STORE阶段：将C矩阵结果写回外部存储器
                     if (!wr_busy) begin
+                        $display("[%0t] [CTRL] STORE: 启动C矩阵DMA写回, base=0x%h, count=%d", $time, wr_base_addr, wr_word_count);
                         wr_start <= 1'b1;  // 启动DMA写
                     end
                     
                     // 等待DMA写完成
                     if (wr_done) begin
+                        $display("[%0t] [CTRL] STORE: C矩阵写回完成，进入DONE阶段", $time);
                         wr_start <= 1'b0;
                         state <= `NPU_ST_DONE;
                     end
                 end
 
                 `NPU_ST_DONE: begin
+                    $display("[%0t] [CTRL] DONE: 计算全部完成", $time);
                     global_busy  <= 1'b0;
                     global_done  <= 1'b1;
                     pool_tile_start_mask <= {`NPU_NUM_TILES{1'b0}};
@@ -381,6 +401,7 @@ module npu_ctrl (
                 end
 
                 default: begin
+                    $display("[%0t] [CTRL] ERROR: 进入错误状态", $time);
                     global_error <= 1'b1;
                     state <= `NPU_ST_ERROR;
                 end

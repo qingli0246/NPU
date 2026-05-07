@@ -4,17 +4,13 @@
   "markerTime": 2305000,
   "altMarkerTime": null,
   "displayTimeUnit": "ns",
-  "selectedSignal": {
-    "name": "tb_npu_top_test.u_npu_top.u_pool.clk",
-    "msb": -1,
-    "lsb": -1
-  },
+  "selectedSignal": null,
   "zoomRatio": 0.0032,
-  "scrollLeft": 2223907,
+  "scrollLeft": 2317657,
   "displayedSignals": [
     {
       "dataType": "netlist-variable",
-      "netlistId": 124,
+      "netlistId": 121,
       "name": "tb_npu_top_test.u_npu_top.rd_data_valid",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -27,7 +23,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 185,
+      "netlistId": 183,
       "name": "tb_npu_top_test.u_npu_top.mode_cache",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -40,7 +36,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 168,
+      "netlistId": 166,
       "name": "tb_npu_top_test.u_npu_top.b_load_phase",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -53,7 +49,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 125,
+      "netlistId": 122,
       "name": "tb_npu_top_test.u_npu_top.rd_data_index",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -66,7 +62,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 118,
+      "netlistId": 115,
       "name": "tb_npu_top_test.u_npu_top.rd_word_count",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -79,7 +75,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 331,
+      "netlistId": 330,
       "name": "tb_npu_top_test.u_npu_top.u_ctrl.calc_rd_word_count.words_per_tile",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -92,7 +88,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 209,
+      "netlistId": 207,
       "name": "tb_npu_top_test.u_npu_top.words_per_tile_cache",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -105,7 +101,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 455,
+      "netlistId": 454,
       "name": "tb_npu_top_test.u_npu_top.u_pool.g_tiles[0].u_tile.a_flat",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -118,7 +114,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 457,
+      "netlistId": 456,
       "name": "tb_npu_top_test.u_npu_top.u_pool.g_tiles[0].u_tile.b_flat",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -131,7 +127,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 180,
+      "netlistId": 178,
       "name": "tb_npu_top_test.u_npu_top.cfg_start_pulse",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -144,7 +140,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 343,
+      "netlistId": 342,
       "name": "tb_npu_top_test.u_npu_top.u_pool.clk",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -157,7 +153,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 298,
+      "netlistId": 296,
       "name": "tb_npu_top_test.u_npu_top.u_ctrl.global_state",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -170,7 +166,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 349,
+      "netlistId": 348,
       "name": "tb_npu_top_test.u_npu_top.u_pool.tile_start_mask",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -183,7 +179,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 350,
+      "netlistId": 349,
       "name": "tb_npu_top_test.u_npu_top.u_pool.tile_done_mask",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -196,7 +192,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 463,
+      "netlistId": 462,
       "name": "tb_npu_top_test.u_npu_top.u_pool.g_tiles[0].u_tile.start",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -209,7 +205,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 498,
+      "netlistId": 499,
       "name": "tb_npu_top_test.u_npu_top.u_pool.g_tiles[0].u_tile.state",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,

@@ -363,8 +363,7 @@ module npu_top (
         .cfg_mode             (reg_mode[1:0]),
         .cfg_b_static         (reg_mode[2]),      // B矩阵静态权重标志
         .cfg_b_independent    (reg_mode[3]),      // B矩阵独立权重标志
-        .cfg_tile_mask_lo     (reg_tile_mask[4:0]),
-        .cfg_tile_mask_hi     (reg_tile_mask[9:5]),
+        .cfg_tile_mask        (reg_tile_mask),    // 直接传递完整的 32 位
         .cfg_a_base           (reg_a_base),
         .cfg_b_base           (reg_b_base),
         .cfg_c_base           (reg_c_base),
@@ -439,6 +438,8 @@ module npu_top (
     integer i_temp;
     integer tile_idx_temp;
     integer word_in_tile_temp;
+    integer b_words_per_matrix_temp;
+    integer b_total_words_temp;
     integer group_i;          // 用于B矩阵组遍历
     integer tile_in_group;    // 用于B矩阵组内Tile遍历
     reg break_found;          // 用于在for循环中模拟break语句
@@ -526,7 +527,27 @@ module npu_top (
             if (a_load_complete && !b_load_phase ) begin
                 b_load_phase <= 1'b1;
                 b_load_cnt <= 16'd0;
-                 b_expected_words <= rd_word_count;  // 缓存B矩阵的预期字数
+                // 缓存B矩阵的预期字数（注意：此时 rd_word_count 仍是A阶段的总字数，不能复用）
+                // B words = ceil(K*N/4)；独立权重(分组共享)则加载4份。
+                if (reg_mode[2]) begin
+                    // 静态权重：不进行DMA加载
+                    b_expected_words <= 16'd0;
+                end else begin
+                    b_words_per_matrix_temp = ((reg_k * reg_n) + 3) / 4;
+                    if (reg_mode[3]) begin
+                        b_total_words_temp = b_words_per_matrix_temp * 4;
+                    end else begin
+                        b_total_words_temp = b_words_per_matrix_temp;
+                    end
+
+                    if (b_total_words_temp <= 0) begin
+                        b_expected_words <= 16'd1;
+                    end else if (b_total_words_temp > 16'hFFFF) begin
+                        b_expected_words <= 16'hFFFF;
+                    end else begin
+                        b_expected_words <= b_total_words_temp[15:0];
+                    end
+                end
                 current_tile_for_weight <= 5'd0;  // 重置组索引，准备加载第0组权重
                 a_load_complete <= 1'b0;
             end
@@ -758,15 +779,19 @@ module npu_top (
                 wr_word_in_tile <= 6'd0;
                 wr_data_word <= 32'd0;
                 wr_data_ready_flag <= 1'b0;
+`ifdef NPU_TOP_DEBUG
                 $display("[%0t] [NPU_TOP] C matrix collection started! wr_start=%b, wr_word_count=%d", 
                          $time, wr_start, wr_word_count);
+`endif
             end
             
             // C矩阵收集完成后，重置阶段标志
             if (c_wr_phase && c_wr_cnt >= wr_word_count) begin
                 c_wr_phase <= 1'b0;
                 c_wr_cnt <= 16'd0;
+`ifdef NPU_TOP_DEBUG
                 $display("[%0t] [NPU_TOP] C matrix collection completed! c_wr_cnt=%d", $time, c_wr_cnt);
+`endif
             end
             
             // 在C矩阵收集阶段，从tile_c_bus收集数据并输出到DMA（带握手协议）
@@ -787,11 +812,13 @@ module npu_top (
                             wr_data_ready_flag <= 1'b1;
                             c_wr_cnt <= c_wr_cnt + 1;  // 只在上升沿递增一次
                             // 调试输出
+`ifdef NPU_TOP_DEBUG
                             if (c_wr_cnt < 3) begin
                                 $display("[%0t] [NPU_TOP] INDEP: wr_tile_idx=%d, wr_word_in_tile=%d, tile_c_bus_slice=%h", 
                                          $time, wr_tile_idx, wr_word_in_tile, 
                                          tile_c_bus[wr_tile_idx * `NPU_TILE_C_BITS + wr_word_in_tile * 32 +: 32]);
                             end
+`endif
                         end else if (!wr_data_ready) begin
                             // DMA未就绪，保持数据和标志不变
                             wr_data_ready_flag <= wr_data_ready_flag;
@@ -853,11 +880,13 @@ module npu_top (
                             wr_data_ready_flag <= 1'b1;
                             c_wr_cnt <= c_wr_cnt + 1;
 
+`ifdef NPU_TOP_DEBUG
                             if (c_wr_cnt < 3) begin
                                 $display("[%0t] [NPU_TOP] INDEP: wr_tile_idx=%d, wr_word_in_tile=%d, tile_c_bus_slice=%h", 
                                          $time, wr_tile_idx, wr_word_in_tile, 
                                          tile_c_bus[wr_tile_idx * `NPU_TILE_C_BITS + wr_word_in_tile * 32 +: 32]);
                             end
+`endif
                         end else if (!wr_data_ready) begin
                             wr_data_ready_flag <= wr_data_ready_flag;
                             c_wr_cnt <= c_wr_cnt;
@@ -991,6 +1020,7 @@ module npu_top (
         end
     end
 
+`ifdef NPU_TOP_DEBUG
     // ==========================================================
     // 调试监控：每1000个周期输出一次关键状态
     // ==========================================================
@@ -1009,5 +1039,6 @@ module npu_top (
             end
         end
     end
+`endif
 
 endmodule
