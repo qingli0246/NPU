@@ -5,7 +5,7 @@ module npu_top (
     input  wire                     clk,
     input  wire                     rst_n,
 
-    // AXI-Lite 控制接口
+    // AXI-Lite 控制接口·
     input  wire [31:0]              s_axi_awaddr,
     input  wire                     s_axi_awvalid,
     output reg                      s_axi_awready,
@@ -293,6 +293,18 @@ module npu_top (
     wire [3:0] wr_cmd_wstrb;
     wire wr_rsp_valid;
     wire wr_data_ready;  // DMA写就绪信号（用于握手协议）
+    
+    // 调试：监控wr_rsp_valid信号
+    reg [31:0] wr_rsp_valid_count;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            wr_rsp_valid_count <= 0;
+        end else if (wr_rsp_valid) begin
+            wr_rsp_valid_count <= wr_rsp_valid_count + 1;
+            $display("[%0t] [NPU_TOP] wr_rsp_valid脉冲 #%d", $time, wr_rsp_valid_count + 1);
+        end
+    end
+    
     // C矩阵写回数据信号（必须在DMA实例化之前声明，避免隐式声明冲突）
     wire wr_data_valid;
     wire [31:0] wr_data_out;
@@ -599,21 +611,14 @@ module npu_top (
                     end
 
                     `NPU_MODE_MERGE: begin
-                        // MERGE 模式：A 矩阵只分发给主 Tile
-                        // 从 Tile 通过脉动级联网络接收数据
-                        //
-                        // 硬件设计原则：
-                        // - 只有标记为 group_master 的 Tile 接收外部数据
-                        // - 主 Tile 计算完成后，通过级联端口传递数据给从 Tile
-                        
-                        if (rd_data_index < 16) begin
-                            for (i_temp = 0; i_temp < `NPU_NUM_TILES; i_temp = i_temp + 1) begin
-                                if (pool_cfg_group_master[i_temp]) begin
-                                    tile_a_bus_reg[i_temp * `NPU_TILE_A_BITS + rd_data_index * 32 +: 32] <= rd_data_word;
-                                    // 只分发给第一个主 Tile，使用 disable 替代 break
-                                    i_temp = `NPU_NUM_TILES;  // Force loop exit
-                                end
-                            end
+                        // MERGE 模式：A 矩阵分发给所有被配置为 group_master 的 Tile
+                        // 修正：支持多个 master。rd_word_count 在 ctrl 已按 master 数量计算。
+                        // 映射策略：将连续的 rd_data_index 按每个 Tile 所需字数划分，目标 tile_id = rd_data_index / words_per_tile_cache
+                        tile_id_temp = rd_data_index / words_per_tile_cache;
+                        word_offset_temp = rd_data_index % words_per_tile_cache;
+
+                        if (tile_id_temp < `NPU_NUM_TILES && pool_cfg_group_master[tile_id_temp]) begin
+                            tile_a_bus_reg[tile_id_temp * `NPU_TILE_A_BITS + word_offset_temp * 32 +: 32] <= rd_data_word;
                         end
                     end
 
@@ -833,22 +838,30 @@ module npu_top (
                         // MERGE模式：从主Tile收集级联后的结果
                         // 简化实现：从第一个标记为group_master的Tile顺序读取
                         // 使用上升沿检测，确保每次DMA准备好接收时只递增一次
-                        if (wr_data_ready && !wr_data_ready_prev) begin
-                            break_found <= 1'b0;
-                            for (i_temp = 0; i_temp < `NPU_NUM_TILES; i_temp = i_temp + 1) begin
-                                if (pool_cfg_group_master[i_temp] && !break_found) begin
-                                    wr_data_word <= tile_c_bus[i_temp * `NPU_TILE_C_BITS + (c_wr_cnt % C_WORDS_PER_TILE) * 32 +: 32];
-                                    wr_data_ready_flag <= 1'b1;
-                                    c_wr_cnt <= c_wr_cnt + 1;
-                                    break_found <= 1'b1;  // 设置标志，后续迭代不再执行
+                        
+                        // 添加边界检查，防止越界访问
+                        if (c_wr_cnt < wr_word_count) begin
+                            if (wr_data_ready && !wr_data_ready_prev) begin
+                                for (i_temp = 0; i_temp < `NPU_NUM_TILES; i_temp = i_temp + 1) begin
+                                    if (pool_cfg_group_master[i_temp]) begin
+                                        wr_data_word <= tile_c_bus[i_temp * `NPU_TILE_C_BITS + (c_wr_cnt % C_WORDS_PER_TILE) * 32 +: 32];
+                                        wr_data_ready_flag <= 1'b1;
+                                        c_wr_cnt <= c_wr_cnt + 1;
+                                        // 找到master后退出循环（优化性能）
+                                        i_temp = `NPU_NUM_TILES;  // 强制退出for循环
+                                    end
                                 end
-                            end
-                            if (!break_found) begin
+                            end else if (!wr_data_ready) begin
+                                // DMA未就绪，保持数据和标志不变
+                                wr_data_ready_flag <= wr_data_ready_flag;
+                                c_wr_cnt <= c_wr_cnt;
+                            end else begin
+                                // 无上升沿但DMA就绪，清除标志
                                 wr_data_ready_flag <= 1'b0;
                             end
                         end else begin
-                            wr_data_ready_flag <= wr_data_ready_flag;
-                            c_wr_cnt <= c_wr_cnt;
+                            // 已超出写入范围，清除标志
+                            wr_data_ready_flag <= 1'b0;
                         end
                     end
 

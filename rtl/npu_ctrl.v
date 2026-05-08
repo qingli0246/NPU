@@ -94,8 +94,9 @@ module npu_ctrl (
                     total_words = words_per_tile * enabled_count;
                 end
                 `NPU_MODE_MERGE: begin
-                    // 只有主 Tile 需要外部数据（假设 1 个主 Tile）
-                    total_words = words_per_tile;
+                    // MERGE: 支持多个主 Tile（每个主 Tile 对应一个 A 矩阵）
+                    // 每个启用的 master 都需要一份 A 数据，因此总字数应按启用的 master 数量计算
+                    total_words = words_per_tile * enabled_count;
                 end
                 `NPU_MODE_SPLIT: begin
                     // 每个 Tile 需要 8×K 的数据

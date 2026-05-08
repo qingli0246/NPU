@@ -78,12 +78,13 @@ module npu_dma_wr #(
                     cmd_write <= 1'b1;
                     data_in_ready <= 1'b1;
 
-
                     // 第一步：锁存输入数据（单周期完成）
                     if (data_in_valid && !data_latched) begin
                         latched_data <= data_in;
                         latched_addr <= base_addr + {wr_cnt, 2'b00};
                         data_latched <= 1'b1;
+                        $display("[%0t] [DMA_WR] Received data_in_valid! addr=0x%h, data=0x%h", 
+                        $time, base_addr + {wr_cnt, 2'b00}, data_in);
                     end
                       // 第二步：等待AXI就绪后发送（可以跨多个周期）
                     if (data_latched) begin
