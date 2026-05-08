@@ -25,19 +25,32 @@ module npu_top (
     input  wire                     s_axi_rready,
 
     // AXI4 数据接口：作为主设备连接 BRAM / 存储控制器
+    // 写地址通道
     output wire [31:0]              m_axi_awaddr,
+    output wire [7:0]               m_axi_awlen,      // Burst长度-1
+    output wire [2:0]               m_axi_awsize,     // 每拍字节数 (3'b010=4字节)
+    output wire [1:0]               m_axi_awburst,    // Burst类型 (2'b01=INCR)
     output wire                     m_axi_awvalid,
     input  wire                     m_axi_awready,
+    // 写数据通道
     output wire [31:0]              m_axi_wdata,
     output wire [3:0]               m_axi_wstrb,
+    output wire                     m_axi_wlast,      // 最后一拍标志
     output wire                     m_axi_wvalid,
     input  wire                     m_axi_wready,
+    // 写响应通道
     input  wire                     m_axi_bvalid,
     output wire                     m_axi_bready,
+    // 读地址通道
     output wire [31:0]              m_axi_araddr,
+    output wire [7:0]               m_axi_arlen,      // Burst长度-1
+    output wire [2:0]               m_axi_arsize,     // 每拍字节数 (3'b010=4字节)
+    output wire [1:0]               m_axi_arburst,    // Burst类型 (2'b01=INCR)
     output wire                     m_axi_arvalid,
     input  wire                     m_axi_arready,
+    // 读数据通道
     input  wire [31:0]              m_axi_rdata,
+    input  wire                     m_axi_rlast,      // 最后一拍标志
     input  wire                     m_axi_rvalid,
     output wire                     m_axi_rready,
 
@@ -63,6 +76,7 @@ module npu_top (
     reg [31:0] reg_h_link_en;
     reg [31:0] reg_v_link_en;
     reg [31:0] reg_group_master;
+    reg [31:0] reg_burst_len;   // 新增: Burst长度配置 (0=单拍, 15=16-beat)
 
     reg cfg_start_pulse;
 
@@ -89,6 +103,7 @@ module npu_top (
             reg_h_link_en   <= 32'd0;
             reg_v_link_en   <= 32'd0;
             reg_group_master<= 32'd0;
+            reg_burst_len   <= 32'd0;  // 默认单拍模式
 
             cfg_start_pulse <= 1'b0;
         end else begin
@@ -116,6 +131,7 @@ module npu_top (
                     6'h09: reg_h_link_en   <= s_axi_wdata;
                     6'h0A: reg_v_link_en   <= s_axi_wdata;
                     6'h0B: reg_group_master<= s_axi_wdata;
+                    6'h0C: reg_burst_len   <= s_axi_wdata;  // Burst长度配置
                     default: begin end
                 endcase
             end else begin
@@ -140,6 +156,7 @@ module npu_top (
     // ----------------------------
     wire [`NPU_NUM_TILES-1:0] pool_tile_start_mask;
     wire [`NPU_NUM_TILES-1:0] pool_tile_clk_en_mask;
+    wire pool_clk_en;  // 全局时钟使能信号
     wire [1:0] pool_mode;
 
     wire rd_start;
@@ -223,7 +240,7 @@ module npu_top (
     npu_compute_pool u_pool (
         .clk              (clk),
         .rst_n            (rst_n),
-        .clk_en           (1'b1),
+        .clk_en           (pool_clk_en),
         .tile_start_mask   (pool_tile_start_mask),
         .tile_clk_en_mask  (pool_tile_clk_en_mask),
         .cfg_top_mode     (pool_mode),
@@ -258,26 +275,31 @@ module npu_top (
     wire rd_data_valid;
     wire [31:0] rd_data_word;
     wire [15:0] rd_data_index;
+    wire [7:0]  rd_cmd_burst_len;
+    wire [1:0]  rd_cmd_burst_type;
 
     npu_dma_rd u_rd_dma (
-        .clk        (clk),
-        .rst_n      (rst_n),
-        .start      (rd_start),
-        .base_addr  (rd_base_addr),
-        .word_count (rd_word_count),
-        .busy       (rd_busy),
-        .done       (rd_done),
-        .cmd_valid  (rd_cmd_valid),
-        .cmd_write  (rd_cmd_write),
-        .cmd_addr   (rd_cmd_addr),
-        .cmd_wdata  (rd_cmd_wdata),
-        .cmd_wstrb  (rd_cmd_wstrb),
-        .cmd_ready  (rd_cmd_ready),
-        .rsp_valid  (rd_rsp_valid),
-        .rsp_rdata  (rd_rsp_rdata),
-        .data_valid (rd_data_valid),
-        .data_word  (rd_data_word),
-        .data_index (rd_data_index)
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .start          (rd_start),
+        .base_addr      (rd_base_addr),
+        .word_count     (rd_word_count),
+        .burst_len      (reg_burst_len[7:0]),  // 从配置寄存器获取
+        .busy           (rd_busy),
+        .done           (rd_done),
+        .cmd_valid      (rd_cmd_valid),
+        .cmd_write      (rd_cmd_write),
+        .cmd_addr       (rd_cmd_addr),
+        .cmd_wdata      (rd_cmd_wdata),
+        .cmd_wstrb      (rd_cmd_wstrb),
+        .cmd_burst_len  (rd_cmd_burst_len),
+        .cmd_burst_type (rd_cmd_burst_type),
+        .cmd_ready      (rd_cmd_ready),
+        .rsp_valid      (rd_rsp_valid),
+        .rsp_rdata      (rd_rsp_rdata),
+        .data_valid     (rd_data_valid),
+        .data_word      (rd_data_word),
+        .data_index     (rd_data_index)
     );
 
     // ----------------------------
@@ -291,9 +313,11 @@ module npu_top (
     wire [31:0] wr_cmd_addr;
     wire [31:0] wr_cmd_wdata;
     wire [3:0] wr_cmd_wstrb;
+    wire [7:0]  wr_cmd_burst_len;
+    wire [1:0]  wr_cmd_burst_type;
     wire wr_rsp_valid;
     wire wr_data_ready;  // DMA写就绪信号（用于握手协议）
-    
+
     // 调试：监控wr_rsp_valid信号
     reg [31:0] wr_rsp_valid_count;
     always @(posedge clk or negedge rst_n) begin
@@ -304,65 +328,87 @@ module npu_top (
             $display("[%0t] [NPU_TOP] wr_rsp_valid脉冲 #%d", $time, wr_rsp_valid_count + 1);
         end
     end
-    
+
     // C矩阵写回数据信号（必须在DMA实例化之前声明，避免隐式声明冲突）
     wire wr_data_valid;
     wire [31:0] wr_data_out;
 
 
     npu_dma_wr u_wr_dma (
-        .clk           (clk),
-        .rst_n         (rst_n),
-        .start         (wr_start),
-        .base_addr     (wr_base_addr),
-        .word_count    (wr_word_count),
-        .data_in       (wr_data_out),      // 使用C矩阵收集后的数据
-        .data_in_valid (wr_data_valid),    // 使用握手信号
-        .data_in_ready (wr_data_ready),    // DMA就绪信号（用于握手）
-        .busy          (wr_busy),
-        .done          (wr_done),
-        .cmd_valid     (wr_cmd_valid),
-        .cmd_write     (wr_cmd_write),
-        .cmd_addr      (wr_cmd_addr),
-        .cmd_wdata     (wr_cmd_wdata),
-        .cmd_wstrb     (wr_cmd_wstrb),
-        .cmd_ready     (wr_cmd_ready),
-        .rsp_valid     (wr_rsp_valid),
-        .rsp_rdata     ()
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .start          (wr_start),
+        .base_addr      (wr_base_addr),
+        .word_count     (wr_word_count),
+        .burst_len      (reg_burst_len[7:0]),  // 从配置寄存器获取
+        .data_in        (wr_data_out),          // 使用C矩阵收集后的数据
+        .data_in_valid  (wr_data_valid),        // 使用握手信号
+        .data_in_ready  (wr_data_ready),        // DMA就绪信号（用于握手）
+        .busy           (wr_busy),
+        .done           (wr_done),
+        .cmd_valid      (wr_cmd_valid),
+        .cmd_write      (wr_cmd_write),
+        .cmd_addr       (wr_cmd_addr),
+        .cmd_wdata      (wr_cmd_wdata),
+        .cmd_wstrb      (wr_cmd_wstrb),
+        .cmd_burst_len  (wr_cmd_burst_len),
+        .cmd_burst_type (wr_cmd_burst_type),
+        .cmd_ready      (wr_cmd_ready),
+        .rsp_valid      (wr_rsp_valid),
+        .rsp_rdata      ()
     );
 
     // ----------------------------
     // AXI 桥
     // ----------------------------
     npu_axi4_bridge u_bridge (
-        .clk          (clk),
-        .rst_n        (rst_n),
-        .rd_cmd_valid (rd_cmd_valid),
-        .rd_cmd_ready (rd_cmd_ready),
-        .rd_cmd_addr  (rd_cmd_addr),
-        .rd_rsp_valid (rd_rsp_valid),
-        .rd_rsp_rdata (rd_rsp_rdata),
-        .wr_cmd_valid (wr_cmd_valid),
-        .wr_cmd_ready (wr_cmd_ready),
-        .wr_cmd_addr  (wr_cmd_addr),
-        .wr_cmd_wdata (wr_cmd_wdata),
-        .wr_cmd_wstrb (wr_cmd_wstrb),
-        .wr_rsp_valid (wr_rsp_valid),
-        .m_axi_awaddr (m_axi_awaddr),
-        .m_axi_awvalid(m_axi_awvalid),
-        .m_axi_awready(m_axi_awready),
-        .m_axi_wdata  (m_axi_wdata),
-        .m_axi_wstrb  (m_axi_wstrb),
-        .m_axi_wvalid (m_axi_wvalid),
-        .m_axi_wready (m_axi_wready),
-        .m_axi_bvalid (m_axi_bvalid),
-        .m_axi_bready (m_axi_bready),
-        .m_axi_araddr (m_axi_araddr),
-        .m_axi_arvalid(m_axi_arvalid),
-        .m_axi_arready(m_axi_arready),
-        .m_axi_rdata  (m_axi_rdata),
-        .m_axi_rvalid (m_axi_rvalid),
-        .m_axi_rready (m_axi_rready)
+        .clk              (clk),
+        .rst_n            (rst_n),
+        // 内部读命令接口
+        .rd_cmd_valid     (rd_cmd_valid),
+        .rd_cmd_ready     (rd_cmd_ready),
+        .rd_cmd_addr      (rd_cmd_addr),
+        .rd_cmd_burst_len (rd_cmd_burst_len),
+        .rd_cmd_burst_type(rd_cmd_burst_type),
+        .rd_rsp_valid     (rd_rsp_valid),
+        .rd_rsp_rdata     (rd_rsp_rdata),
+        // 内部写命令接口
+        .wr_cmd_valid     (wr_cmd_valid),
+        .wr_cmd_ready     (wr_cmd_ready),
+        .wr_cmd_addr      (wr_cmd_addr),
+        .wr_cmd_wdata     (wr_cmd_wdata),
+        .wr_cmd_wstrb     (wr_cmd_wstrb),
+        .wr_cmd_burst_len (wr_cmd_burst_len),
+        .wr_cmd_burst_type(wr_cmd_burst_type),
+        .wr_rsp_valid     (wr_rsp_valid),
+        // AXI4 主设备接口 - 写地址通道
+        .m_axi_awaddr     (m_axi_awaddr),
+        .m_axi_awlen      (m_axi_awlen),
+        .m_axi_awsize     (m_axi_awsize),
+        .m_axi_awburst    (m_axi_awburst),
+        .m_axi_awvalid    (m_axi_awvalid),
+        .m_axi_awready    (m_axi_awready),
+        // AXI4 主设备接口 - 写数据通道
+        .m_axi_wdata      (m_axi_wdata),
+        .m_axi_wstrb      (m_axi_wstrb),
+        .m_axi_wlast      (m_axi_wlast),
+        .m_axi_wvalid     (m_axi_wvalid),
+        .m_axi_wready     (m_axi_wready),
+        // AXI4 主设备接口 - 写响应通道
+        .m_axi_bvalid     (m_axi_bvalid),
+        .m_axi_bready     (m_axi_bready),
+        // AXI4 主设备接口 - 读地址通道
+        .m_axi_araddr     (m_axi_araddr),
+        .m_axi_arlen      (m_axi_arlen),
+        .m_axi_arsize     (m_axi_arsize),
+        .m_axi_arburst    (m_axi_arburst),
+        .m_axi_arvalid    (m_axi_arvalid),
+        .m_axi_arready    (m_axi_arready),
+        // AXI4 主设备接口 - 读数据通道
+        .m_axi_rdata      (m_axi_rdata),
+        .m_axi_rlast      (m_axi_rlast),
+        .m_axi_rvalid     (m_axi_rvalid),
+        .m_axi_rready     (m_axi_rready)
     );
 
     // ----------------------------
@@ -390,6 +436,7 @@ module npu_top (
         .wr_done              (wr_done),
         .pool_tile_start_mask (pool_tile_start_mask),
         .pool_tile_clk_en_mask(pool_tile_clk_en_mask),
+        .pool_clk_en          (pool_clk_en),
         .pool_mode            (pool_mode),
         .rd_start             (rd_start),
         .wr_start             (wr_start),

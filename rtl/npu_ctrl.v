@@ -26,6 +26,7 @@ module npu_ctrl (
 
     output reg  [`NPU_NUM_TILES-1:0] pool_tile_start_mask,
     output reg  [`NPU_NUM_TILES-1:0] pool_tile_clk_en_mask,
+    output reg                      pool_clk_en,         // 全局时钟使能
     output reg  [1:0]               pool_mode,
     output reg                      rd_start,
     output reg                      wr_start,
@@ -219,6 +220,7 @@ module npu_ctrl (
             state                <= `NPU_ST_IDLE;
             pool_tile_start_mask  <= {`NPU_NUM_TILES{1'b0}};
             pool_tile_clk_en_mask <= {`NPU_NUM_TILES{1'b0}};
+            pool_clk_en           <= 1'b0;  // 默认关闭时钟
             pool_mode             <= `NPU_MODE_INDEP;
             rd_start              <= 1'b0;
             wr_start              <= 1'b0;
@@ -252,6 +254,7 @@ module npu_ctrl (
                     global_busy <= 1'b0;
                     pool_tile_start_mask  <= {`NPU_NUM_TILES{1'b0}};
                     pool_tile_clk_en_mask <= {`NPU_NUM_TILES{1'b0}};
+                    pool_clk_en           <= 1'b0;  // IDLE时关闭全局时钟
                     pool_mode             <= cfg_mode;
                     a_load_done_flag      <= 1'b0;  // 确保在IDLE状态清除
                     tile_start_mask_sent  <= 1'b0;  // 重置Tile启动标志，为下次计算做准备
@@ -260,15 +263,15 @@ module npu_ctrl (
                         $display("[%0t] [CTRL] IDLE->CFG: 启动计算", $time);
                         $display("[%0t] [CTRL] 配置: mode=%b, m=%d, n=%d, k=%d", $time, cfg_mode, cfg_matrix_m, cfg_matrix_n, cfg_matrix_k);
                         $display("[%0t] [CTRL] 配置: tile_mask=0x%h, b_static=%b, b_independent=%b", $time, cfg_tile_mask, cfg_b_static, cfg_b_independent);
-                        
+
                         // 启动时把 CPU 配置锁存下来，后续流程完全由状态机推进。
                         pool_mode             <= cfg_mode;
-                        
-                        // 根据cfg_tile_mask配置启用的Tile
-                        // cfg_tile_mask[31:0]对应所有32个Tile
-                        // 对于32个Tile，需要扩展掩码
-                        pool_tile_clk_en_mask <= {`NPU_NUM_TILES{1'b1}};  // 所有Tile时钟使能
-                        
+
+                        // 根据工作模式和选择的Tile配置时钟门控
+                        // 只有被选中的Tile才开启时钟，降低功耗
+                        pool_clk_en           <= 1'b1;  // 开启全局时钟
+                        pool_tile_clk_en_mask <= cfg_tile_mask[`NPU_NUM_TILES-1:0];
+
                         // 注意：tile_start_mask不在这里设置，而是在进入RUN状态时产生一个周期脉冲
                         pool_tile_start_mask  <= {`NPU_NUM_TILES{1'b0}};  // 初始为0
                         
@@ -398,6 +401,7 @@ module npu_ctrl (
                     global_busy  <= 1'b0;
                     global_done  <= 1'b1;
                     pool_tile_start_mask <= {`NPU_NUM_TILES{1'b0}};
+                    pool_clk_en  <= 1'b0;  // 完成后关闭时钟
                     state <= `NPU_ST_IDLE;
                 end
 
