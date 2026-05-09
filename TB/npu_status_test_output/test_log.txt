@@ -1,0 +1,291 @@
+========================================
+NPU Status模块测试日志
+(联合npu_config测试)
+========================================
+测试时间: 2026-05-09 16:09:15
+持续时间: 0.0550114 秒
+========================================
+
+========================================
+  NPU Status Module Testbench
+  (Combined with npu_config)
+  Start Time:                    0
+========================================
+Time=                   0 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+
+[INFO] Reset released at time                   20
+
+----------------------------------------
+  TEST           1: Default Values After Reset
+----------------------------------------
+[PASS] status_done correctly reset to 0
+[PASS] status_error correctly reset to 0
+[PASS] npu_irq correctly reset to 0
+[PASS] REG_STATUS default value correct: 0x00000000
+
+----------------------------------------
+  TEST           2: Done Flag Set and Hold
+----------------------------------------
+Time=                  66 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                  75 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] status_done set correctly after npu_done pulse
+[PASS] status_done held value for 3 cycles
+[PASS] REG_STATUS correct (done=1): 0x00000001
+
+----------------------------------------
+  TEST           3: Error Flag Set and Hold
+----------------------------------------
+Time=                 165 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                 175 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 185 | npu_done=0 npu_error=1 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 195 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=0
+[PASS] status_error set correctly after npu_error pulse
+[PASS] status_error held value for 3 cycles
+[PASS] REG_STATUS correct (error=1): 0x00000002
+
+----------------------------------------
+  TEST           4: Both Flags Set Simultaneously
+----------------------------------------
+Time=                 285 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=1
+Time=                 295 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 305 | npu_done=1 npu_error=1 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 315 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=0
+[PASS] Both flags set correctly: done=1, error=1
+[PASS] REG_STATUS correct (done=1, error=1): 0x00000003
+
+----------------------------------------
+  TEST           5: Status Clear via REG_CTRL
+----------------------------------------
+Time=                 375 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=1
+Time=                 385 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] Both flags cleared via REG_CTRL
+[PASS] REG_STATUS cleared: 0x00000000
+
+----------------------------------------
+  TEST           6: Interrupt Generation - Done Only
+----------------------------------------
+Time=                 455 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 465 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] npu_irq generated for done event
+Time=                 475 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] npu_irq returned to 0 after one cycle
+
+----------------------------------------
+  TEST           7: Interrupt Generation - Error Only
+----------------------------------------
+Time=                 505 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                 515 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 555 | npu_done=0 npu_error=1 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 565 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=1 | clr=0
+[PASS] npu_irq generated for error event
+Time=                 575 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=0
+[PASS] npu_irq returned to 0 after one cycle
+
+----------------------------------------
+  TEST           8: Interrupt Generation - Both Enabled
+----------------------------------------
+Time=                 605 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=1
+Time=                 615 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 655 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 665 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] npu_irq generated for done (both enabled)
+Time=                 675 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                 685 | npu_done=0 npu_error=1 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                 695 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=1 | clr=0
+[PASS] npu_irq generated for error (both enabled)
+
+----------------------------------------
+  TEST           9: No Interrupt When Disabled
+----------------------------------------
+Time=                 705 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=0
+Time=                 725 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=1
+Time=                 735 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 775 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 785 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] No interrupt when disabled (done)
+Time=                 795 | npu_done=0 npu_error=1 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                 805 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=0
+[PASS] No interrupt when disabled (error)
+
+----------------------------------------
+  TEST          10: Edge Detection - No Double Trigger
+----------------------------------------
+Time=                 835 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=1
+Time=                 845 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 885 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 895 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] npu_irq triggered on rising edge (detected in second cycle)
+Time=                 905 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] npu_irq not re-triggered on sustained signal (edge-sensitive)
+Time=                 915 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+
+----------------------------------------
+  TEST          11: Multiple Done Pulses
+----------------------------------------
+Time=                 945 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                 955 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                 995 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1005 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] npu_irq generated for pulse           1
+Time=                1015 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1025 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1035 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] npu_irq generated for pulse           2
+Time=                1045 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1055 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1065 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] npu_irq generated for pulse           3
+Time=                1075 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+
+----------------------------------------
+  TEST          12: Status Register Dynamic Update
+----------------------------------------
+Time=                1105 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                1115 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1125 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1135 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+Time=                1145 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] REG_STATUS after done: 0x00000001
+Time=                1176 | npu_done=0 npu_error=1 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1185 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=0
+[PASS] REG_STATUS after error: 0x00000003
+Time=                1245 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=0 | clr=1
+Time=                1255 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1265 | npu_done=0 npu_error=1 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1275 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=0
+[PASS] REG_STATUS after clear+error: 0x00000002
+
+----------------------------------------
+  TEST          13: Async Reset Behavior
+----------------------------------------
+Time=                1316 | npu_done=1 npu_error=1 | status_done=0 status_error=1 | irq=0 | clr=0
+Time=                1325 | npu_done=0 npu_error=0 | status_done=1 status_error=1 | irq=1 | clr=0
+Time=                1335 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] All flags reset asynchronously
+[PASS] Flags held cleared after reset release
+
+----------------------------------------
+  TEST          14: Interrupt Re-trigger After Clear
+----------------------------------------
+Time=                1375 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=1
+Time=                1385 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1425 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1435 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] First done pulse: interrupt generated
+Time=                1445 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1475 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                1485 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1495 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1505 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] Second done pulse after clear: interrupt re-triggered
+Time=                1515 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+
+----------------------------------------
+  TEST          15: Back-to-Back Error Pulses
+----------------------------------------
+Time=                1545 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                1555 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1595 | npu_done=0 npu_error=1 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1605 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=1 | clr=0
+[PASS] First error pulse: interrupt generated
+Time=                1615 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=0
+Time=                1625 | npu_done=0 npu_error=1 | status_done=0 status_error=1 | irq=0 | clr=0
+Time=                1635 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=1 | clr=0
+[PASS] Second error pulse: interrupt fires on new rising edge (edge-triggered behavior)
+Time=                1645 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=0
+
+----------------------------------------
+  TEST          16: Interrupt Enable After Event
+----------------------------------------
+Time=                1675 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=1
+Time=                1685 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1725 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1735 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] No interrupt when disabled
+[PASS] No interrupt after enabling (edge already passed)
+Time=                1785 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1795 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] New done event: interrupt generated correctly
+Time=                1805 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+
+----------------------------------------
+  TEST          17: REG_CTRL=0x03 (Start + Clear)
+----------------------------------------
+Time=                1815 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1825 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] status_done set before test
+Time=                1835 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                1855 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                1865 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] status_done cleared by REG_CTRL=0x03
+Time=                1925 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=1
+[PASS] cfg_start generated with REG_CTRL=0x03
+[PASS] cfg_status_clr generated with REG_CTRL=0x03
+Time=                1935 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] Both pulses returned to 0 after REG_CTRL=0x03
+
+----------------------------------------
+  TEST          18: Race Condition - status_clr vs npu_done
+----------------------------------------
+Time=                1955 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=1
+Time=                1965 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1975 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                1985 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] status_done set before race test
+Time=                1995 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                2006 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                2015 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=1
+Time=                2016 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=1
+Time=                2025 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] status_done has valid value after race condition: 0
+[PASS] status_error has valid value after race condition: 0
+
+----------------------------------------
+  TEST          19: Consecutive status_clr Pulses
+----------------------------------------
+Time=                2035 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                2045 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+[PASS] status_done set
+Time=                2055 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                2075 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=1
+Time=                2085 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] First clr: status_done cleared
+Time=                2115 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=1
+Time=                2125 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] Second clr: status_done still cleared (idempotent)
+Time=                2135 | npu_done=0 npu_error=1 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                2145 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=0
+Time=                2175 | npu_done=0 npu_error=0 | status_done=0 status_error=1 | irq=0 | clr=1
+Time=                2185 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                2215 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=1
+Time=                2225 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+[PASS] Double clr on error: status_error cleared
+
+----------------------------------------
+  TEST          20: Interrupt Enable Toggled During Event
+----------------------------------------
+Time=                2255 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=1
+Time=                2265 | npu_done=0 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                2305 | npu_done=1 npu_error=0 | status_done=0 status_error=0 | irq=0 | clr=0
+Time=                2315 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=1 | clr=0
+Time=                2325 | npu_done=1 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+Time=                2346 | npu_done=0 npu_error=0 | status_done=1 status_error=0 | irq=0 | clr=0
+[PASS] npu_irq has valid value after enable toggle: 0 (behavior depends on timing)
+[PASS] status_done correctly set after event: 1
+
+========================================
+  Test Summary
+========================================
+  Total Tests:          20
+  Result: ALL TESTS PASSED ✓
+========================================
+[INFO] All tests passed successfully!
+  End Time:                 2415
+========================================
+
+F:\complication-6\NPU\TB\tb_npu_status_test.v:1115: $finish called at 2465 (1s)
+
+
+========================================
+测试日志结束
+========================================

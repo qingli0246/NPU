@@ -1,0 +1,500 @@
+========================================
+NPU AXI Slave模块测试日志
+(联合npu_config测试)
+========================================
+测试时间: 2026-05-09 15:54:36
+持续时间: 0.143983 秒
+========================================
+
+VCD info: dumpfile npu_axi_slave_test.vcd opened for output.
+========================================
+  NPU AXI Slave + Buffer Manager 测试
+  开始时间:                    0
+========================================
+Time=                   0 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000000 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+
+======== 第一部分: 寄存器访问 ========
+
+  测试           1: 通过 AXI 读写 REG_M
+Time=                  46 | AW:addr=0x000c len=  0 v=1 r=0 | W:data=0x00000010 v=1 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                  55 | AW:addr=0x000c len=  0 v=1 r=1 | W:data=0x00000010 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                  65 | AW:addr=0x000c len=  0 v=1 r=0 | W:data=0x00000010 v=1 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                  76 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 105 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 116 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 125 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=135 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x000c
+Time=                 135 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=1 r=0 | R:data=0x00000010 v=0 last=0
+[AXI_DBG] t=145 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x000c
+Time=                 145 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=1 r=0 | R:data=0x00000010 v=1 last=1
+Time=                 146 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000010 v=1 last=1
+[AXI_DBG] t=155 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x000c
+Time=                 155 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] REG_M =         16
+
+  测试           2: 读写 REG_N, REG_K
+[AXI_DBG] t=165 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x000c
+Time=                 165 | AW:addr=0x000c len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 166 | AW:addr=0x0010 len=  0 v=1 r=0 | W:data=0x00000020 v=1 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 175 | AW:addr=0x0010 len=  0 v=1 r=1 | W:data=0x00000020 v=1 r=1 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 185 | AW:addr=0x0010 len=  0 v=1 r=0 | W:data=0x00000020 v=1 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 196 | AW:addr=0x0010 len=  0 v=0 r=0 | W:data=0x00000020 v=0 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 225 | AW:addr=0x0010 len=  0 v=0 r=0 | W:data=0x00000020 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 226 | AW:addr=0x0014 len=  0 v=1 r=0 | W:data=0x00000010 v=1 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 235 | AW:addr=0x0014 len=  0 v=1 r=1 | W:data=0x00000010 v=1 r=1 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 245 | AW:addr=0x0014 len=  0 v=1 r=0 | W:data=0x00000010 v=1 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 256 | AW:addr=0x0014 len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] cfg_n=32, cfg_k=16
+
+  测试           3: REG_MODE 读写
+Time=                 285 | AW:addr=0x0014 len=  0 v=0 r=0 | W:data=0x00000010 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 296 | AW:addr=0x0008 len=  0 v=1 r=0 | W:data=0x00000001 v=1 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 305 | AW:addr=0x0008 len=  0 v=1 r=1 | W:data=0x00000001 v=1 r=1 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 315 | AW:addr=0x0008 len=  0 v=1 r=0 | W:data=0x00000001 v=1 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 326 | AW:addr=0x0008 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] cfg_mode=01 (MERGE)
+
+  测试           4: REG_CTRL 启动脉冲
+Time=                 355 | AW:addr=0x0008 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 366 | AW:addr=0x0000 len=  0 v=1 r=0 | W:data=0x00000001 v=1 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 375 | AW:addr=0x0000 len=  0 v=1 r=1 | W:data=0x00000001 v=1 r=1 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 385 | AW:addr=0x0000 len=  0 v=1 r=0 | W:data=0x00000001 v=1 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 396 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=1 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 425 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x000c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 446 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 455 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=465 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0000
+Time=                 465 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=1 r=0 | R:data=0x00000001 v=0 last=0
+[AXI_DBG] t=475 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0000
+Time=                 475 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=1 r=0 | R:data=0x00000001 v=1 last=1
+Time=                 476 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000001 v=1 last=1
+[AXI_DBG] t=485 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0000
+Time=                 485 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] REG_CTRL[0] set (start pulse generated)
+
+  测试           5: REG_IRQ_EN
+[AXI_DBG] t=495 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0000
+Time=                 495 | AW:addr=0x0000 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 496 | AW:addr=0x0020 len=  0 v=1 r=0 | W:data=0x00000003 v=1 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 505 | AW:addr=0x0020 len=  0 v=1 r=1 | W:data=0x00000003 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 515 | AW:addr=0x0020 len=  0 v=1 r=0 | W:data=0x00000003 v=1 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 526 | AW:addr=0x0020 len=  0 v=0 r=0 | W:data=0x00000003 v=0 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] IRQ enable: done=1, error=1
+
+  测试           6: TILE_MASK + ITERATIONS
+Time=                 555 | AW:addr=0x0020 len=  0 v=0 r=0 | W:data=0x00000003 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 566 | AW:addr=0x0018 len=  0 v=1 r=0 | W:data=0xffff0000 v=1 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 575 | AW:addr=0x0018 len=  0 v=1 r=1 | W:data=0xffff0000 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 585 | AW:addr=0x0018 len=  0 v=1 r=0 | W:data=0xffff0000 v=1 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 596 | AW:addr=0x0018 len=  0 v=0 r=0 | W:data=0xffff0000 v=0 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 625 | AW:addr=0x0018 len=  0 v=0 r=0 | W:data=0xffff0000 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 626 | AW:addr=0x001c len=  0 v=1 r=0 | W:data=0x00000008 v=1 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 635 | AW:addr=0x001c len=  0 v=1 r=1 | W:data=0x00000008 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 645 | AW:addr=0x001c len=  0 v=1 r=0 | W:data=0x00000008 v=1 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 656 | AW:addr=0x001c len=  0 v=0 r=0 | W:data=0x00000008 v=0 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] mask=0xffff0000, iter= 8
+
+======== 第二部分: Burst 写入 A Buffer ========
+
+  测试           7: Burst 写入 16 个节拍到 A Buffer
+Time=                 685 | AW:addr=0x001c len=  0 v=0 r=0 | W:data=0x00000008 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 696 | AW:addr=0x0100 len= 15 v=1 r=0 | W:data=0x00000008 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 705 | AW:addr=0x0100 len= 15 v=1 r=1 | W:data=0x00000008 v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 715 | AW:addr=0x0100 len= 15 v=1 r=0 | W:data=0x00000008 v=0 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 726 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000100 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 736 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000101 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 746 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000102 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 756 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000103 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 766 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000104 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 776 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000105 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 786 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000106 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 796 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000107 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 806 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000108 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 816 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x00000109 v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 826 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010a v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 836 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010b v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 846 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010c v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 856 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010d v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 866 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010e v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 876 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=1 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 886 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=1 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 895 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=1 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] Burst write 16 beats completed
+
+  测试           8: 回读 A Buffer (验证 burst 数据)
+Time=                 915 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 916 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 925 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=935 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0100
+Time=                 935 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=945 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0100
+Time=                 945 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=0 | R:data=0x00000100 v=1 last=1
+Time=                 946 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000100 v=1 last=1
+[AXI_DBG] t=955 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0100
+Time=                 955 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] A[0] = 0x00000100
+[AXI_DBG] t=965 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0100
+Time=                 965 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 966 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                 975 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=985 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0104
+Time=                 985 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=995 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0104
+Time=                 995 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=1 r=0 | R:data=0x00000101 v=1 last=1
+Time=                 996 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=0 r=0 | R:data=0x00000101 v=1 last=1
+[AXI_DBG] t=1005 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0104
+Time=                1005 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] A[1] = 0x00000101
+[AXI_DBG] t=1015 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0104
+Time=                1015 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x0104 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1016 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1025 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1035 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x013c
+Time=                1035 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1045 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x013c
+Time=                1045 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=1 r=0 | R:data=0x0000010f v=1 last=1
+Time=                1046 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x0000010f v=1 last=1
+[AXI_DBG] t=1055 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x013c
+Time=                1055 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] A[15] = 0x0000010f
+
+======== 第三部分: Burst 写入 B Buffer ========
+
+  测试           9: Burst 写入 8 个节拍到 B Buffer
+[AXI_DBG] t=1065 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x013c
+Time=                1065 | AW:addr=0x0100 len= 15 v=0 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1066 | AW:addr=0x4000 len=  7 v=1 r=0 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1075 | AW:addr=0x4000 len=  7 v=1 r=1 | W:data=0x0000010f v=0 r=0 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1085 | AW:addr=0x4000 len=  7 v=1 r=0 | W:data=0x0000010f v=0 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1096 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000200 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1106 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000201 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1116 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000202 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1126 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000203 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1136 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000204 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1146 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000205 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1156 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000206 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1166 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=1 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1176 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=1 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1185 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=1 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] Burst write 8 beats to B completed
+
+  测试          10: 回读 B Buffer
+Time=                1205 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x013c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1206 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1215 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1225 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x4000
+Time=                1225 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1235 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x4000
+Time=                1235 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=0 | R:data=0x00000200 v=1 last=1
+Time=                1236 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000200 v=1 last=1
+[AXI_DBG] t=1245 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x4000
+Time=                1245 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] B[0] = 0x00000200
+[AXI_DBG] t=1255 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x4000
+Time=                1255 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1256 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1265 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1275 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x401c
+Time=                1275 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1285 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x401c
+Time=                1285 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=1 r=0 | R:data=0x00000207 v=1 last=1
+Time=                1286 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000207 v=1 last=1
+[AXI_DBG] t=1295 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x401c
+Time=                1295 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] B[7] = 0x00000207
+
+======== 第四部分: C Buffer 写入 + Burst 读取 ========
+
+  测试          11: 写入 C Buffer 然后 burst 读取
+[AXI_DBG] t=1305 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x401c
+Time=                1305 | AW:addr=0x4000 len=  7 v=0 r=0 | W:data=0x00000207 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1306 | AW:addr=0x8000 len=  0 v=1 r=0 | W:data=0xcafe0001 v=1 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1315 | AW:addr=0x8000 len=  0 v=1 r=1 | W:data=0xcafe0001 v=1 r=1 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1325 | AW:addr=0x8000 len=  0 v=1 r=0 | W:data=0xcafe0001 v=1 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1336 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcafe0001 v=0 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1365 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcafe0001 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1366 | AW:addr=0x8004 len=  0 v=1 r=0 | W:data=0xcafe0002 v=1 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1375 | AW:addr=0x8004 len=  0 v=1 r=1 | W:data=0xcafe0002 v=1 r=1 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1385 | AW:addr=0x8004 len=  0 v=1 r=0 | W:data=0xcafe0002 v=1 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1396 | AW:addr=0x8004 len=  0 v=0 r=0 | W:data=0xcafe0002 v=0 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1425 | AW:addr=0x8004 len=  0 v=0 r=0 | W:data=0xcafe0002 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1426 | AW:addr=0x8008 len=  0 v=1 r=0 | W:data=0xcafe0003 v=1 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1435 | AW:addr=0x8008 len=  0 v=1 r=1 | W:data=0xcafe0003 v=1 r=1 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1445 | AW:addr=0x8008 len=  0 v=1 r=0 | W:data=0xcafe0003 v=1 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1456 | AW:addr=0x8008 len=  0 v=0 r=0 | W:data=0xcafe0003 v=0 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1485 | AW:addr=0x8008 len=  0 v=0 r=0 | W:data=0xcafe0003 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1486 | AW:addr=0x800c len=  0 v=1 r=0 | W:data=0xcafe0004 v=1 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1495 | AW:addr=0x800c len=  0 v=1 r=1 | W:data=0xcafe0004 v=1 r=1 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1505 | AW:addr=0x800c len=  0 v=1 r=0 | W:data=0xcafe0004 v=1 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1516 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=1 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1545 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x401c v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1556 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1565 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1575 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x8000
+Time=                1575 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1585 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x8000
+Time=                1585 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=0 | R:data=0xcafe0001 v=1 last=0
+Time=                1586 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0001 v=1 last=0
+[AXI_DBG] t=1595 r_state=2 rvalid=1 rlast=0 rready=1 arvalid=0 r_cnt=0 r_addr=0x8000
+Time=                1595 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=1 last=0
+[AXI_DBG] t=1605 r_state=1 rvalid=1 rlast=0 rready=1 arvalid=0 r_cnt=1 r_addr=0x8004
+Time=                1605 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0001 v=0 last=0
+[AXI_DBG] t=1615 r_state=2 rvalid=0 rlast=0 rready=1 arvalid=0 r_cnt=1 r_addr=0x8004
+Time=                1615 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0002 v=1 last=0
+[AXI_DBG] t=1625 r_state=2 rvalid=1 rlast=0 rready=1 arvalid=0 r_cnt=1 r_addr=0x8004
+Time=                1625 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=1 last=0
+[AXI_DBG] t=1635 r_state=1 rvalid=1 rlast=0 rready=1 arvalid=0 r_cnt=2 r_addr=0x8008
+Time=                1635 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0002 v=0 last=0
+[AXI_DBG] t=1645 r_state=2 rvalid=0 rlast=0 rready=1 arvalid=0 r_cnt=2 r_addr=0x8008
+Time=                1645 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0003 v=1 last=0
+[AXI_DBG] t=1655 r_state=2 rvalid=1 rlast=0 rready=1 arvalid=0 r_cnt=2 r_addr=0x8008
+Time=                1655 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=1 last=0
+[AXI_DBG] t=1665 r_state=1 rvalid=1 rlast=0 rready=1 arvalid=0 r_cnt=3 r_addr=0x800c
+Time=                1665 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0003 v=0 last=0
+[AXI_DBG] t=1675 r_state=2 rvalid=0 rlast=0 rready=1 arvalid=0 r_cnt=3 r_addr=0x800c
+Time=                1675 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcafe0004 v=1 last=1
+[AXI_DBG] t=1685 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=3 r_addr=0x800c
+Time=                1685 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[AXI_DBG] t=1695 r_state=0 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=3 r_addr=0x800c
+Time=                1695 | AW:addr=0x800c len=  0 v=0 r=0 | W:data=0xcafe0004 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+[BURST_RD] loop done, rready=1 rvalid=0
+[PASS] C[0] = 0xcafe0001 (burst read first beat)
+
+======== 第五部分: 地址边界 ========
+
+  测试          12: 寄存器/Buffer 边界
+[DEBUG] Before Part 5: rvalid=0 rlast=0 rdata=0x00000000 rready=0 arvalid=0
+Time=                1766 | AW:addr=0x0020 len=  0 v=1 r=0 | W:data=0x00000001 v=1 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1775 | AW:addr=0x0020 len=  0 v=1 r=1 | W:data=0x00000001 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1785 | AW:addr=0x0020 len=  0 v=1 r=0 | W:data=0x00000001 v=1 r=0 | B:v=1 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1796 | AW:addr=0x0020 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=1 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1825 | AW:addr=0x0020 len=  0 v=0 r=0 | W:data=0x00000001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1826 | AW:addr=0x0100 len=  0 v=1 r=0 | W:data=0xaaaabbbb v=1 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1835 | AW:addr=0x0100 len=  0 v=1 r=1 | W:data=0xaaaabbbb v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1845 | AW:addr=0x0100 len=  0 v=1 r=0 | W:data=0xaaaabbbb v=1 r=0 | B:v=1 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1856 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=1 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1885 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1896 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1905 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1915 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0020
+Time=                1915 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=1 r=0 | R:data=0x00000001 v=0 last=0
+[AXI_DBG] t=1925 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0020
+Time=                1925 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=1 r=0 | R:data=0x00000001 v=1 last=1
+Time=                1926 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=0 r=0 | R:data=0x00000001 v=1 last=1
+[AXI_DBG] t=1935 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0020
+Time=                1935 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] IRQ_EN=0x00000001 (not corrupted by buffer write)
+[AXI_DBG] t=1945 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0020
+Time=                1945 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0020 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1946 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1955 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1965 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0100
+Time=                1965 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=1975 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0100
+Time=                1975 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=1 r=0 | R:data=0xaaaabbbb v=1 last=1
+Time=                1976 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0xaaaabbbb v=1 last=1
+[AXI_DBG] t=1985 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0100
+Time=                1985 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] A[0]=0xaaaabbbb (not corrupted by register write)
+
+  测试          13: A/B Buffer 边界
+[AXI_DBG] t=1995 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0100
+Time=                1995 | AW:addr=0x0100 len=  0 v=0 r=0 | W:data=0xaaaabbbb v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                1996 | AW:addr=0x40fc len=  0 v=1 r=0 | W:data=0xaaaa0001 v=1 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2005 | AW:addr=0x40fc len=  0 v=1 r=1 | W:data=0xaaaa0001 v=1 r=1 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2015 | AW:addr=0x40fc len=  0 v=1 r=0 | W:data=0xaaaa0001 v=1 r=0 | B:v=1 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2026 | AW:addr=0x40fc len=  0 v=0 r=0 | W:data=0xaaaa0001 v=0 r=0 | B:v=1 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2055 | AW:addr=0x40fc len=  0 v=0 r=0 | W:data=0xaaaa0001 v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2056 | AW:addr=0x4000 len=  0 v=1 r=0 | W:data=0xbbbb0001 v=1 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2065 | AW:addr=0x4000 len=  0 v=1 r=1 | W:data=0xbbbb0001 v=1 r=1 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2075 | AW:addr=0x4000 len=  0 v=1 r=0 | W:data=0xbbbb0001 v=1 r=0 | B:v=1 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2086 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=1 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2115 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x0100 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2126 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2135 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2145 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x40fc
+Time=                2145 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2155 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x40fc
+Time=                2155 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=1 r=0 | R:data=0xaaaa0001 v=1 last=1
+Time=                2156 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=0 r=0 | R:data=0xaaaa0001 v=1 last=1
+[AXI_DBG] t=2165 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x40fc
+Time=                2165 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] A last word = 0xaaaa0001
+[AXI_DBG] t=2175 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x40fc
+Time=                2175 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x40fc v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2176 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2185 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2195 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x4000
+Time=                2195 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2205 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x4000
+Time=                2205 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=1 r=0 | R:data=0xbbbb0001 v=1 last=1
+Time=                2206 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0xbbbb0001 v=1 last=1
+[AXI_DBG] t=2215 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x4000
+Time=                2215 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] B[0] = 0xbbbb0001
+
+  测试          14: B/C Buffer 边界
+[AXI_DBG] t=2225 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x4000
+Time=                2225 | AW:addr=0x4000 len=  0 v=0 r=0 | W:data=0xbbbb0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2226 | AW:addr=0x7ffc len=  0 v=1 r=0 | W:data=0xbbbb0002 v=1 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2235 | AW:addr=0x7ffc len=  0 v=1 r=1 | W:data=0xbbbb0002 v=1 r=1 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2245 | AW:addr=0x7ffc len=  0 v=1 r=0 | W:data=0xbbbb0002 v=1 r=0 | B:v=1 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2256 | AW:addr=0x7ffc len=  0 v=0 r=0 | W:data=0xbbbb0002 v=0 r=0 | B:v=1 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2285 | AW:addr=0x7ffc len=  0 v=0 r=0 | W:data=0xbbbb0002 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2286 | AW:addr=0x8000 len=  0 v=1 r=0 | W:data=0xcccc0001 v=1 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2295 | AW:addr=0x8000 len=  0 v=1 r=1 | W:data=0xcccc0001 v=1 r=1 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2305 | AW:addr=0x8000 len=  0 v=1 r=0 | W:data=0xcccc0001 v=1 r=0 | B:v=1 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2316 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=1 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2345 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x4000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2356 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2365 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2375 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x7ffc
+Time=                2375 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2385 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x7ffc
+Time=                2385 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=1 r=0 | R:data=0xbbbb0002 v=1 last=1
+Time=                2386 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=0 r=0 | R:data=0xbbbb0002 v=1 last=1
+[AXI_DBG] t=2395 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x7ffc
+Time=                2395 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] B last word = 0xbbbb0002
+[AXI_DBG] t=2405 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x7ffc
+Time=                2405 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x7ffc v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2406 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2415 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2425 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x8000
+Time=                2425 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=2435 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x8000
+Time=                2435 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=1 r=0 | R:data=0xcccc0001 v=1 last=1
+Time=                2436 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0xcccc0001 v=1 last=1
+[AXI_DBG] t=2445 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x8000
+Time=                2445 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] C[0] = 0xcccc0001
+
+======== 第六部分: 大型 Burst 传输 ========
+
+  测试          15: 64 个节拍 burst 写入 A Buffer
+[AXI_DBG] t=2455 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x8000
+Time=                2455 | AW:addr=0x8000 len=  0 v=0 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2456 | AW:addr=0x0200 len= 63 v=1 r=0 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2465 | AW:addr=0x0200 len= 63 v=1 r=1 | W:data=0xcccc0001 v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2475 | AW:addr=0x0200 len= 63 v=1 r=0 | W:data=0xcccc0001 v=0 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2486 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001000 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2496 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001001 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2506 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001002 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2516 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001003 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2526 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001004 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2536 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001005 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2546 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001006 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2556 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001007 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2566 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001008 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2576 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001009 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2586 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000100a v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2596 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000100b v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2606 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000100c v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2616 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000100d v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2626 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000100e v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2636 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000100f v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2646 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001010 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2656 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001011 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2666 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001012 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2676 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001013 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2686 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001014 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2696 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001015 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2706 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001016 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2716 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001017 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2726 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001018 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2736 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001019 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2746 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000101a v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2756 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000101b v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2766 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000101c v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2776 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000101d v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2786 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000101e v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2796 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000101f v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2806 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001020 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2816 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001021 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2826 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001022 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2836 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001023 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2846 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001024 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2856 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001025 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2866 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001026 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2876 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001027 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2886 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001028 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2896 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001029 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2906 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000102a v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2916 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000102b v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2926 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000102c v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2936 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000102d v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2946 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000102e v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2956 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000102f v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2966 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001030 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2976 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001031 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2986 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001032 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                2996 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001033 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3006 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001034 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3016 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001035 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3026 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001036 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3036 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001037 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3046 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001038 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3056 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x00001039 v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3066 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103a v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3076 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103b v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3086 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103c v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3096 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103d v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3106 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103e v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3116 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=1 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3126 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=1 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3135 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=1 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+[PASS] 64-beat burst write completed
+
+  测试          16: 验证 64 个节拍 burst 数据
+Time=                3155 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x8000 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3156 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3165 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=3175 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0200
+Time=                3175 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=3185 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0200
+Time=                3185 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=1 r=0 | R:data=0x00001000 v=1 last=1
+Time=                3186 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=0 r=0 | R:data=0x00001000 v=1 last=1
+[AXI_DBG] t=3195 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0200
+Time=                3195 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] beat[0] = 0x00001000
+[AXI_DBG] t=3205 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0200
+Time=                3205 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0200 v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3206 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3215 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=3225 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x02fc
+Time=                3225 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=3235 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x02fc
+Time=                3235 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=1 r=0 | R:data=0x0000103f v=1 last=1
+Time=                3236 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=0 r=0 | R:data=0x0000103f v=1 last=1
+[AXI_DBG] t=3245 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x02fc
+Time=                3245 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] beat[63] = 0x0000103f
+[AXI_DBG] t=3255 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x02fc
+Time=                3255 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x02fc v=0 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3256 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=1 r=0 | R:data=0x00000000 v=0 last=0
+Time=                3265 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=1 r=1 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=3275 r_state=1 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0280
+Time=                3275 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=1 r=0 | R:data=0x00000000 v=0 last=0
+[AXI_DBG] t=3285 r_state=2 rvalid=0 rlast=0 rready=0 arvalid=1 r_cnt=0 r_addr=0x0280
+Time=                3285 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=1 r=0 | R:data=0x00001020 v=1 last=1
+Time=                3286 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=0 r=0 | R:data=0x00001020 v=1 last=1
+[AXI_DBG] t=3295 r_state=2 rvalid=1 rlast=1 rready=1 arvalid=0 r_cnt=0 r_addr=0x0280
+Time=                3295 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=0 r=0 | R:data=0x00000000 v=1 last=1
+[PASS] beat[32] = 0x00001020
+[AXI_DBG] t=3305 r_state=0 rvalid=1 rlast=1 rready=0 arvalid=0 r_cnt=0 r_addr=0x0280
+Time=                3305 | AW:addr=0x0200 len= 63 v=0 r=0 | W:data=0x0000103f v=0 r=0 | B:v=0 | AR:addr=0x0280 v=0 r=0 | R:data=0x00000000 v=0 last=0
+
+========================================
+  测试总结
+========================================
+  总测试数:          16
+  结果: 全部测试通过 ✓
+  结束时间:                 3345
+========================================
+
+F:\complication-6\NPU\TB\tb_npu_axi_slave_test.v:573: $finish called at 3395 (1s)
+
+
+========================================
+测试日志结束
+========================================

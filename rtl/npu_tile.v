@@ -1,205 +1,232 @@
-`timescale 1ns/1ps
 `include "npu_defs.vh"
 
+// ============================================================
+// npu_tile - 单个 8×8 矩阵乘法计算单元（标准FSM三分法重构）
+// INT8 输入，INT32 累加，串行加载 A/B，并行输出 C
+// 
+// FSM设计原则：
+// 1. 时序逻辑块：状态寄存器更新
+// 2. 组合逻辑块（下一状态）：计算next_state
+// 3. 组合逻辑块（输出）：控制信号和数据输出
+// ============================================================
 module npu_tile #(
-    parameter TILE_ID = 0
-) (
-    // 时钟与控制
-    input  wire                         clk,
-    input  wire                         rst_n,
-    input  wire                         clk_en,
-    input  wire                         start,
-
-    // 模式配置：由上层计算池统一下发
-    input  wire [1:0]                   top_mode,
-    input  wire                         is_master,  // 1: 组主Tile，0: 从Tile
-
-    // 本地矩阵输入（INDEP/SPLIT 主要使用）
-    input  wire [`NPU_TILE_A_BITS-1:0]   a_flat,
-    input  wire [`NPU_TILE_B_BITS-1:0]   b_flat,
-
-    // 脉动级联输入（MERGE 主要使用）
-    input  wire [`TILE_PORT_W-1:0]       a_left_i,
-    input  wire [`TILE_PORT_W-1:0]       b_top_i,
-
-    // 脉动级联输出（连接到右侧/下侧相邻Tile）
-    output reg  [`TILE_PORT_W-1:0]       a_right_o,
-    output reg  [`TILE_PORT_W-1:0]       b_down_o,
-
-    // Tile运行状态与计算结果
-    output reg                          busy,
-    output reg                          done,
-    output reg  [`NPU_TILE_C_BITS-1:0]   c_flat
+    parameter K_MAX = `NPU_K_MAX
+)(
+    input  wire        clk,
+    input  wire        rst_n,
+    // 配置
+    input  wire [5:0]  cfg_k,
+    input  wire        tile_en,
+    // A 矩阵串行输入（8bit/周期）
+    input  wire [7:0]  a_data,
+    input  wire        a_valid,
+    output wire        a_ready,
+    // B 矩阵串行输入（8bit/周期）
+    input  wire [7:0]  b_data,
+    input  wire        b_valid,
+    output wire        b_ready,
+    // C 结果并行输出（8×32bit = 256bit）
+    output wire [255:0] c_data,
+    output reg         c_valid,
+    input  wire        c_ready,
+    // 状态
+    output reg         compute_done
 );
 
-    reg [1:0] state;
-    reg [`NPU_TILE_A_BITS-1:0] a_lat;
-    reg [`NPU_TILE_B_BITS-1:0] b_lat;
-    wire split_mode;
-    wire merge_mode;
-    reg start_d;
-    wire start_pulse = start & ~start_d;
+    // ========================================================
+    //  本地 Buffer（时序逻辑块1：本地存储器）
+    // ========================================================
+    reg [7:0]  a_local [0:8*K_MAX-1];   // 8×K
+    reg [7:0]  b_local [0:K_MAX*8-1];   // K×8
+    reg [31:0] c_local [0:63];           // 8×8 INT32
+
+    // ========================================================
+    //  状态机寄存器（时序逻辑块2：状态寄存器）
+    // ========================================================
+    reg [2:0]  state;
+    reg [8:0]  load_cnt;                 // 加载计数 (0 ~ 8K-1)
+    reg [5:0]  k_cnt;                    // K 迭代计数
+
+    // ---- 状态寄存器更新（时序）----
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            start_d <= 1'b0;
-        end else if (clk_en) begin
-            start_d <= start;
+            state    <= `TILE_IDLE;
+            load_cnt <= 9'd0;
+            k_cnt    <= 6'd0;
+        end else begin
+            state    <= next_state;
+            load_cnt <= load_cnt_next;
+            k_cnt    <= k_cnt_next;
         end
     end
-    assign split_mode = (top_mode == `NPU_MODE_SPLIT);
-    assign merge_mode = (top_mode == `NPU_MODE_MERGE);
 
-    localparam ST_IDLE = 2'd0;
-    localparam ST_RUN  = 2'd1;
-    localparam ST_DONE = 2'd2;
+    // ========================================================
+    //  下一状态逻辑（组合逻辑块1：状态转移）
+    // ========================================================
+    wire [2:0] next_state;
+    wire [8:0] load_cnt_next;
+    wire [5:0] k_cnt_next;
+    
+    wire [8:0] load_target = {cfg_k, 3'b000};  // 8 * cfg_k
 
-    // 计算 4x4 或 8x8 的点积。split_mode 时只取前 4 个乘加项，便于做 4x4 子阵列骨架。
-    function [31:0] dot_block;
-        input [`NPU_TILE_A_BITS-1:0] a_mat;
-        input [`NPU_TILE_B_BITS-1:0] b_mat;
-        input [2:0] row_idx;
-        input [2:0] col_idx;
-        input       use_split;
-        integer k;
-        integer limit;
-        reg [31:0] sum;
-        reg [7:0] a_val;
-        reg [7:0] b_val;
-        begin
-            sum = 32'd0;
-            limit = use_split ? 4 : 8;
-            for (k = 0; k < 8; k = k + 1) begin
-                if (k < limit) begin
-                    a_val = a_mat[((row_idx * 8 + k) * 8) +: 8];
-                    b_val = b_mat[((k * 8 + col_idx) * 8) +: 8];
-                    sum = sum + a_val * b_val;
+    always @(*) begin
+        // 默认值
+        next_state    = state;
+        load_cnt_next = load_cnt;
+        k_cnt_next    = k_cnt;
+
+        case (state)
+            // ---- TILE_IDLE: 空闲 ----
+            `TILE_IDLE: begin
+                if (tile_en && a_valid && b_valid) begin
+                    next_state    = `TILE_LOAD;
+                    load_cnt_next = 9'd0;
                 end
             end
-            dot_block = sum;
-        end
-    endfunction
 
-    integer ri;
-    integer ci;
-    reg [2:0] row_sel;
-    reg [2:0] col_sel;
-    reg [31:0] dot_val;
+            // ---- TILE_LOAD: 加载 A/B 数据 ----
+            `TILE_LOAD: begin
+                if (a_valid && b_valid) begin
+                    load_cnt_next = load_cnt + 9'd1;
+                    if (load_cnt + 9'd1 >= load_target) begin
+                        next_state = `TILE_COMPUTE;
+                        k_cnt_next = 6'd0;
+                    end
+                end
+            end
 
-    // 调试信号：捕获C[0][0]的计算过程（使用独立信号而非数组）
-    reg [31:0] debug_c00_sum;
-    reg [7:0] debug_c00_a_val_0, debug_c00_a_val_1, debug_c00_a_val_2, debug_c00_a_val_3;
-    reg [7:0] debug_c00_a_val_4, debug_c00_a_val_5, debug_c00_a_val_6, debug_c00_a_val_7;
-    reg [7:0] debug_c00_b_val_0, debug_c00_b_val_1, debug_c00_b_val_2, debug_c00_b_val_3;
-    reg [7:0] debug_c00_b_val_4, debug_c00_b_val_5, debug_c00_b_val_6, debug_c00_b_val_7;
-    
+            // ---- TILE_COMPUTE: 计算（K 个周期）----
+            `TILE_COMPUTE: begin
+                k_cnt_next = k_cnt + 6'd1;
+                if (k_cnt + 6'd1 >= cfg_k) begin
+                    next_state = `TILE_DONE;
+                end
+            end
+
+            // ---- TILE_DONE: 完成，输出结果 ----
+            `TILE_DONE: begin
+                if (c_ready) begin
+                    next_state = `TILE_IDLE;
+                end
+            end
+
+            default: next_state = `TILE_IDLE;
+        endcase
+    end
+
+    // ========================================================
+    //  输出逻辑（组合逻辑块2：输出控制）
+    // ========================================================
+    wire tile_a_ready;
+    wire tile_b_ready;
+
+    always @(*) begin
+        // 默认值
+        tile_a_ready = 1'b0;
+        tile_b_ready = 1'b0;
+
+        case (state)
+            // ---- TILE_IDLE: 空闲 ----
+            `TILE_IDLE: begin
+                if (tile_en && a_valid && b_valid) begin
+                    tile_a_ready = 1'b1;
+                    tile_b_ready = 1'b1;
+                end
+            end
+
+            // ---- TILE_LOAD: 加载数据 ----
+            `TILE_LOAD: begin
+                if (a_valid && b_valid) begin
+                    tile_a_ready = 1'b1;
+                    tile_b_ready = 1'b1;
+                end
+            end
+
+            // ---- TILE_COMPUTE: 计算 ----
+            `TILE_COMPUTE: begin
+                // 无特殊输出
+            end
+
+            // ---- TILE_DONE: 完成 ----
+            `TILE_DONE: begin
+                // 输出信号由时序逻辑块控制
+            end
+
+            default: ;
+        endcase
+    end
+
+    // ---- 输出信号赋值 ----
+    assign a_ready = tile_a_ready;
+    assign b_ready = tile_b_ready;
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            state  <= ST_IDLE;
-            busy   <= 1'b0;
-            done   <= 1'b0;
-            c_flat <= {`NPU_TILE_C_BITS{1'b0}};
-            a_lat  <= {`NPU_TILE_A_BITS{1'b0}};
-            b_lat  <= {`NPU_TILE_B_BITS{1'b0}};
-            a_right_o <= {`TILE_PORT_W{1'b0}};
-            b_down_o  <= {`TILE_PORT_W{1'b0}};
-        end else if (clk_en) begin
-            done <= 1'b0;
-            case (state)
-                ST_IDLE: begin
-                    busy <= 1'b0;
-                    // 修改：使用上升沿触发
-                    if (start_pulse) begin
-                        // 启动时锁存输入，后续计算不再受外部数据抖动影响。
-                        a_lat <= a_flat;
-                        b_lat <= b_flat;
-                        
-                        // 调试输出
-                        $display("[%0t] [TILE%0d] ST_IDLE: a_flat[63:0]=%h, b_flat[63:0]=%h", 
-                                 $time, TILE_ID, a_flat[63:0], b_flat[63:0]);
-
-                        // MERGE 模式下，从单元优先接受级联输入；主单元保留本地注入。
-                        // 该策略便于支持"组主控 + 从属级联"的软件可重构拓扑。
-                        if (merge_mode) begin
-                            if (!is_master) begin
-                                a_lat[0 +: `TILE_PORT_W] <= a_left_i;
-                                b_lat[0 +: `TILE_PORT_W] <= b_top_i;
-                            end
-                        end
-
-                        // 导出本 Tile 的右/下级联输出，供相邻 Tile 取用。
-                        a_right_o <= a_flat[`NPU_TILE_A_BITS-`TILE_PORT_W +: `TILE_PORT_W];
-                        b_down_o  <= b_flat[`NPU_TILE_B_BITS-`TILE_PORT_W +: `TILE_PORT_W];
-
-                        busy  <= 1'b1;
-                        state <= ST_RUN;
-                    end
-                end
-
-                ST_RUN: begin
-                    // 先打印输入数据摘要
-                    $display("\n[%0t] [TILE%0d] ===== START COMPUTATION =====", $time, TILE_ID);
-                    $display("[%0t] [TILE%0d] Mode: %s, Split: %b", 
-                            $time, TILE_ID, 
-                            (top_mode==2'd0)?"INDEP":(top_mode==2'd1)?"MERGE":"SPLIT",
-                            split_mode);
-                    
-                    // 打印完整 A 矩阵（8x8）
-                    $display("[%0t] [TILE%0d] ===== Input Matrix A (8x8) =====", $time, TILE_ID);
-                    for (ri = 0; ri < 8; ri = ri + 1) begin
-                        $write("[%0t] [TILE%0d] A[%d][0:7] = ", $time, TILE_ID, ri);
-                        for (ci = 0; ci < 8; ci = ci + 1) begin
-                            $write("%4d ", a_lat[((ri * 8 + ci) * 8) +: 8]);
-                        end
-                        $display("");
-                    end
-                    
-                    // 打印完整 B 矩阵（8x8）
-                    $display("[%0t] [TILE%0d] ===== Input Matrix B (8x8) =====", $time, TILE_ID);
-                    for (ri = 0; ri < 8; ri = ri + 1) begin
-                        $write("[%0t] [TILE%0d] B[%d][0:7] = ", $time, TILE_ID, ri);
-                        for (ci = 0; ci < 8; ci = ci + 1) begin
-                            $write("%4d ", b_lat[((ri * 8 + ci) * 8) +: 8]);
-                        end
-                        $display("");
-                    end
-
-
-                    // 这里采用"骨架式"计算：一次性算完整个 Tile 输出，便于先把层次结构跑通。
-                    for (ri = 0; ri < 8; ri = ri + 1) begin
-                        for (ci = 0; ci < 8; ci = ci + 1) begin
-                            row_sel = ri[2:0];
-                            col_sel = ci[2:0];
-                            dot_val = dot_block(a_lat, b_lat, row_sel, col_sel, split_mode);
-                            c_flat[((ri * 8 + ci) * 32) +: 32] <= dot_val;
-                            
-                            // 同时打印C矩阵元素（使用dot_val而非c_flat）
-                            if (ci == 0) begin
-                                $write("[%0t] [TILE%0d] C[%d][0:7] = ", $time, TILE_ID, ri);
-                            end
-                            $write("%4d ", dot_val);
-                            if (ci == 7) begin
-                                $display("");
-                            end
-                        end
-                    end
-                    
-                    $display("[%0t] [TILE%0d] ===== COMPUTATION COMPLETE =====\n", $time, TILE_ID);
-                    state <= ST_DONE;
-                end
-
-                ST_DONE: begin
-                    busy <= 1'b0;
-                    done <= 1'b1;
-                    state <= ST_IDLE;
-                    // 调试输出：在DONE状态打印c_flat的前32位
-                    $display("[%0t] [TILE%0d] ST_DONE: c_flat[31:0]=%h", $time, TILE_ID, c_flat[31:0]);
-                end
-
-                default: begin
-                    state <= ST_IDLE;
-                end
-            endcase
+            compute_done <= 1'b0;
+            c_valid      <= 1'b0;
+        end else begin
+            compute_done <= (state == `TILE_DONE);
+            c_valid      <= (state == `TILE_DONE);
         end
     end
+
+    // ========================================================
+    //  MAC 阵列计算（时序逻辑块3：累加器阵列）
+    //  C[i][j] += A[i][k] * B[k][j]
+    //  每个 k 周期，所有 64 个 MAC 并行计算
+    // ========================================================
+    integer i, j;
+
+    // 乘法操作数（组合逻辑）
+    wire signed [7:0]  a_val [0:7];
+    wire signed [7:0]  b_val [0:7];
+    wire signed [15:0] prod [0:7][0:7];
+
+    genvar gi, gj;
+    generate
+        for (gi = 0; gi < 8; gi = gi + 1) begin : gen_a
+            assign a_val[gi] = a_local[gi * K_MAX + k_cnt];
+        end
+        for (gj = 0; gj < 8; gj = gj + 1) begin : gen_b
+            assign b_val[gj] = b_local[k_cnt * 8 + gj];
+        end
+        for (gi = 0; gi < 8; gi = gi + 1) begin : gen_prod_row
+            for (gj = 0; gj < 8; gj = gj + 1) begin : gen_prod_col
+                assign prod[gi][gj] = a_val[gi] * b_val[gj];
+            end
+        end
+    endgenerate
+
+    // 累加逻辑（时序）
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            for (i = 0; i < 64; i = i + 1)
+                c_local[i] <= 32'd0;
+        end else begin
+            if (state == `TILE_IDLE && tile_en && a_valid && b_valid) begin
+                for (i = 0; i < 64; i = i + 1)
+                    c_local[i] <= 32'd0;
+            end else if (state == `TILE_COMPUTE) begin
+                for (i = 0; i < 8; i = i + 1) begin
+                    for (j = 0; j < 8; j = j + 1) begin
+                        c_local[i*8+j] <= c_local[i*8+j] +
+                                           {{16{prod[i][j][15]}}, prod[i][j]};
+                    end
+                end
+            end
+        end
+    end
+
+    // ========================================================
+    //  C 输出组装（组合逻辑块3：数据组装）
+    //  256bit 并行输出
+    // ========================================================
+    generate
+        for (gi = 0; gi < 8; gi = gi + 1) begin : gen_c_row
+            for (gj = 0; gj < 8; gj = gj + 1) begin : gen_c_col
+                assign c_data[(gi*8+gj)*32 +: 32] = c_local[gi*8+gj];
+            end
+        end
+    endgenerate
 
 endmodule

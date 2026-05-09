@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -ExecutionPolicy Bypass -File ./run_tb_npu_config.ps1)",
+      "Bash(iverilog -o npu_config_test_output/tb_npu_config -I ../rtl tb_npu_config_test.v ../rtl/npu_config.v)",
+      "Bash(vvp npu_config_test_output/tb_npu_config)",
+      "Bash(iverilog -o /dev/null -I rtl rtl/npu_defs.vh rtl/npu_clock_gate.v rtl/npu_tile.v rtl/npu_compute_pool.v rtl/npu_config.v rtl/npu_status.v rtl/npu_scheduler.v rtl/npu_buffer_mgr.v rtl/npu_data_mover.v rtl/npu_axi_slave.v rtl/npu_top.v)",
+      "Bash(iverilog -o npu_axi_slave_test_output/tb_npu_axi_slave -I ../rtl tb_npu_axi_slave_test.v ../rtl/npu_axi_slave.v ../rtl/npu_config.v)",
+      "Bash(timeout 30 vvp npu_axi_slave_test_output/tb_npu_axi_slave)",
+      "Bash(timeout 15 vvp npu_axi_slave_test_output/tb_npu_axi_slave)"
+    ]
+  }
+}

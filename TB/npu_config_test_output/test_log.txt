@@ -1,0 +1,385 @@
+========================================
+NPU Config模块测试日志
+========================================
+测试时间: 2026-05-09 16:07:16
+持续时间: 0.0779289 秒
+========================================
+
+========================================
+  NPU Config Module Testbench
+  Start Time:                    0
+========================================
+Time=                   0 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+
+[INFO] Reset released at time                   20
+
+----------------------------------------
+  TEST           1: Default Values After Reset
+----------------------------------------
+Time=                  46 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] REG_CTRL default value correct: 0x00000000
+Time=                  66 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                  76 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000008 | start=0 clr=0
+[PASS] REG_M default value correct:          8
+Time=                  96 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 106 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x10 rd_data=0x00000008 | start=0 clr=0
+[PASS] REG_N default value correct:          8
+Time=                 126 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 136 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x00000008 | start=0 clr=0
+[PASS] REG_K default value correct:          8
+Time=                 156 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 166 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x18 rd_data=0xffffffff | start=0 clr=0
+[PASS] REG_TILE_MASK default value correct: 0xffffffff
+Time=                 186 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 196 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x1c rd_data=0x00000001 | start=0 clr=0
+[PASS] REG_ITERATIONS default value correct:          1
+[PASS] Output ports match defaults: M= 8, N= 8, K= 8
+
+----------------------------------------
+  TEST           2: Write and Read Back - Basic Registers
+----------------------------------------
+Time=                 216 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 226 | wr_en=1 wr_addr=0x0c wr_data=0x00000010 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 236 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 246 | wr_en=1 wr_addr=0x10 wr_data=0x00000020 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 256 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 266 | wr_en=1 wr_addr=0x14 wr_data=0x00000040 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 276 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 296 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000010 | start=0 clr=0
+[PASS] REG_M write/read successful:         16
+Time=                 316 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 326 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x10 rd_data=0x00000020 | start=0 clr=0
+[PASS] REG_N write/read successful:         32
+Time=                 346 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 356 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x00000040 | start=0 clr=0
+[PASS] REG_K write/read successful:         64
+[PASS] Output ports updated correctly: M=16, N=32, K= 0
+
+----------------------------------------
+  TEST           3: Write Mode Register
+----------------------------------------
+Time=                 376 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 386 | wr_en=1 wr_addr=0x08 wr_data=0x0000000c | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 396 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 416 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x08 rd_data=0x0000000c | start=0 clr=0
+[PASS] REG_MODE write/read successful: 0x0000000c
+[PASS] cfg_mode output correct: 00
+
+----------------------------------------
+  TEST           4: Write Tile Mask and Iterations
+----------------------------------------
+Time=                 436 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 446 | wr_en=1 wr_addr=0x18 wr_data=0x0000ffff | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 456 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 466 | wr_en=1 wr_addr=0x1c wr_data=0x00000008 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 476 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 496 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x18 rd_data=0x0000ffff | start=0 clr=0
+[PASS] REG_TILE_MASK write/read successful: 0x0000ffff
+[PASS] cfg_tile_mask output correct: 0x0000ffff
+Time=                 516 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 526 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x1c rd_data=0x00000008 | start=0 clr=0
+[PASS] REG_ITERATIONS write/read successful:          8
+[PASS] cfg_iterations output correct:  8
+
+----------------------------------------
+  TEST           5: Start Pulse Generation
+----------------------------------------
+Time=                 546 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 556 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 565 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+Time=                 566 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+[PASS] cfg_start pulse generated in first cycle
+Time=                 575 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] cfg_start pulse returned to 0 in second cycle
+
+----------------------------------------
+  TEST           6: Status Clear Pulse Generation
+----------------------------------------
+Time=                 596 | wr_en=1 wr_addr=0x00 wr_data=0x00000002 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 605 | wr_en=1 wr_addr=0x00 wr_data=0x00000002 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=1
+Time=                 606 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=1
+[PASS] cfg_status_clr pulse generated in first cycle
+Time=                 615 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] cfg_status_clr pulse returned to 0 in second cycle
+
+----------------------------------------
+  TEST           7: IRQ Enable Register
+----------------------------------------
+Time=                 636 | wr_en=1 wr_addr=0x20 wr_data=0x00000003 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 646 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 666 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x20 rd_data=0x00000003 | start=0 clr=0
+[PASS] REG_IRQ_EN write/read successful: 0x00000003
+[PASS] IRQ enable outputs correct: done=1, error=1
+
+----------------------------------------
+  TEST           8: Status Register Read
+----------------------------------------
+Time=                 686 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 706 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x04 rd_data=0x00000001 | start=0 clr=0
+[PASS] REG_STATUS read successful (done=1, error=0): 0x00000001
+Time=                 726 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 746 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x04 rd_data=0x00000002 | start=0 clr=0
+[PASS] REG_STATUS read successful (done=0, error=1): 0x00000002
+Time=                 766 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 786 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x04 rd_data=0x00000003 | start=0 clr=0
+[PASS] REG_STATUS read successful (done=1, error=1): 0x00000003
+
+----------------------------------------
+  TEST           9: Computing Lock Mechanism
+----------------------------------------
+Time=                 806 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 826 | wr_en=1 wr_addr=0x0c wr_data=0x00000064 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 836 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 856 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000010 | start=0 clr=0
+[PASS] REG_M correctly locked during computing: still         16
+Time=                 876 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 886 | wr_en=1 wr_addr=0x10 wr_data=0x000000c8 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 896 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 916 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x10 rd_data=0x00000020 | start=0 clr=0
+[PASS] REG_N correctly locked during computing: still         32
+Time=                 936 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 946 | wr_en=1 wr_addr=0x14 wr_data=0x00000080 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 956 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                 976 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x00000040 | start=0 clr=0
+[PASS] REG_K correctly locked during computing: still         64
+Time=                 996 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1006 | wr_en=1 wr_addr=0x08 wr_data=0x000000ff | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1016 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1036 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x08 rd_data=0x0000000c | start=0 clr=0
+[PASS] REG_MODE correctly locked during computing: still 0x0000000c
+Time=                1056 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1066 | wr_en=1 wr_addr=0x18 wr_data=0xaaaaaaaa | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1076 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1096 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x18 rd_data=0xaaaaaaaa | start=0 clr=0
+[PASS] REG_TILE_MASK correctly updated (not locked): 0xaaaaaaaa
+Time=                1116 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1136 | wr_en=1 wr_addr=0x0c wr_data=0x00000064 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1146 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1166 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000064 | start=0 clr=0
+[PASS] REG_M write successful after computing cleared:        100
+
+----------------------------------------
+  TEST          10: Multiple Sequential Writes
+----------------------------------------
+Time=                1186 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1196 | wr_en=1 wr_addr=0x0c wr_data=0x00000018 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1206 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1216 | wr_en=1 wr_addr=0x10 wr_data=0x00000030 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1226 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1236 | wr_en=1 wr_addr=0x14 wr_data=0x00000060 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1246 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1256 | wr_en=1 wr_addr=0x18 wr_data=0xf0f0f0f0 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1266 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1276 | wr_en=1 wr_addr=0x1c wr_data=0x00000010 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1286 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1316 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000018 | start=0 clr=0
+[PASS] Sequential write REG_M successful:         24
+Time=                1336 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1346 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x10 rd_data=0x00000030 | start=0 clr=0
+[PASS] Sequential write REG_N successful:         48
+Time=                1366 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1376 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x00000060 | start=0 clr=0
+[PASS] Sequential write REG_K successful:         96
+Time=                1396 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1406 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x18 rd_data=0xf0f0f0f0 | start=0 clr=0
+[PASS] Sequential write REG_TILE_MASK successful: 0xf0f0f0f0
+Time=                1426 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1436 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x1c rd_data=0x00000010 | start=0 clr=0
+[PASS] Sequential write REG_ITERATIONS successful:         16
+
+----------------------------------------
+  TEST          11: Mode Register Enumeration (INDEP/MERGE/SPLIT)
+----------------------------------------
+Time=                1456 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1466 | wr_en=1 wr_addr=0x08 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1476 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] INDEP mode: cfg_mode = 00
+Time=                1496 | wr_en=1 wr_addr=0x08 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1506 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] MERGE mode: cfg_mode = 01
+Time=                1526 | wr_en=1 wr_addr=0x08 wr_data=0x00000002 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1536 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] SPLIT mode: cfg_mode = 10
+
+----------------------------------------
+  TEST          12: M/N/K Boundary Values (0 and 63)
+----------------------------------------
+Time=                1556 | wr_en=1 wr_addr=0x0c wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1566 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1576 | wr_en=1 wr_addr=0x10 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1586 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1596 | wr_en=1 wr_addr=0x14 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1606 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1626 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000000 | start=0 clr=0
+[PASS] REG_M=0: read back          0
+Time=                1646 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1656 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x10 rd_data=0x00000000 | start=0 clr=0
+[PASS] REG_N=0: read back          0
+Time=                1676 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1686 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x00000000 | start=0 clr=0
+[PASS] REG_K=0: read back          0
+Time=                1706 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1716 | wr_en=1 wr_addr=0x0c wr_data=0x0000003f | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1726 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1736 | wr_en=1 wr_addr=0x10 wr_data=0x0000003f | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1746 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1756 | wr_en=1 wr_addr=0x14 wr_data=0x0000003f | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1766 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1786 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x0000003f | start=0 clr=0
+[PASS] REG_M=63: read back         63
+[PASS] cfg_m output: 63
+Time=                1806 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1816 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x10 rd_data=0x0000003f | start=0 clr=0
+[PASS] REG_N=63: read back         63
+Time=                1836 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1846 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x0000003f | start=0 clr=0
+[PASS] REG_K=63: read back         63
+[PASS] cfg_k output: 63
+Time=                1866 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1876 | wr_en=1 wr_addr=0x14 wr_data=0x00000040 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1886 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1906 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x14 rd_data=0x00000040 | start=0 clr=0
+[PASS] REG_K=64: register stores full 32-bit value         64
+[PASS] cfg_k truncation: 64 ->  0 (6-bit overflow confirmed)
+
+----------------------------------------
+  TEST          13: Start Pulse During Computing Lock
+----------------------------------------
+Time=                1926 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1946 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                1955 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+Time=                1956 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+[PASS] cfg_start pulse generated during computing lock (REG_CTRL not locked)
+Time=                1965 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] cfg_start returned to 0
+
+----------------------------------------
+  TEST          14: Unlocked Registers During Computing
+----------------------------------------
+Time=                2006 | wr_en=1 wr_addr=0x1c wr_data=0x0000000f | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2016 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2036 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x1c rd_data=0x0000000f | start=0 clr=0
+[PASS] REG_ITERATIONS writable during computing:         15
+Time=                2056 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2066 | wr_en=1 wr_addr=0x20 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2076 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2096 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x20 rd_data=0x00000001 | start=0 clr=0
+[PASS] REG_IRQ_EN writable during computing: 0x00000001
+Time=                2116 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+
+----------------------------------------
+  TEST          15: REG_CTRL Simultaneous Start + Clear (0x03)
+----------------------------------------
+Time=                2136 | wr_en=1 wr_addr=0x00 wr_data=0x00000003 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2145 | wr_en=1 wr_addr=0x00 wr_data=0x00000003 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=1
+Time=                2146 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=1
+[PASS] cfg_start asserted with REG_CTRL=0x03
+[PASS] cfg_status_clr asserted with REG_CTRL=0x03
+Time=                2155 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] Both pulses returned to 0
+
+----------------------------------------
+  TEST          16: Async Reset Recovery
+----------------------------------------
+Time=                2176 | wr_en=1 wr_addr=0x0c wr_data=0x00000020 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2186 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2196 | wr_en=1 wr_addr=0x10 wr_data=0x00000030 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2206 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2216 | wr_en=1 wr_addr=0x14 wr_data=0x00000010 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2226 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2236 | wr_en=1 wr_addr=0x08 wr_data=0x00000002 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2246 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2256 | wr_en=1 wr_addr=0x18 wr_data=0x12345678 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2266 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2276 | wr_en=1 wr_addr=0x1c wr_data=0x00000005 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2286 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] M/N/K reset to defaults: M= 8, N= 8, K= 8
+Time=                2326 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000008 | start=0 clr=0
+[PASS] REG_M after reset:          8
+Time=                2346 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2356 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x08 rd_data=0x00000000 | start=0 clr=0
+[PASS] REG_MODE after reset: 0x00000000
+Time=                2376 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2386 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x18 rd_data=0xffffffff | start=0 clr=0
+[PASS] REG_TILE_MASK after reset: 0xffffffff
+Time=                2406 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2416 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x1c rd_data=0x00000001 | start=0 clr=0
+[PASS] REG_ITERATIONS after reset:          1
+
+----------------------------------------
+  TEST          17: Address Decoding - Illegal Addresses
+----------------------------------------
+Time=                2436 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2446 | wr_en=1 wr_addr=0x0c wr_data=0x00000010 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2456 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2476 | wr_en=1 wr_addr=0x03 wr_data=0xdeadbeef | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2486 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2506 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000010 | start=0 clr=0
+[PASS] REG_M unaffected by write to illegal address 0x03
+Time=                2526 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2536 | wr_en=1 wr_addr=0xff wr_data=0xcafebabe | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2546 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2566 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000010 | start=0 clr=0
+[PASS] REG_M unaffected by write to out-of-range address 0xFF
+Time=                2586 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2596 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0xff rd_data=0x00000000 | start=0 clr=0
+[PASS] Read from undefined address 0xFF returns 0
+Time=                2616 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2626 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x05 rd_data=0x00000000 | start=0 clr=0
+[PASS] Read from non-aligned address 0x05 returns 0
+
+----------------------------------------
+  TEST          18: Multi-Cycle Write Enable (Bus Glitch)
+----------------------------------------
+Time=                2646 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2656 | wr_en=1 wr_addr=0x0c wr_data=0x00000018 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2686 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2706 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000018 | start=0 clr=0
+[PASS] Multi-cycle wr_en: register value correct (        24)
+[PASS] cfg_m stable after multi-cycle write: 24
+
+----------------------------------------
+  TEST          19: Back-to-Back Start Pulses
+----------------------------------------
+Time=                2726 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2736 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2745 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+Time=                2746 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+[PASS] First start pulse generated
+Time=                2755 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] First start pulse returned to 0
+Time=                2776 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2785 | wr_en=1 wr_addr=0x00 wr_data=0x00000001 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+Time=                2786 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=1 clr=0
+[PASS] Second start pulse generated
+Time=                2795 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+[PASS] Second start pulse returned to 0
+
+----------------------------------------
+  TEST          20: Write to Read-Only STATUS Register
+----------------------------------------
+Time=                2826 | wr_en=1 wr_addr=0x04 wr_data=0xffffffff | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2836 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2856 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x04 rd_data=0x00000001 | start=0 clr=0
+[PASS] REG_STATUS is read-only, write had no effect: 0x00000001
+Time=                2876 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+Time=                2886 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=1 rd_addr=0x0c rd_data=0x00000018 | start=0 clr=0
+[PASS] REG_M unaffected by write to STATUS address
+Time=                2906 | wr_en=0 wr_addr=0x00 wr_data=0x00000000 | rd_en=0 rd_addr=0x00 rd_data=0x00000000 | start=0 clr=0
+
+========================================
+  Test Summary
+========================================
+  Total Tests:          20
+  Result: ALL TESTS PASSED ✓
+========================================
+[INFO] All tests passed successfully!
+  End Time:                 2965
+========================================
+
+F:\complication-6\NPU\TB\tb_npu_config_test.v:1139: $finish called at 3015 (1s)
+
+
+========================================
+测试日志结束
+========================================
