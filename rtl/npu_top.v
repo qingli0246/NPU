@@ -21,8 +21,9 @@ module npu_top (axi_aclk, axi_aresetn,
     parameter ADDR_WIDTH  = `NPU_AXI_ADDR_WIDTH;
     parameter DATA_WIDTH  = `NPU_AXI_DATA_WIDTH;
     parameter TILE_COUNT  = `NPU_NUM_TILES;
+    parameter K_MAX       = `NPU_K_MAX;
     parameter A_BUS_WIDTH = 8 * `NPU_NUM_TILES;
-    parameter C_BUS_WIDTH = 256 * `NPU_NUM_TILES;
+    parameter C_BUS_WIDTH = `NPU_TILE_C_BITS * `NPU_NUM_TILES;  // 2048 * 32 = 65536位
 
     // ---- AXI4 Slave 接口 ----
     input  wire                    axi_aclk;
