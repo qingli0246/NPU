@@ -444,7 +444,7 @@ module npu_axi_slave #(
             buf_rd_addr <= r_buf_rd_addr;
         end
     end
-
+/*
     // ========================================================
     //  Debug 输出（仿真时启用）
     // ========================================================
@@ -455,5 +455,5 @@ module npu_axi_slave #(
                 $time, r_state, axi_rvalid, axi_rlast, axi_rready, axi_arvalid, r_cnt, r_addr);
     end
     // synthesis translate_on
-
+*/
 endmodule

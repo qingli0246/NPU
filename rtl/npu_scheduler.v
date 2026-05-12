@@ -37,17 +37,21 @@ module npu_scheduler (
     // ========================================================
     //  内部信号定义
     // ========================================================
+    
+    // 迭代计数器（时序）
     reg [3:0] iter_cnt;
+    
+    // 下一状态寄存器（时序）
     reg [3:0] next_state;
     reg [3:0] iter_cnt_next;
 
-    // 组合逻辑输出信号
-    wire comb_load_start;
-    wire comb_compute_start;
-    wire comb_store_start;
-    wire comb_npu_done;
-    wire comb_npu_error;
-    wire comb_computing;
+    // 组合逻辑输出信号（使用 reg 以便在 always @(*) 中赋值）
+    reg comb_load_start;
+    reg comb_compute_start;
+    reg comb_store_start;
+    reg comb_npu_done;
+    reg comb_npu_error;
+    reg comb_computing;
 
     // ========================================================
     //  1. 时序逻辑块：状态寄存器和迭代计数器
@@ -105,6 +109,9 @@ module npu_scheduler (
                 if (cfg_start) begin
                     next_state    = `NPU_ST_LOAD;
                     iter_cnt_next = 4'd0;
+                end else begin
+                    // 自动回到 IDLE，确保 tile_en 降为 0，清除残留状态
+                    next_state = `NPU_ST_IDLE;
                 end
             end
 

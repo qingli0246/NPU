@@ -87,6 +87,9 @@
 `define TILE_LOAD            3'd1
 `define TILE_COMPUTE         3'd2
 `define TILE_DONE            3'd3
+// 异步加载状态
+`define TILE_LOAD_A          3'd4
+`define TILE_LOAD_B          3'd5
 
 // ============================================================
 //  AXI 响应编码

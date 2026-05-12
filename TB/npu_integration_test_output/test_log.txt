@@ -1,0 +1,829 @@
+VCD info: dumpfile npu_integration_test.vcd opened for output.
+============================================================
+  NPU 联合测试 - 完整系统验证
+  模块: AXI Slave + Config + Status + Buffer Manager
+        + Scheduler + Data Mover + Compute Pool
+  开始时间:                    0
+============================================================
+
+============================================================
+  阶段1: 基础通信测试
+  目标: 验证 AXI 总线 → Config 寄存器 → Buffer 读写
+============================================================
+
+  测试           1: 复位后默认值验证
+[PASS] cfg_mode 默认值 = 00 (INDEP)
+
+  测试           2: 写入配置寄存器 (Mode=INDEP, M=8, N=8, K=8)
+[PASS] Config 输出: mode=00 m= 8 n= 8 k= 8
+
+  测试           3: 通过 AXI 写入 A Buffer
+[PASS] A[0] = 0x00001000
+
+  测试           4: Burst 写入 B Buffer
+[PASS] B[0] = 0x00002000
+
+============================================================
+  阶段2: 状态与中断测试
+  目标: 验证 Status 模块的标志管理和中断生成
+============================================================
+
+  测试           5: 使能 Done 和 Error 中断
+[PASS] 中断使能: done=1 error=1
+
+  测试           6: 清除状态标志
+[PASS] 状态清除脉冲已发送
+
+============================================================
+  阶段3: 完整执行流程测试 (INDEP 模式)
+  目标: 验证 Load → Compute → Store 完整流程
+============================================================
+
+  测试           7: 配置并启动 NPU (INDEP, K=4, Tile 0)
+    写入 A 矩阵数据 (8×8布局,K=4有效)...
+
+    ===== A 矩阵 (8×8 INT8, 行优先布局) =====
+    基地址: 0x00000100
+    格式: 每行2个word，每个word包含4个字节 [byte0, byte1, byte2, byte3]
+
+    A[          0] = [ 1,  2,  3,  4,  5,  6,  7,  8]
+    A[          1] = [ 9, 10, 11, 12, 13, 14, 15, 16]
+    A[          2] = [17, 18, 19, 20, 21, 22, 23, 24]
+    A[          3] = [25, 26, 27, 28, 29, 30, 31, 32]
+    A[          4] = [33, 34, 35, 36, 37, 38, 39, 40]
+    A[          5] = [41, 42, 43, 44, 45, 46, 47, 48]
+    A[          6] = [49, 50, 51, 52, 53, 54, 55, 56]
+    A[          7] = [57, 58, 59, 60, 61, 62, 63, 64]
+    =========================================
+
+    写入 B 矩阵数据 (8×8单位矩阵)...
+
+    ===== B 矩阵 (8×8 INT8, 行优先布局) =====
+    基地址: 0x00004000
+    格式: 每行2个word，每个word包含4个字节 [byte0, byte1, byte2, byte3]
+
+    B[          0] = [ 1,  0,  0,  0,  0,  0,  0,  0]
+    B[          1] = [ 0,  1,  0,  0,  0,  0,  0,  0]
+    B[          2] = [ 0,  0,  1,  0,  0,  0,  0,  0]
+    B[          3] = [ 0,  0,  0,  1,  0,  0,  0,  0]
+    B[          4] = [ 0,  0,  0,  0,  1,  0,  0,  0]
+    B[          5] = [ 0,  0,  0,  0,  0,  1,  0,  0]
+    B[          6] = [ 0,  0,  0,  0,  0,  0,  1,  0]
+    B[          7] = [ 0,  0,  0,  0,  0,  0,  0,  1]
+
+    --- 原始Word值（十六进制）---
+      Word[ 0] @0x00004000 = 0x00000001
+      Word[ 1] @0x00004004 = 0x00000000
+      Word[ 2] @0x00004008 = 0x00000100
+      Word[ 3] @0x0000400c = 0x00000000
+      Word[ 4] @0x00004010 = 0x00010000
+      Word[ 5] @0x00004014 = 0x00000000
+      Word[ 6] @0x00004018 = 0x01000000
+      Word[ 7] @0x0000401c = 0x00000000
+      Word[ 8] @0x00004020 = 0x00000000
+      Word[ 9] @0x00004024 = 0x00000001
+      Word[10] @0x00004028 = 0x00000000
+      Word[11] @0x0000402c = 0x00000100
+      Word[12] @0x00004030 = 0x00000000
+      Word[13] @0x00004034 = 0x00010000
+      Word[14] @0x00004038 = 0x00000000
+      Word[15] @0x0000403c = 0x01000000
+    =========================================
+
+    写入 B 矩阵 (单位矩阵)...
+
+    ===== B 矩阵 (8×8 INT8, 行优先布局) =====
+    基地址: 0x00004000
+    格式: 每行2个word，每个word包含4个字节 [byte0, byte1, byte2, byte3]
+
+    B[          0] = [ 1,  0,  0,  0,  0,  0,  0,  0]
+    B[          1] = [ 0,  1,  0,  0,  0,  0,  0,  0]
+    B[          2] = [ 0,  0,  1,  0,  0,  0,  0,  0]
+    B[          3] = [ 0,  0,  0,  1,  0,  0,  0,  0]
+    B[          4] = [ 0,  0,  0,  0,  1,  0,  0,  0]
+    B[          5] = [ 0,  0,  0,  0,  0,  1,  0,  0]
+    B[          6] = [ 0,  0,  0,  0,  0,  0,  1,  0]
+    B[          7] = [ 0,  0,  0,  0,  0,  0,  0,  1]
+
+    --- 原始Word值（十六进制）---
+      Word[ 0] @0x00004000 = 0x00000001
+      Word[ 1] @0x00004004 = 0x00000000
+      Word[ 2] @0x00004008 = 0x00000100
+      Word[ 3] @0x0000400c = 0x00000000
+      Word[ 4] @0x00004010 = 0x00010000
+      Word[ 5] @0x00004014 = 0x00000000
+      Word[ 6] @0x00004018 = 0x01000000
+      Word[ 7] @0x0000401c = 0x00000000
+      Word[ 8] @0x00004020 = 0x00000000
+      Word[ 9] @0x00004024 = 0x00000001
+      Word[10] @0x00004028 = 0x00000000
+      Word[11] @0x0000402c = 0x00000100
+      Word[12] @0x00004030 = 0x00000000
+      Word[13] @0x00004034 = 0x00010000
+      Word[14] @0x00004038 = 0x00000000
+      Word[15] @0x0000403c = 0x01000000
+    =========================================
+
+    启动 NPU...
+[t=9175] STATE -> LOAD_A
+[t=9175] DataMover -> LOAD_A
+[TILE DBG] t=9175 state: 0 -> 4, a_loaded=0, b_loaded=0
+[t=9185] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9195 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
+[DM UNPACK_A DBG] t=9195 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
+[t=9205] STATE -> UNPACK_A
+    等待 computing 信号...
+[DM UNPACK_A DBG] t=9205 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
+[DM UNPACK_A DBG] t=9205 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
+[DM UNPACK_A DBG] t=9215 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
+[DM UNPACK_A DBG] t=9215 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
+[DM UNPACK_A DBG] t=9225 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
+[DM UNPACK_A DBG] t=9225 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
+[t=9245] DataMover -> LOAD_A
+[t=9245] STATE -> LOAD_A
+[t=9255] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9265 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
+[DM UNPACK_A DBG] t=9265 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
+[t=9275] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9275 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
+[DM UNPACK_A DBG] t=9275 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
+[DM UNPACK_A DBG] t=9285 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
+[DM UNPACK_A DBG] t=9285 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
+[DM UNPACK_A DBG] t=9295 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
+[DM UNPACK_A DBG] t=9295 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
+[PASS] computing = 1, NPU 正在执行
+    等待 NPU 完成...
+[t=9315] STATE -> LOAD_A
+[t=9315] DataMover -> LOAD_A
+[t=9325] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9335 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
+[DM UNPACK_A DBG] t=9335 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
+[t=9345] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9345 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
+[DM UNPACK_A DBG] t=9345 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
+[DM UNPACK_A DBG] t=9355 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
+[DM UNPACK_A DBG] t=9355 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
+[DM UNPACK_A DBG] t=9365 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
+[DM UNPACK_A DBG] t=9365 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
+[t=9385] DataMover -> LOAD_A
+[t=9385] STATE -> LOAD_A
+[t=9395] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9405 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
+[DM UNPACK_A DBG] t=9405 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
+[t=9415] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9415 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
+[DM UNPACK_A DBG] t=9415 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
+[DM UNPACK_A DBG] t=9425 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
+[DM UNPACK_A DBG] t=9425 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
+[DM UNPACK_A DBG] t=9435 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
+[DM UNPACK_A DBG] t=9435 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
+[t=9455] STATE -> LOAD_A
+[t=9455] DataMover -> LOAD_A
+[t=9465] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9475 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
+[DM UNPACK_A DBG] t=9475 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
+[t=9485] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9485 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
+[DM UNPACK_A DBG] t=9485 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
+[DM UNPACK_A DBG] t=9495 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
+[DM UNPACK_A DBG] t=9495 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
+[DM UNPACK_A DBG] t=9505 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
+[DM UNPACK_A DBG] t=9505 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
+[t=9525] DataMover -> LOAD_A
+[t=9525] STATE -> LOAD_A
+[t=9535] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9545 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
+[DM UNPACK_A DBG] t=9545 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
+[t=9555] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9555 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
+[DM UNPACK_A DBG] t=9555 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
+[DM UNPACK_A DBG] t=9565 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
+[DM UNPACK_A DBG] t=9565 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
+[DM UNPACK_A DBG] t=9575 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
+[DM UNPACK_A DBG] t=9575 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
+[t=9595] STATE -> LOAD_A
+[t=9595] DataMover -> LOAD_A
+[t=9605] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9615 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
+[DM UNPACK_A DBG] t=9615 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
+[t=9625] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9625 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
+[DM UNPACK_A DBG] t=9625 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
+[DM UNPACK_A DBG] t=9635 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
+[DM UNPACK_A DBG] t=9635 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
+[DM UNPACK_A DBG] t=9645 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
+[DM UNPACK_A DBG] t=9645 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
+[t=9665] DataMover -> LOAD_A
+[t=9665] STATE -> LOAD_A
+[t=9675] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9685 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
+[DM UNPACK_A DBG] t=9685 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
+[t=9695] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9695 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
+[DM UNPACK_A DBG] t=9695 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
+[DM UNPACK_A DBG] t=9705 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
+[DM UNPACK_A DBG] t=9705 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
+[DM UNPACK_A DBG] t=9715 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
+[DM UNPACK_A DBG] t=9715 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
+[t=9735] STATE -> LOAD_A
+[t=9735] DataMover -> LOAD_A
+[t=9745] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9755 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
+[DM UNPACK_A DBG] t=9755 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
+[t=9765] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9765 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
+[DM UNPACK_A DBG] t=9765 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
+[DM UNPACK_A DBG] t=9775 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
+[DM UNPACK_A DBG] t=9775 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
+[DM UNPACK_A DBG] t=9785 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
+[DM UNPACK_A DBG] t=9785 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
+[t=9805] DataMover -> LOAD_A
+[t=9805] STATE -> LOAD_A
+[t=9815] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9825 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
+[DM UNPACK_A DBG] t=9825 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
+[t=9835] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9835 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
+[DM UNPACK_A DBG] t=9835 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
+[DM UNPACK_A DBG] t=9845 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
+[DM UNPACK_A DBG] t=9845 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
+[DM UNPACK_A DBG] t=9855 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
+[DM UNPACK_A DBG] t=9855 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
+[t=9875] STATE -> LOAD_A
+[t=9875] DataMover -> LOAD_A
+[t=9885] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9895 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
+[DM UNPACK_A DBG] t=9895 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
+[t=9905] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9905 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
+[DM UNPACK_A DBG] t=9905 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
+[DM UNPACK_A DBG] t=9915 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
+[DM UNPACK_A DBG] t=9915 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
+[DM UNPACK_A DBG] t=9925 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
+[DM UNPACK_A DBG] t=9925 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
+[t=9945] DataMover -> LOAD_A
+[t=9945] STATE -> LOAD_A
+[t=9955] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=9965 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
+[DM UNPACK_A DBG] t=9965 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
+[t=9975] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=9975 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
+[DM UNPACK_A DBG] t=9975 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
+[DM UNPACK_A DBG] t=9985 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
+[DM UNPACK_A DBG] t=9985 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
+[DM UNPACK_A DBG] t=9995 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
+[DM UNPACK_A DBG] t=9995 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
+[t=10015] STATE -> LOAD_A
+[t=10015] DataMover -> LOAD_A
+[t=10025] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=10035 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
+[DM UNPACK_A DBG] t=10035 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
+[t=10045] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=10045 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
+[DM UNPACK_A DBG] t=10045 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
+[DM UNPACK_A DBG] t=10055 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
+[DM UNPACK_A DBG] t=10055 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
+[DM UNPACK_A DBG] t=10065 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
+[DM UNPACK_A DBG] t=10065 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
+[t=10085] DataMover -> LOAD_A
+[t=10085] STATE -> LOAD_A
+[t=10095] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=10105 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
+[DM UNPACK_A DBG] t=10105 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
+[t=10115] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=10115 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
+[DM UNPACK_A DBG] t=10115 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
+[DM UNPACK_A DBG] t=10125 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
+[DM UNPACK_A DBG] t=10125 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
+[DM UNPACK_A DBG] t=10135 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
+[DM UNPACK_A DBG] t=10135 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
+[t=10155] STATE -> LOAD_A
+[t=10155] DataMover -> LOAD_A
+[t=10165] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=10175 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
+[DM UNPACK_A DBG] t=10175 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
+[t=10185] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=10185 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
+[DM UNPACK_A DBG] t=10185 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
+[DM UNPACK_A DBG] t=10195 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
+[DM UNPACK_A DBG] t=10195 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
+[DM UNPACK_A DBG] t=10205 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
+[DM UNPACK_A DBG] t=10205 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
+[t=10225] DataMover -> LOAD_A
+[t=10225] STATE -> LOAD_A
+[t=10235] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=10245 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
+[DM UNPACK_A DBG] t=10245 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
+[t=10255] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=10255 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
+[DM UNPACK_A DBG] t=10255 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
+[DM UNPACK_A DBG] t=10265 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
+[DM UNPACK_A DBG] t=10265 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
+[DM UNPACK_A DBG] t=10275 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
+[DM UNPACK_A DBG] t=10275 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
+[t=10295] STATE -> LOAD_B
+[t=10295] DataMover -> LOAD_B
+[TILE DBG] t=10295 state: 4 -> 0, a_loaded=1, b_loaded=0
+[t=10305] STATE -> LOAD_B_WAIT
+[TILE DBG] t=10305 state: 0 -> 5, a_loaded=1, b_loaded=0
+
+[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
+  A[          0] = [  1,   2,   3,   4,   5,   6,   7,   8]
+  A[          1] = [  9,  10,  11,  12,  13,  14,  15,  16]
+  A[          2] = [ 17,  18,  19,  20,  21,  22,  23,  24]
+  A[          3] = [ 25,  26,  27,  28,  29,  30,  31,  32]
+  A[          4] = [ 33,  34,  35,  36,  37,  38,  39,  40]
+  A[          5] = [ 41,  42,  43,  44,  45,  46,  47,  48]
+  A[          6] = [ 49,  50,  51,  52,  53,  54,  55,  56]
+  A[          7] = [ 57,  58,  59,  60,  61,  62,  63,  64]
+==========================================
+
+[t=10325] STATE -> UNPACK_B
+[TILE LOAD_B DBG] t=10335 storing b_local[  0]=   1 (0x01)
+[TILE LOAD_B DBG] t=10345 storing b_local[  1]=   0 (0x00)
+[TILE LOAD_B DBG] t=10355 storing b_local[  2]=   0 (0x00)
+[t=10365] DataMover -> LOAD_B
+[t=10365] STATE -> LOAD_B
+[TILE LOAD_B DBG] t=10365 storing b_local[  3]=   0 (0x00)
+[t=10375] STATE -> LOAD_B_WAIT
+[t=10395] STATE -> UNPACK_B
+[TILE LOAD_B DBG] t=10405 storing b_local[  4]=   0 (0x00)
+[TILE LOAD_B DBG] t=10415 storing b_local[  5]=   0 (0x00)
+[TILE LOAD_B DBG] t=10425 storing b_local[  6]=   0 (0x00)
+[t=10435] STATE -> LOAD_B
+[t=10435] DataMover -> LOAD_B
+[TILE LOAD_B DBG] t=10435 storing b_local[  7]=   0 (0x00)
+[t=10445] STATE -> LOAD_B_WAIT
+[t=10465] STATE -> UNPACK_B
+[t=10505] DataMover -> LOAD_B
+[t=10505] STATE -> LOAD_B
+[t=10515] STATE -> LOAD_B_WAIT
+[t=10535] STATE -> UNPACK_B
+[t=10575] STATE -> LOAD_B
+[t=10575] DataMover -> LOAD_B
+[t=10585] STATE -> LOAD_B_WAIT
+[t=10605] STATE -> UNPACK_B
+[t=10645] DataMover -> LOAD_B
+[t=10645] STATE -> LOAD_B
+[t=10655] STATE -> LOAD_B_WAIT
+[t=10675] STATE -> UNPACK_B
+[t=10715] STATE -> LOAD_B
+[t=10715] DataMover -> LOAD_B
+[t=10725] STATE -> LOAD_B_WAIT
+[t=10745] STATE -> UNPACK_B
+[t=10785] DataMover -> LOAD_B
+[t=10785] STATE -> LOAD_B
+[t=10795] STATE -> LOAD_B_WAIT
+[t=10815] STATE -> UNPACK_B
+[t=10855] STATE -> LOAD_B
+[t=10855] DataMover -> LOAD_B
+[t=10865] STATE -> LOAD_B_WAIT
+[t=10885] STATE -> UNPACK_B
+[t=10925] DataMover -> LOAD_B
+[t=10925] STATE -> LOAD_B
+[t=10935] STATE -> LOAD_B_WAIT
+[t=10955] STATE -> UNPACK_B
+[t=10995] STATE -> LOAD_B
+[t=10995] DataMover -> LOAD_B
+[t=11005] STATE -> LOAD_B_WAIT
+[t=11025] STATE -> UNPACK_B
+[t=11065] DataMover -> LOAD_B
+[t=11065] STATE -> LOAD_B
+[t=11075] STATE -> LOAD_B_WAIT
+[t=11095] STATE -> UNPACK_B
+[t=11135] STATE -> LOAD_B
+[t=11135] DataMover -> LOAD_B
+[t=11145] STATE -> LOAD_B_WAIT
+[t=11165] STATE -> UNPACK_B
+[t=11205] DataMover -> LOAD_B
+[t=11205] STATE -> LOAD_B
+[t=11215] STATE -> LOAD_B_WAIT
+[t=11235] STATE -> UNPACK_B
+[t=11275] STATE -> LOAD_B
+[t=11275] DataMover -> LOAD_B
+[t=11285] STATE -> LOAD_B_WAIT
+[t=11305] STATE -> UNPACK_B
+[TILE LOAD_B DBG] t=11315 storing b_local[ 56]=   0 (0x00)
+[TILE LOAD_B DBG] t=11325 storing b_local[ 57]=   0 (0x00)
+[TILE LOAD_B DBG] t=11335 storing b_local[ 58]=   0 (0x00)
+[t=11345] DataMover -> LOAD_B
+[t=11345] STATE -> LOAD_B
+[TILE LOAD_B DBG] t=11345 storing b_local[ 59]=   0 (0x00)
+[t=11355] STATE -> LOAD_B_WAIT
+[DM UNPACK_B DBG] t=11365 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
+[DM UNPACK_B DBG] t=11365 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
+[t=11375] STATE -> UNPACK_B
+[DM UNPACK_B DBG] t=11375 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
+[DM UNPACK_B DBG] t=11375 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
+[TILE LOAD_B DBG] t=11385 storing b_local[ 60]=   0 (0x00)
+[DM UNPACK_B DBG] t=11385 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
+[DM UNPACK_B DBG] t=11385 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
+[TILE LOAD_B DBG] t=11395 storing b_local[ 61]=   0 (0x00)
+[DM UNPACK_B DBG] t=11395 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
+[DM UNPACK_B DBG] t=11395 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
+[TILE LOAD_B DBG] t=11405 storing b_local[ 62]=   0 (0x00)
+[STORE DBG] t=11405 Entering S_STORE, tile_c_valid=1, preparing to read C data
+[t=11415] STATE -> 10
+[t=11415] DataMover -> STORE
+[TILE LOAD_B DBG] t=11415 storing b_local[ 63]=   1 (0x01)
+[TILE DBG] t=11415 state: 5 -> 2, a_loaded=1, b_loaded=1
+[STORE DBG] t=11415 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000000
+[t=11425] STATE -> 11
+
+[TILE 0] ===== B Matrix Loaded (8×8 INT8) =====
+  B[          0] = [  1,   0,   0,   0,   0,   0,   0,   0]
+  B[          1] = [  0,   1,   0,   0,   0,   0,   0,   0]
+  B[          2] = [  0,   0,   1,   0,   0,   0,   0,   0]
+  B[          3] = [  0,   0,   0,   1,   0,   0,   0,   0]
+  B[          4] = [  0,   0,   0,   0,   1,   0,   0,   0]
+  B[          5] = [  0,   0,   0,   0,   0,   1,   0,   0]
+  B[          6] = [  0,   0,   0,   0,   0,   0,   1,   0]
+  B[          7] = [  0,   0,   0,   0,   0,   0,   0,   1]
+==========================================
+
+[TILE DBG] t=11495 state: 2 -> 3, a_loaded=1, b_loaded=1
+
+[TILE 0] ===== C Matrix Result (8×8 INT32) =====
+  C[          0] = [     1,      2,      3,      4,      5,      6,      7,      8]
+  C[          1] = [     9,     10,     11,     12,     13,     14,     15,     16]
+  C[          2] = [    17,     18,     19,     20,     21,     22,     23,     24]
+  C[          3] = [    25,     26,     27,     28,     29,     30,     31,     32]
+  C[          4] = [    33,     34,     35,     36,     37,     38,     39,     40]
+  C[          5] = [    41,     42,     43,     44,     45,     46,     47,     48]
+  C[          6] = [    49,     50,     51,     52,     53,     54,     55,     56]
+  C[          7] = [    57,     58,     59,     60,     61,     62,     63,     64]
+==========================================
+
+[t=12065] DataMover -> DONE
+[t=12065] STATE -> DONE
+[t=12075] STATE -> IDLE
+[t=12075] DataMover -> IDLE
+[STORE WAIT] t=12095 Waiting for tile_c_valid...
+[t=12105] DataMover -> STORE
+[t=12105] STATE -> 10
+[STORE DBG] t=12115 Entering S_STORE, tile_c_valid=1, preparing to read C data
+[STORE DBG] t=12125 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000001
+[t=12135] STATE -> 11
+[t=12775] STATE -> DONE
+[t=12775] DataMover -> DONE
+[t=12785] DataMover -> IDLE
+[t=12785] STATE -> IDLE
+[PASS] npu_done 检测到! (timeout=349)
+    STATUS 寄存器 = 0x00000001
+[PASS] status_done = 1
+
+  测试 7b: 验证 C Buffer 计算结果正确性 (B=I, 期望C[i][j]=A_byte[i*K+j])
+    重新配置并启动 NPU (B=I, K=4)...
+    写入 B 矩阵 (单位矩阵)...
+    启动 NPU...
+[t=14365] DataMover -> LOAD_A
+[t=14365] STATE -> LOAD_A
+[t=14375] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14385 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
+[DM UNPACK_A DBG] t=14385 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
+[t=14395] STATE -> UNPACK_A
+    等待 NPU 完成...
+[DM UNPACK_A DBG] t=14395 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
+[DM UNPACK_A DBG] t=14395 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
+[DM UNPACK_A DBG] t=14405 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
+[DM UNPACK_A DBG] t=14405 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
+[DM UNPACK_A DBG] t=14415 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
+[DM UNPACK_A DBG] t=14415 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
+[t=14435] STATE -> LOAD_A
+[t=14435] DataMover -> LOAD_A
+[t=14445] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14455 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
+[DM UNPACK_A DBG] t=14455 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
+[t=14465] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14465 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
+[DM UNPACK_A DBG] t=14465 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
+[DM UNPACK_A DBG] t=14475 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
+[DM UNPACK_A DBG] t=14475 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
+[DM UNPACK_A DBG] t=14485 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
+[DM UNPACK_A DBG] t=14485 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
+[t=14505] DataMover -> LOAD_A
+[t=14505] STATE -> LOAD_A
+[t=14515] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14525 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
+[DM UNPACK_A DBG] t=14525 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
+[t=14535] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14535 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
+[DM UNPACK_A DBG] t=14535 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
+[DM UNPACK_A DBG] t=14545 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
+[DM UNPACK_A DBG] t=14545 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
+[DM UNPACK_A DBG] t=14555 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
+[DM UNPACK_A DBG] t=14555 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
+[t=14575] STATE -> LOAD_A
+[t=14575] DataMover -> LOAD_A
+[t=14585] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14595 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
+[DM UNPACK_A DBG] t=14595 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
+[t=14605] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14605 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
+[DM UNPACK_A DBG] t=14605 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
+[DM UNPACK_A DBG] t=14615 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
+[DM UNPACK_A DBG] t=14615 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
+[DM UNPACK_A DBG] t=14625 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
+[DM UNPACK_A DBG] t=14625 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
+[t=14645] DataMover -> LOAD_A
+[t=14645] STATE -> LOAD_A
+[t=14655] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14665 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
+[DM UNPACK_A DBG] t=14665 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
+[t=14675] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14675 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
+[DM UNPACK_A DBG] t=14675 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
+[DM UNPACK_A DBG] t=14685 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
+[DM UNPACK_A DBG] t=14685 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
+[DM UNPACK_A DBG] t=14695 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
+[DM UNPACK_A DBG] t=14695 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
+[t=14715] STATE -> LOAD_A
+[t=14715] DataMover -> LOAD_A
+[t=14725] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14735 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
+[DM UNPACK_A DBG] t=14735 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
+[t=14745] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14745 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
+[DM UNPACK_A DBG] t=14745 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
+[DM UNPACK_A DBG] t=14755 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
+[DM UNPACK_A DBG] t=14755 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
+[DM UNPACK_A DBG] t=14765 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
+[DM UNPACK_A DBG] t=14765 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
+[t=14785] DataMover -> LOAD_A
+[t=14785] STATE -> LOAD_A
+[t=14795] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14805 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
+[DM UNPACK_A DBG] t=14805 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
+[t=14815] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14815 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
+[DM UNPACK_A DBG] t=14815 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
+[DM UNPACK_A DBG] t=14825 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
+[DM UNPACK_A DBG] t=14825 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
+[DM UNPACK_A DBG] t=14835 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
+[DM UNPACK_A DBG] t=14835 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
+[t=14855] STATE -> LOAD_A
+[t=14855] DataMover -> LOAD_A
+[t=14865] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14875 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
+[DM UNPACK_A DBG] t=14875 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
+[t=14885] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14885 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
+[DM UNPACK_A DBG] t=14885 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
+[DM UNPACK_A DBG] t=14895 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
+[DM UNPACK_A DBG] t=14895 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
+[DM UNPACK_A DBG] t=14905 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
+[DM UNPACK_A DBG] t=14905 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
+[t=14925] DataMover -> LOAD_A
+[t=14925] STATE -> LOAD_A
+[t=14935] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=14945 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
+[DM UNPACK_A DBG] t=14945 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
+[t=14955] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=14955 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
+[DM UNPACK_A DBG] t=14955 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
+[DM UNPACK_A DBG] t=14965 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
+[DM UNPACK_A DBG] t=14965 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
+[DM UNPACK_A DBG] t=14975 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
+[DM UNPACK_A DBG] t=14975 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
+[t=14995] STATE -> LOAD_A
+[t=14995] DataMover -> LOAD_A
+[t=15005] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15015 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
+[DM UNPACK_A DBG] t=15015 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
+[t=15025] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15025 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
+[DM UNPACK_A DBG] t=15025 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
+[DM UNPACK_A DBG] t=15035 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
+[DM UNPACK_A DBG] t=15035 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
+[DM UNPACK_A DBG] t=15045 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
+[DM UNPACK_A DBG] t=15045 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
+[t=15065] DataMover -> LOAD_A
+[t=15065] STATE -> LOAD_A
+[t=15075] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15085 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
+[DM UNPACK_A DBG] t=15085 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
+[t=15095] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15095 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
+[DM UNPACK_A DBG] t=15095 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
+[DM UNPACK_A DBG] t=15105 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
+[DM UNPACK_A DBG] t=15105 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
+[DM UNPACK_A DBG] t=15115 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
+[DM UNPACK_A DBG] t=15115 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
+[t=15135] STATE -> LOAD_A
+[t=15135] DataMover -> LOAD_A
+[t=15145] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15155 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
+[DM UNPACK_A DBG] t=15155 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
+[t=15165] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15165 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
+[DM UNPACK_A DBG] t=15165 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
+[DM UNPACK_A DBG] t=15175 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
+[DM UNPACK_A DBG] t=15175 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
+[DM UNPACK_A DBG] t=15185 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
+[DM UNPACK_A DBG] t=15185 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
+[t=15205] DataMover -> LOAD_A
+[t=15205] STATE -> LOAD_A
+[t=15215] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15225 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
+[DM UNPACK_A DBG] t=15225 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
+[t=15235] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15235 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
+[DM UNPACK_A DBG] t=15235 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
+[DM UNPACK_A DBG] t=15245 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
+[DM UNPACK_A DBG] t=15245 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
+[DM UNPACK_A DBG] t=15255 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
+[DM UNPACK_A DBG] t=15255 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
+[t=15275] STATE -> LOAD_A
+[t=15275] DataMover -> LOAD_A
+[t=15285] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15295 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
+[DM UNPACK_A DBG] t=15295 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
+[t=15305] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15305 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
+[DM UNPACK_A DBG] t=15305 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
+[DM UNPACK_A DBG] t=15315 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
+[DM UNPACK_A DBG] t=15315 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
+[DM UNPACK_A DBG] t=15325 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
+[DM UNPACK_A DBG] t=15325 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
+[t=15345] DataMover -> LOAD_A
+[t=15345] STATE -> LOAD_A
+[t=15355] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15365 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
+[DM UNPACK_A DBG] t=15365 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
+[t=15375] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15375 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
+[DM UNPACK_A DBG] t=15375 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
+[DM UNPACK_A DBG] t=15385 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
+[DM UNPACK_A DBG] t=15385 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
+[DM UNPACK_A DBG] t=15395 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
+[DM UNPACK_A DBG] t=15395 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
+[t=15415] STATE -> LOAD_A
+[t=15415] DataMover -> LOAD_A
+[t=15425] STATE -> LOAD_A_WAIT
+[DM UNPACK_A DBG] t=15435 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
+[DM UNPACK_A DBG] t=15435 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
+[t=15445] STATE -> UNPACK_A
+[DM UNPACK_A DBG] t=15445 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
+[DM UNPACK_A DBG] t=15445 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
+[DM UNPACK_A DBG] t=15455 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
+[DM UNPACK_A DBG] t=15455 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
+[DM UNPACK_A DBG] t=15465 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
+[DM UNPACK_A DBG] t=15465 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
+[t=15485] DataMover -> LOAD_B
+[t=15485] STATE -> LOAD_B
+[t=15495] STATE -> LOAD_B_WAIT
+[t=15515] STATE -> UNPACK_B
+[t=15555] STATE -> LOAD_B
+[t=15555] DataMover -> LOAD_B
+[t=15565] STATE -> LOAD_B_WAIT
+[t=15585] STATE -> UNPACK_B
+[t=15625] DataMover -> LOAD_B
+[t=15625] STATE -> LOAD_B
+[t=15635] STATE -> LOAD_B_WAIT
+[t=15655] STATE -> UNPACK_B
+[t=15695] STATE -> LOAD_B
+[t=15695] DataMover -> LOAD_B
+[t=15705] STATE -> LOAD_B_WAIT
+[t=15725] STATE -> UNPACK_B
+[t=15765] DataMover -> LOAD_B
+[t=15765] STATE -> LOAD_B
+[t=15775] STATE -> LOAD_B_WAIT
+[t=15795] STATE -> UNPACK_B
+[t=15835] STATE -> LOAD_B
+[t=15835] DataMover -> LOAD_B
+[t=15845] STATE -> LOAD_B_WAIT
+[t=15865] STATE -> UNPACK_B
+[t=15905] DataMover -> LOAD_B
+[t=15905] STATE -> LOAD_B
+[t=15915] STATE -> LOAD_B_WAIT
+[t=15935] STATE -> UNPACK_B
+[t=15975] STATE -> LOAD_B
+[t=15975] DataMover -> LOAD_B
+[t=15985] STATE -> LOAD_B_WAIT
+[t=16005] STATE -> UNPACK_B
+[t=16045] DataMover -> LOAD_B
+[t=16045] STATE -> LOAD_B
+[t=16055] STATE -> LOAD_B_WAIT
+[t=16075] STATE -> UNPACK_B
+[t=16115] STATE -> LOAD_B
+[t=16115] DataMover -> LOAD_B
+[t=16125] STATE -> LOAD_B_WAIT
+[t=16145] STATE -> UNPACK_B
+[t=16185] DataMover -> LOAD_B
+[t=16185] STATE -> LOAD_B
+[t=16195] STATE -> LOAD_B_WAIT
+[t=16215] STATE -> UNPACK_B
+[t=16255] STATE -> LOAD_B
+[t=16255] DataMover -> LOAD_B
+[t=16265] STATE -> LOAD_B_WAIT
+[t=16285] STATE -> UNPACK_B
+[t=16325] DataMover -> LOAD_B
+[t=16325] STATE -> LOAD_B
+[t=16335] STATE -> LOAD_B_WAIT
+[t=16355] STATE -> UNPACK_B
+[t=16395] STATE -> LOAD_B
+[t=16395] DataMover -> LOAD_B
+[t=16405] STATE -> LOAD_B_WAIT
+[t=16425] STATE -> UNPACK_B
+[t=16465] DataMover -> LOAD_B
+[t=16465] STATE -> LOAD_B
+[t=16475] STATE -> LOAD_B_WAIT
+[t=16495] STATE -> UNPACK_B
+[t=16535] STATE -> LOAD_B
+[t=16535] DataMover -> LOAD_B
+[t=16545] STATE -> LOAD_B_WAIT
+[DM UNPACK_B DBG] t=16555 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
+[DM UNPACK_B DBG] t=16555 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
+[t=16565] STATE -> UNPACK_B
+[DM UNPACK_B DBG] t=16565 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
+[DM UNPACK_B DBG] t=16565 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
+[DM UNPACK_B DBG] t=16575 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
+[DM UNPACK_B DBG] t=16575 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
+[DM UNPACK_B DBG] t=16585 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
+[DM UNPACK_B DBG] t=16585 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
+[STORE DBG] t=16595 Entering S_STORE, tile_c_valid=1, preparing to read C data
+[t=16605] DataMover -> STORE
+[t=16605] STATE -> 10
+[STORE DBG] t=16605 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000001
+[t=16615] STATE -> 11
+[t=17255] STATE -> DONE
+[t=17255] DataMover -> DONE
+[t=17265] DataMover -> IDLE
+[t=17265] STATE -> IDLE
+[STORE WAIT] t=17285 Waiting for tile_c_valid...
+[t=17295] STATE -> 10
+[t=17295] DataMover -> STORE
+[STORE DBG] t=17305 Entering S_STORE, tile_c_valid=1, preparing to read C data
+[STORE DBG] t=17315 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000001
+[t=17325] STATE -> 11
+[t=17965] DataMover -> DONE
+[t=17965] STATE -> DONE
+[t=17975] STATE -> IDLE
+[t=17975] DataMover -> IDLE
+[PASS] npu_done 检测到! (timeout=359)
+    STATUS 寄存器 = 0x00000001
+[PASS] status_done = 1
+
+    ===== 调试信息：计算完成后 A/B/C 矩阵数据 =====
+    --- A 矩阵 (8×8布局,地址 0x00000100 - 0x0000013c) ---
+      Row           0 [k=0-3] @0x00000100 = 0x04030201 (bytes: 01 02 03 04)
+      Row           0 [k=4-7] @0x00000104 = 0x08070605 (应全0)
+      Row           1 [k=0-3] @0x00000108 = 0x0c0b0a09 (bytes: 09 0a 0b 0c)
+      Row           1 [k=4-7] @0x0000010c = 0x100f0e0d (应全0)
+      Row           2 [k=0-3] @0x00000110 = 0x14131211 (bytes: 11 12 13 14)
+      Row           2 [k=4-7] @0x00000114 = 0x18171615 (应全0)
+      Row           3 [k=0-3] @0x00000118 = 0x1c1b1a19 (bytes: 19 1a 1b 1c)
+      Row           3 [k=4-7] @0x0000011c = 0x201f1e1d (应全0)
+      Row           4 [k=0-3] @0x00000120 = 0x24232221 (bytes: 21 22 23 24)
+      Row           4 [k=4-7] @0x00000124 = 0x28272625 (应全0)
+      Row           5 [k=0-3] @0x00000128 = 0x2c2b2a29 (bytes: 29 2a 2b 2c)
+      Row           5 [k=4-7] @0x0000012c = 0x302f2e2d (应全0)
+      Row           6 [k=0-3] @0x00000130 = 0x34333231 (bytes: 31 32 33 34)
+      Row           6 [k=4-7] @0x00000134 = 0x38373635 (应全0)
+      Row           7 [k=0-3] @0x00000138 = 0x3c3b3a39 (bytes: 39 3a 3b 3c)
+      Row           7 [k=4-7] @0x0000013c = 0x403f3e3d (应全0)
+    --- B 矩阵 (地址 0x00004000 - 0x0000401c) ---
+      B[0] @0x00004000 = 0x00000001
+      B[1] @0x00004004 = 0x00000000
+      B[2] @0x00004008 = 0x00000100
+      B[3] @0x0000400c = 0x00000000
+      B[4] @0x00004010 = 0x00010000
+      B[5] @0x00004014 = 0x00000000
+      B[6] @0x00004018 = 0x01000000
+      B[7] @0x0000401c = 0x00000000
+    --- C 矩阵 (8x8 INT32, 共64个word) ---
+      C[0][0..3] = 0x00000001
+      C[1][0..3] = 0x00000009
+      C[2][0..3] = 0x00000011
+      C[3][0..3] = 0x00000019
+      C[4][0..3] = 0x00000021
+      C[5][0..3] = 0x00000029
+      C[6][0..3] = 0x00000031
+      C[7][0..3] = 0x00000039
+    =================================================
+
+    验证 Tile 0 的计算结果 (B=I, K=8, 期望 C[i][j]=A_byte[i*K+j])...
+    验证通过！
+
+    [PASS] 测试 7b: Tile 0 计算结果正确，共验证 64 个元素
+
+============================================================
+  NPU 联合测试总结
+============================================================
+  总测试数:           8
+
+  测试覆盖:
+    - 阶段1: 基础通信 (AXI + Config + Buffer) - 4个测试
+    - 阶段2: 状态与中断 - 2个测试
+    - 阶段3: INDEP 模式完整流程 + 数据验证 - 2个测试
+    - 阶段4: MERGE 模式完整流程 - 1个测试
+    - 阶段5: SPLIT 模式完整流程 - 1个测试
+    - 阶段6: 多次迭代 - 1个测试
+    - 阶段7: 边界条件 - 2个测试
+    - 阶段8: 中断验证 - 1个测试
+    - 阶段9: 多 Tile 并行 - 1个测试
+
+  结果: 全部测试通过!
+  结束时间:                26135
+============================================================
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1456: $finish called at 26185 (1s)
