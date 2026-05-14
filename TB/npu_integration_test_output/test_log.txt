@@ -7,810 +7,1374 @@ VCD info: dumpfile npu_integration_test.vcd opened for output.
 ============================================================
 
 ============================================================
-  阶段1: 基础通信测试
-  目标: 验证 AXI 总线 → Config 寄存器 → Buffer 读写
+  阶段4: MERGE 模式严格验证测试
+  目标: 验证多 Tile 合并模式的正确性
+  配置: M=32, N=8, K=4, Tile 0-3
 ============================================================
 
-  测试           1: 复位后默认值验证
-[PASS] cfg_mode 默认值 = 00 (INDEP)
-
-  测试           2: 写入配置寄存器 (Mode=INDEP, M=8, N=8, K=8)
-[PASS] Config 输出: mode=00 m= 8 n= 8 k= 8
-
-  测试           3: 通过 AXI 写入 A Buffer
-[PASS] A[0] = 0x00001000
-
-  测试           4: Burst 写入 B Buffer
-[PASS] B[0] = 0x00002000
-
-============================================================
-  阶段2: 状态与中断测试
-  目标: 验证 Status 模块的标志管理和中断生成
-============================================================
-
-  测试           5: 使能 Done 和 Error 中断
-[PASS] 中断使能: done=1 error=1
-
-  测试           6: 清除状态标志
-[PASS] 状态清除脉冲已发送
-
-============================================================
-  阶段3: 完整执行流程测试 (INDEP 模式)
-  目标: 验证 Load → Compute → Store 完整流程
-============================================================
-
-  测试           7: 配置并启动 NPU (INDEP, K=4, Tile 0)
-    写入 A 矩阵数据 (8×8布局,K=4有效)...
-
-    ===== A 矩阵 (8×8 INT8, 行优先布局) =====
-    基地址: 0x00000100
-    格式: 每行2个word，每个word包含4个字节 [byte0, byte1, byte2, byte3]
-
-    A[          0] = [ 1,  2,  3,  4,  5,  6,  7,  8]
-    A[          1] = [ 9, 10, 11, 12, 13, 14, 15, 16]
-    A[          2] = [17, 18, 19, 20, 21, 22, 23, 24]
-    A[          3] = [25, 26, 27, 28, 29, 30, 31, 32]
-    A[          4] = [33, 34, 35, 36, 37, 38, 39, 40]
-    A[          5] = [41, 42, 43, 44, 45, 46, 47, 48]
-    A[          6] = [49, 50, 51, 52, 53, 54, 55, 56]
-    A[          7] = [57, 58, 59, 60, 61, 62, 63, 64]
-    =========================================
-
-    写入 B 矩阵数据 (8×8单位矩阵)...
-
-    ===== B 矩阵 (8×8 INT8, 行优先布局) =====
-    基地址: 0x00004000
-    格式: 每行2个word，每个word包含4个字节 [byte0, byte1, byte2, byte3]
-
-    B[          0] = [ 1,  0,  0,  0,  0,  0,  0,  0]
-    B[          1] = [ 0,  1,  0,  0,  0,  0,  0,  0]
-    B[          2] = [ 0,  0,  1,  0,  0,  0,  0,  0]
-    B[          3] = [ 0,  0,  0,  1,  0,  0,  0,  0]
-    B[          4] = [ 0,  0,  0,  0,  1,  0,  0,  0]
-    B[          5] = [ 0,  0,  0,  0,  0,  1,  0,  0]
-    B[          6] = [ 0,  0,  0,  0,  0,  0,  1,  0]
-    B[          7] = [ 0,  0,  0,  0,  0,  0,  0,  1]
-
-    --- 原始Word值（十六进制）---
-      Word[ 0] @0x00004000 = 0x00000001
-      Word[ 1] @0x00004004 = 0x00000000
-      Word[ 2] @0x00004008 = 0x00000100
-      Word[ 3] @0x0000400c = 0x00000000
-      Word[ 4] @0x00004010 = 0x00010000
-      Word[ 5] @0x00004014 = 0x00000000
-      Word[ 6] @0x00004018 = 0x01000000
-      Word[ 7] @0x0000401c = 0x00000000
-      Word[ 8] @0x00004020 = 0x00000000
-      Word[ 9] @0x00004024 = 0x00000001
-      Word[10] @0x00004028 = 0x00000000
-      Word[11] @0x0000402c = 0x00000100
-      Word[12] @0x00004030 = 0x00000000
-      Word[13] @0x00004034 = 0x00010000
-      Word[14] @0x00004038 = 0x00000000
-      Word[15] @0x0000403c = 0x01000000
-    =========================================
-
-    写入 B 矩阵 (单位矩阵)...
-
-    ===== B 矩阵 (8×8 INT8, 行优先布局) =====
-    基地址: 0x00004000
-    格式: 每行2个word，每个word包含4个字节 [byte0, byte1, byte2, byte3]
-
-    B[          0] = [ 1,  0,  0,  0,  0,  0,  0,  0]
-    B[          1] = [ 0,  1,  0,  0,  0,  0,  0,  0]
-    B[          2] = [ 0,  0,  1,  0,  0,  0,  0,  0]
-    B[          3] = [ 0,  0,  0,  1,  0,  0,  0,  0]
-    B[          4] = [ 0,  0,  0,  0,  1,  0,  0,  0]
-    B[          5] = [ 0,  0,  0,  0,  0,  1,  0,  0]
-    B[          6] = [ 0,  0,  0,  0,  0,  0,  1,  0]
-    B[          7] = [ 0,  0,  0,  0,  0,  0,  0,  1]
-
-    --- 原始Word值（十六进制）---
-      Word[ 0] @0x00004000 = 0x00000001
-      Word[ 1] @0x00004004 = 0x00000000
-      Word[ 2] @0x00004008 = 0x00000100
-      Word[ 3] @0x0000400c = 0x00000000
-      Word[ 4] @0x00004010 = 0x00010000
-      Word[ 5] @0x00004014 = 0x00000000
-      Word[ 6] @0x00004018 = 0x01000000
-      Word[ 7] @0x0000401c = 0x00000000
-      Word[ 8] @0x00004020 = 0x00000000
-      Word[ 9] @0x00004024 = 0x00000001
-      Word[10] @0x00004028 = 0x00000000
-      Word[11] @0x0000402c = 0x00000100
-      Word[12] @0x00004030 = 0x00000000
-      Word[13] @0x00004034 = 0x00010000
-      Word[14] @0x00004038 = 0x00000000
-      Word[15] @0x0000403c = 0x01000000
-    =========================================
-
-    启动 NPU...
-[t=9175] STATE -> LOAD_A
-[t=9175] DataMover -> LOAD_A
-[TILE DBG] t=9175 state: 0 -> 4, a_loaded=0, b_loaded=0
-[t=9185] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9195 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
-[DM UNPACK_A DBG] t=9195 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
-[t=9205] STATE -> UNPACK_A
-    等待 computing 信号...
-[DM UNPACK_A DBG] t=9205 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
-[DM UNPACK_A DBG] t=9205 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
-[DM UNPACK_A DBG] t=9215 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
-[DM UNPACK_A DBG] t=9215 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
-[DM UNPACK_A DBG] t=9225 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
-[DM UNPACK_A DBG] t=9225 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
-[t=9245] DataMover -> LOAD_A
-[t=9245] STATE -> LOAD_A
-[t=9255] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9265 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
-[DM UNPACK_A DBG] t=9265 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
-[t=9275] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9275 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
-[DM UNPACK_A DBG] t=9275 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
-[DM UNPACK_A DBG] t=9285 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
-[DM UNPACK_A DBG] t=9285 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
-[DM UNPACK_A DBG] t=9295 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
-[DM UNPACK_A DBG] t=9295 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
-[PASS] computing = 1, NPU 正在执行
-    等待 NPU 完成...
-[t=9315] STATE -> LOAD_A
-[t=9315] DataMover -> LOAD_A
-[t=9325] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9335 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
-[DM UNPACK_A DBG] t=9335 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
-[t=9345] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9345 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
-[DM UNPACK_A DBG] t=9345 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
-[DM UNPACK_A DBG] t=9355 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
-[DM UNPACK_A DBG] t=9355 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
-[DM UNPACK_A DBG] t=9365 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
-[DM UNPACK_A DBG] t=9365 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
-[t=9385] DataMover -> LOAD_A
-[t=9385] STATE -> LOAD_A
-[t=9395] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9405 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
-[DM UNPACK_A DBG] t=9405 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
-[t=9415] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9415 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
-[DM UNPACK_A DBG] t=9415 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
-[DM UNPACK_A DBG] t=9425 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
-[DM UNPACK_A DBG] t=9425 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
-[DM UNPACK_A DBG] t=9435 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
-[DM UNPACK_A DBG] t=9435 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
-[t=9455] STATE -> LOAD_A
-[t=9455] DataMover -> LOAD_A
-[t=9465] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9475 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
-[DM UNPACK_A DBG] t=9475 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
-[t=9485] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9485 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
-[DM UNPACK_A DBG] t=9485 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
-[DM UNPACK_A DBG] t=9495 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
-[DM UNPACK_A DBG] t=9495 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
-[DM UNPACK_A DBG] t=9505 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
-[DM UNPACK_A DBG] t=9505 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
+  测试           1: MERGE 模式完整验证 (M=32, N=8, K=8, Tile 0-3)
+    [步骤1] 清除状态标志...
+    [步骤2] 配置 MERGE 模式参数...
+      配置: MODE=MERGE, M=32, N=8, K=8, TILE_MASK=0x0000000f
+    [步骤3] 构造 A 矩阵 (32×8, 按8×8布局存储)...
+      A 矩阵构造完成: 32行 × 8列 = 64 words
+      数据模式: A[row][col] = row*8 + col
+    [步骤4] 构造 B 矩阵 (8×8, 标准单位矩阵)...
+      B 矩阵构造完成: 8行 × 8列 = 16 words
+      数据模式: B[i][j] = 1 (当 i==j), 否则 0
+      预期结果: C[row][col] = A[row][col] (所有元素)
+    [步骤5] 打印输入矩阵（前8行）...
+      --- A 矩阵前8行 ---
+        A[          0][0-3] = 0x03020100 (bytes:  0  1  2  3)
+        A[          0][4-7] = 0x07060504 (bytes:  4  5  6  7)
+        A[          1][0-3] = 0x0b0a0908 (bytes:  8  9 10 11)
+        A[          1][4-7] = 0x0f0e0d0c (bytes: 12 13 14 15)
+        A[          2][0-3] = 0x13121110 (bytes: 16 17 18 19)
+        A[          2][4-7] = 0x17161514 (bytes: 20 21 22 23)
+        A[          3][0-3] = 0x1b1a1918 (bytes: 24 25 26 27)
+        A[          3][4-7] = 0x1f1e1d1c (bytes: 28 29 30 31)
+        A[          4][0-3] = 0x23222120 (bytes: 32 33 34 35)
+        A[          4][4-7] = 0x27262524 (bytes: 36 37 38 39)
+        A[          5][0-3] = 0x2b2a2928 (bytes: 40 41 42 43)
+        A[          5][4-7] = 0x2f2e2d2c (bytes: 44 45 46 47)
+        A[          6][0-3] = 0x33323130 (bytes: 48 49 50 51)
+        A[          6][4-7] = 0x37363534 (bytes: 52 53 54 55)
+        A[          7][0-3] = 0x3b3a3938 (bytes: 56 57 58 59)
+        A[          7][4-7] = 0x3f3e3d3c (bytes: 60 61 62 63)
+        A[          8][0-3] = 0x43424140 (bytes: 64 65 66 67)
+        A[          8][4-7] = 0x47464544 (bytes: 68 69 70 71)
+        A[          9][0-3] = 0x4b4a4948 (bytes: 72 73 74 75)
+        A[          9][4-7] = 0x4f4e4d4c (bytes: 76 77 78 79)
+        A[         10][0-3] = 0x53525150 (bytes: 80 81 82 83)
+        A[         10][4-7] = 0x57565554 (bytes: 84 85 86 87)
+        A[         11][0-3] = 0x5b5a5958 (bytes: 88 89 90 91)
+        A[         11][4-7] = 0x5f5e5d5c (bytes: 92 93 94 95)
+        A[         12][0-3] = 0x63626160 (bytes: 96 97 98 99)
+        A[         12][4-7] = 0x67666564 (bytes: 100 101 102 103)
+        A[         13][0-3] = 0x6b6a6968 (bytes: 104 105 106 107)
+        A[         13][4-7] = 0x6f6e6d6c (bytes: 108 109 110 111)
+        A[         14][0-3] = 0x73727170 (bytes: 112 113 114 115)
+        A[         14][4-7] = 0x77767574 (bytes: 116 117 118 119)
+        A[         15][0-3] = 0x7b7a7978 (bytes: 120 121 122 123)
+        A[         15][4-7] = 0x7f7e7d7c (bytes: 124 125 126 127)
+        A[         16][0-3] = 0x83828180 (bytes: -128 -127 -126 -125)
+        A[         16][4-7] = 0x87868584 (bytes: -124 -123 -122 -121)
+        A[         17][0-3] = 0x8b8a8988 (bytes: -120 -119 -118 -117)
+        A[         17][4-7] = 0x8f8e8d8c (bytes: -116 -115 -114 -113)
+        A[         18][0-3] = 0x93929190 (bytes: -112 -111 -110 -109)
+        A[         18][4-7] = 0x97969594 (bytes: -108 -107 -106 -105)
+        A[         19][0-3] = 0x9b9a9998 (bytes: -104 -103 -102 -101)
+        A[         19][4-7] = 0x9f9e9d9c (bytes: -100 -99 -98 -97)
+        A[         20][0-3] = 0xa3a2a1a0 (bytes: -96 -95 -94 -93)
+        A[         20][4-7] = 0xa7a6a5a4 (bytes: -92 -91 -90 -89)
+        A[         21][0-3] = 0xabaaa9a8 (bytes: -88 -87 -86 -85)
+        A[         21][4-7] = 0xafaeadac (bytes: -84 -83 -82 -81)
+        A[         22][0-3] = 0xb3b2b1b0 (bytes: -80 -79 -78 -77)
+        A[         22][4-7] = 0xb7b6b5b4 (bytes: -76 -75 -74 -73)
+        A[         23][0-3] = 0xbbbab9b8 (bytes: -72 -71 -70 -69)
+        A[         23][4-7] = 0xbfbebdbc (bytes: -68 -67 -66 -65)
+        A[         24][0-3] = 0xc3c2c1c0 (bytes: -64 -63 -62 -61)
+        A[         24][4-7] = 0xc7c6c5c4 (bytes: -60 -59 -58 -57)
+        A[         25][0-3] = 0xcbcac9c8 (bytes: -56 -55 -54 -53)
+        A[         25][4-7] = 0xcfcecdcc (bytes: -52 -51 -50 -49)
+        A[         26][0-3] = 0xd3d2d1d0 (bytes: -48 -47 -46 -45)
+        A[         26][4-7] = 0xd7d6d5d4 (bytes: -44 -43 -42 -41)
+        A[         27][0-3] = 0xdbdad9d8 (bytes: -40 -39 -38 -37)
+        A[         27][4-7] = 0xdfdedddc (bytes: -36 -35 -34 -33)
+        A[         28][0-3] = 0xe3e2e1e0 (bytes: -32 -31 -30 -29)
+        A[         28][4-7] = 0xe7e6e5e4 (bytes: -28 -27 -26 -25)
+        A[         29][0-3] = 0xebeae9e8 (bytes: -24 -23 -22 -21)
+        A[         29][4-7] = 0xefeeedec (bytes: -20 -19 -18 -17)
+        A[         30][0-3] = 0xf3f2f1f0 (bytes: -16 -15 -14 -13)
+        A[         30][4-7] = 0xf7f6f5f4 (bytes: -12 -11 -10 -9)
+        A[         31][0-3] = 0xfbfaf9f8 (bytes: -8 -7 -6 -5)
+        A[         31][4-7] = 0xfffefdfc (bytes: -4 -3 -2 -1)
+      --- B 矩阵（8×8 单位矩阵）---
+        B[          0][0-3] = 0x00000001 (bytes:  1  0  0  0)
+        B[          0][4-7] = 0x00000000 (bytes:  0  0  0  0)
+        B[          1][0-3] = 0x00000100 (bytes:  0  1  0  0)
+        B[          1][4-7] = 0x00000000 (bytes:  0  0  0  0)
+        B[          2][0-3] = 0x00010000 (bytes:  0  0  1  0)
+        B[          2][4-7] = 0x00000000 (bytes:  0  0  0  0)
+        B[          3][0-3] = 0x01000000 (bytes:  0  0  0  1)
+        B[          3][4-7] = 0x00000000 (bytes:  0  0  0  0)
+        B[          4][0-3] = 0x00000000 (bytes:  0  0  0  0)
+        B[          4][4-7] = 0x00000001 (bytes:  1  0  0  0)
+        B[          5][0-3] = 0x00000000 (bytes:  0  0  0  0)
+        B[          5][4-7] = 0x00000100 (bytes:  0  1  0  0)
+        B[          6][0-3] = 0x00000000 (bytes:  0  0  0  0)
+        B[          6][4-7] = 0x00010000 (bytes:  0  0  1  0)
+        B[          7][0-3] = 0x00000000 (bytes:  0  0  0  0)
+        B[          7][4-7] = 0x01000000 (bytes:  0  0  0  1)
+    [步骤6] 启动 NPU...
+[t=9445] DataMover -> LOAD_A
+[t=9445] STATE -> LOAD_A
+[TILE DBG] t=9445 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=9445 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=9445 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=9445 state: 0 -> 4, a_loaded=0, b_loaded=0
+[t=9455] STATE -> LOAD_A_WAIT
+[t=9475] STATE -> UNPACK_A
+    [步骤7] 等待 NPU 完成计算...
+[t=9485] DataMover -> LOAD_A
+[t=9485] STATE -> LOAD_A
+[t=9495] STATE -> LOAD_A_WAIT
+[t=9515] STATE -> UNPACK_A
 [t=9525] DataMover -> LOAD_A
 [t=9525] STATE -> LOAD_A
 [t=9535] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9545 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
-[DM UNPACK_A DBG] t=9545 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
 [t=9555] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9555 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
-[DM UNPACK_A DBG] t=9555 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
-[DM UNPACK_A DBG] t=9565 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
-[DM UNPACK_A DBG] t=9565 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
-[DM UNPACK_A DBG] t=9575 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
-[DM UNPACK_A DBG] t=9575 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
-[t=9595] STATE -> LOAD_A
-[t=9595] DataMover -> LOAD_A
-[t=9605] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9615 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
-[DM UNPACK_A DBG] t=9615 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
-[t=9625] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9625 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
-[DM UNPACK_A DBG] t=9625 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
-[DM UNPACK_A DBG] t=9635 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
-[DM UNPACK_A DBG] t=9635 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
-[DM UNPACK_A DBG] t=9645 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
-[DM UNPACK_A DBG] t=9645 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
-[t=9665] DataMover -> LOAD_A
-[t=9665] STATE -> LOAD_A
-[t=9675] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9685 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
-[DM UNPACK_A DBG] t=9685 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
-[t=9695] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9695 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
-[DM UNPACK_A DBG] t=9695 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
-[DM UNPACK_A DBG] t=9705 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
-[DM UNPACK_A DBG] t=9705 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
-[DM UNPACK_A DBG] t=9715 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
-[DM UNPACK_A DBG] t=9715 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
-[t=9735] STATE -> LOAD_A
-[t=9735] DataMover -> LOAD_A
-[t=9745] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9755 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
-[DM UNPACK_A DBG] t=9755 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
-[t=9765] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9765 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
-[DM UNPACK_A DBG] t=9765 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
-[DM UNPACK_A DBG] t=9775 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
-[DM UNPACK_A DBG] t=9775 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
-[DM UNPACK_A DBG] t=9785 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
-[DM UNPACK_A DBG] t=9785 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
+[t=9565] DataMover -> LOAD_A
+[t=9565] STATE -> LOAD_A
+[t=9575] STATE -> LOAD_A_WAIT
+[t=9595] STATE -> UNPACK_A
+[t=9605] DataMover -> LOAD_A
+[t=9605] STATE -> LOAD_A
+[t=9615] STATE -> LOAD_A_WAIT
+[t=9635] STATE -> UNPACK_A
+[t=9645] DataMover -> LOAD_A
+[t=9645] STATE -> LOAD_A
+[t=9655] STATE -> LOAD_A_WAIT
+[t=9675] STATE -> UNPACK_A
+[t=9685] DataMover -> LOAD_A
+[t=9685] STATE -> LOAD_A
+[t=9695] STATE -> LOAD_A_WAIT
+[t=9715] STATE -> UNPACK_A
+[t=9725] DataMover -> LOAD_A
+[t=9725] STATE -> LOAD_A
+[t=9735] STATE -> LOAD_A_WAIT
+[t=9755] STATE -> UNPACK_A
+[t=9765] DataMover -> LOAD_A
+[t=9765] STATE -> LOAD_A
+[t=9775] STATE -> LOAD_A_WAIT
+[t=9795] STATE -> UNPACK_A
 [t=9805] DataMover -> LOAD_A
 [t=9805] STATE -> LOAD_A
 [t=9815] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9825 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
-[DM UNPACK_A DBG] t=9825 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
 [t=9835] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9835 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
-[DM UNPACK_A DBG] t=9835 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
-[DM UNPACK_A DBG] t=9845 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
-[DM UNPACK_A DBG] t=9845 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
-[DM UNPACK_A DBG] t=9855 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
-[DM UNPACK_A DBG] t=9855 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
-[t=9875] STATE -> LOAD_A
-[t=9875] DataMover -> LOAD_A
-[t=9885] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9895 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
-[DM UNPACK_A DBG] t=9895 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
-[t=9905] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9905 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
-[DM UNPACK_A DBG] t=9905 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
-[DM UNPACK_A DBG] t=9915 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
-[DM UNPACK_A DBG] t=9915 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
-[DM UNPACK_A DBG] t=9925 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
-[DM UNPACK_A DBG] t=9925 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
-[t=9945] DataMover -> LOAD_A
-[t=9945] STATE -> LOAD_A
-[t=9955] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=9965 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
-[DM UNPACK_A DBG] t=9965 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
-[t=9975] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=9975 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
-[DM UNPACK_A DBG] t=9975 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
-[DM UNPACK_A DBG] t=9985 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
-[DM UNPACK_A DBG] t=9985 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
-[DM UNPACK_A DBG] t=9995 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
-[DM UNPACK_A DBG] t=9995 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
-[t=10015] STATE -> LOAD_A
-[t=10015] DataMover -> LOAD_A
-[t=10025] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=10035 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
-[DM UNPACK_A DBG] t=10035 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
-[t=10045] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=10045 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
-[DM UNPACK_A DBG] t=10045 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
-[DM UNPACK_A DBG] t=10055 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
-[DM UNPACK_A DBG] t=10055 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
-[DM UNPACK_A DBG] t=10065 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
-[DM UNPACK_A DBG] t=10065 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
+[t=9845] DataMover -> LOAD_A
+[t=9845] STATE -> LOAD_A
+[t=9855] STATE -> LOAD_A_WAIT
+[t=9875] STATE -> UNPACK_A
+[t=9885] DataMover -> LOAD_A
+[t=9885] STATE -> LOAD_A
+[t=9895] STATE -> LOAD_A_WAIT
+[t=9915] STATE -> UNPACK_A
+[t=9925] DataMover -> LOAD_A
+[t=9925] STATE -> LOAD_A
+[t=9935] STATE -> LOAD_A_WAIT
+[t=9955] STATE -> UNPACK_A
+[t=9965] DataMover -> LOAD_A
+[t=9965] STATE -> LOAD_A
+[t=9975] STATE -> LOAD_A_WAIT
+[t=9995] STATE -> UNPACK_A
+[t=10005] DataMover -> LOAD_A
+[t=10005] STATE -> LOAD_A
+[t=10015] STATE -> LOAD_A_WAIT
+[t=10035] STATE -> UNPACK_A
+[t=10045] DataMover -> LOAD_A
+[t=10045] STATE -> LOAD_A
+[t=10055] STATE -> LOAD_A_WAIT
+[t=10075] STATE -> UNPACK_A
 [t=10085] DataMover -> LOAD_A
 [t=10085] STATE -> LOAD_A
 [t=10095] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=10105 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
-[DM UNPACK_A DBG] t=10105 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
 [t=10115] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=10115 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
-[DM UNPACK_A DBG] t=10115 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
-[DM UNPACK_A DBG] t=10125 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
-[DM UNPACK_A DBG] t=10125 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
-[DM UNPACK_A DBG] t=10135 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
-[DM UNPACK_A DBG] t=10135 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
-[t=10155] STATE -> LOAD_A
-[t=10155] DataMover -> LOAD_A
-[t=10165] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=10175 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
-[DM UNPACK_A DBG] t=10175 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
-[t=10185] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=10185 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
-[DM UNPACK_A DBG] t=10185 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
-[DM UNPACK_A DBG] t=10195 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
-[DM UNPACK_A DBG] t=10195 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
-[DM UNPACK_A DBG] t=10205 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
-[DM UNPACK_A DBG] t=10205 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
-[t=10225] DataMover -> LOAD_A
-[t=10225] STATE -> LOAD_A
-[t=10235] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=10245 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
-[DM UNPACK_A DBG] t=10245 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
-[t=10255] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=10255 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
-[DM UNPACK_A DBG] t=10255 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
-[DM UNPACK_A DBG] t=10265 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
-[DM UNPACK_A DBG] t=10265 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
-[DM UNPACK_A DBG] t=10275 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
-[DM UNPACK_A DBG] t=10275 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
-[t=10295] STATE -> LOAD_B
-[t=10295] DataMover -> LOAD_B
-[TILE DBG] t=10295 state: 4 -> 0, a_loaded=1, b_loaded=0
-[t=10305] STATE -> LOAD_B_WAIT
-[TILE DBG] t=10305 state: 0 -> 5, a_loaded=1, b_loaded=0
+[t=10125] DataMover -> LOAD_A
+[t=10125] STATE -> LOAD_A
+[t=10135] STATE -> LOAD_A_WAIT
+[t=10155] STATE -> UNPACK_A
+[t=10165] DataMover -> LOAD_A
+[t=10165] STATE -> LOAD_A
+[t=10175] STATE -> LOAD_A_WAIT
+[t=10195] STATE -> UNPACK_A
+[t=10205] DataMover -> LOAD_A
+[t=10205] STATE -> LOAD_A
+[t=10215] STATE -> LOAD_A_WAIT
+[t=10235] STATE -> UNPACK_A
+[t=10245] DataMover -> LOAD_A
+[t=10245] STATE -> LOAD_A
+[t=10255] STATE -> LOAD_A_WAIT
+[t=10275] STATE -> UNPACK_A
+[t=10285] DataMover -> LOAD_A
+[t=10285] STATE -> LOAD_A
+[t=10295] STATE -> LOAD_A_WAIT
+[t=10315] STATE -> UNPACK_A
+[t=10325] DataMover -> LOAD_A
+[t=10325] STATE -> LOAD_A
+[t=10335] STATE -> LOAD_A_WAIT
+[t=10355] STATE -> UNPACK_A
+[t=10365] DataMover -> LOAD_A
+[t=10365] STATE -> LOAD_A
+[t=10375] STATE -> LOAD_A_WAIT
+[t=10395] STATE -> UNPACK_A
+[t=10405] DataMover -> LOAD_A
+[t=10405] STATE -> LOAD_A
+[t=10415] STATE -> LOAD_A_WAIT
+[t=10435] STATE -> UNPACK_A
+[t=10445] DataMover -> LOAD_A
+[t=10445] STATE -> LOAD_A
+[t=10455] STATE -> LOAD_A_WAIT
+[t=10475] STATE -> UNPACK_A
+[t=10485] DataMover -> LOAD_A
+[t=10485] STATE -> LOAD_A
+[t=10495] STATE -> LOAD_A_WAIT
+[t=10515] STATE -> UNPACK_A
+[t=10525] DataMover -> LOAD_A
+[t=10525] STATE -> LOAD_A
+[t=10535] STATE -> LOAD_A_WAIT
+[t=10555] STATE -> UNPACK_A
+[t=10565] DataMover -> LOAD_A
+[t=10565] STATE -> LOAD_A
+[t=10575] STATE -> LOAD_A_WAIT
+[t=10595] STATE -> UNPACK_A
+[t=10605] DataMover -> LOAD_A
+[t=10605] STATE -> LOAD_A
+[t=10615] STATE -> LOAD_A_WAIT
+[t=10635] STATE -> UNPACK_A
+[t=10645] DataMover -> LOAD_A
+[t=10645] STATE -> LOAD_A
+[t=10655] STATE -> LOAD_A_WAIT
+[t=10675] STATE -> UNPACK_A
+[t=10685] DataMover -> LOAD_A
+[t=10685] STATE -> LOAD_A
+[t=10695] STATE -> LOAD_A_WAIT
+[t=10715] STATE -> UNPACK_A
+[t=10725] DataMover -> LOAD_A
+[t=10725] STATE -> LOAD_A
+[t=10735] STATE -> LOAD_A_WAIT
+[t=10755] STATE -> UNPACK_A
+[t=10765] DataMover -> LOAD_A
+[t=10765] STATE -> LOAD_A
+[t=10775] STATE -> LOAD_A_WAIT
+[t=10795] STATE -> UNPACK_A
+[t=10805] DataMover -> LOAD_A
+[t=10805] STATE -> LOAD_A
+[t=10815] STATE -> LOAD_A_WAIT
+[t=10835] STATE -> UNPACK_A
+[t=10845] DataMover -> LOAD_A
+[t=10845] STATE -> LOAD_A
+[t=10855] STATE -> LOAD_A_WAIT
+[t=10875] STATE -> UNPACK_A
+[t=10885] DataMover -> LOAD_A
+[t=10885] STATE -> LOAD_A
+[t=10895] STATE -> LOAD_A_WAIT
+[t=10915] STATE -> UNPACK_A
+[t=10925] DataMover -> LOAD_A
+[t=10925] STATE -> LOAD_A
+[t=10935] STATE -> LOAD_A_WAIT
+[t=10955] STATE -> UNPACK_A
+[t=10965] DataMover -> LOAD_A
+[t=10965] STATE -> LOAD_A
+[t=10975] STATE -> LOAD_A_WAIT
+[t=10995] STATE -> UNPACK_A
+[t=11005] DataMover -> LOAD_A
+[t=11005] STATE -> LOAD_A
+[t=11015] STATE -> LOAD_A_WAIT
+[t=11035] STATE -> UNPACK_A
+[t=11045] DataMover -> LOAD_A
+[t=11045] STATE -> LOAD_A
+[t=11055] STATE -> LOAD_A_WAIT
+[t=11075] STATE -> UNPACK_A
+[t=11085] DataMover -> LOAD_A
+[t=11085] STATE -> LOAD_A
+[t=11095] STATE -> LOAD_A_WAIT
+[t=11115] STATE -> UNPACK_A
+[t=11125] DataMover -> LOAD_A
+[t=11125] STATE -> LOAD_A
+[t=11135] STATE -> LOAD_A_WAIT
+[t=11155] STATE -> UNPACK_A
+[t=11165] DataMover -> LOAD_A
+[t=11165] STATE -> LOAD_A
+[t=11175] STATE -> LOAD_A_WAIT
+[t=11195] STATE -> UNPACK_A
+[t=11205] DataMover -> LOAD_A
+[t=11205] STATE -> LOAD_A
+[t=11215] STATE -> LOAD_A_WAIT
+[t=11235] STATE -> UNPACK_A
+[t=11245] DataMover -> LOAD_A
+[t=11245] STATE -> LOAD_A
+[t=11255] STATE -> LOAD_A_WAIT
+[t=11275] STATE -> UNPACK_A
+[t=11285] DataMover -> LOAD_A
+[t=11285] STATE -> LOAD_A
+[t=11295] STATE -> LOAD_A_WAIT
+[t=11315] STATE -> UNPACK_A
+[t=11325] DataMover -> LOAD_A
+[t=11325] STATE -> LOAD_A
+[t=11335] STATE -> LOAD_A_WAIT
+[t=11355] STATE -> UNPACK_A
+[t=11365] DataMover -> LOAD_A
+[t=11365] STATE -> LOAD_A
+[t=11375] STATE -> LOAD_A_WAIT
+[t=11395] STATE -> UNPACK_A
+[t=11405] DataMover -> LOAD_A
+[t=11405] STATE -> LOAD_A
+[t=11415] STATE -> LOAD_A_WAIT
+[t=11435] STATE -> UNPACK_A
+[t=11445] DataMover -> LOAD_A
+[t=11445] STATE -> LOAD_A
+[t=11455] STATE -> LOAD_A_WAIT
+[t=11475] STATE -> UNPACK_A
+[t=11485] DataMover -> LOAD_A
+[t=11485] STATE -> LOAD_A
+[t=11495] STATE -> LOAD_A_WAIT
+[t=11515] STATE -> UNPACK_A
+[t=11525] DataMover -> LOAD_A
+[t=11525] STATE -> LOAD_A
+[t=11535] STATE -> LOAD_A_WAIT
+[t=11555] STATE -> UNPACK_A
+[t=11565] DataMover -> LOAD_A
+[t=11565] STATE -> LOAD_A
+[t=11575] STATE -> LOAD_A_WAIT
+[t=11595] STATE -> UNPACK_A
+[t=11605] DataMover -> LOAD_A
+[t=11605] STATE -> LOAD_A
+[t=11615] STATE -> LOAD_A_WAIT
+[t=11635] STATE -> UNPACK_A
+[t=11645] DataMover -> LOAD_A
+[t=11645] STATE -> LOAD_A
+[t=11655] STATE -> LOAD_A_WAIT
+[t=11675] STATE -> UNPACK_A
+[t=11685] DataMover -> LOAD_A
+[t=11685] STATE -> LOAD_A
+[t=11695] STATE -> LOAD_A_WAIT
+[t=11715] STATE -> UNPACK_A
+[t=11725] DataMover -> LOAD_A
+[t=11725] STATE -> LOAD_A
+[t=11735] STATE -> LOAD_A_WAIT
+[t=11755] STATE -> UNPACK_A
+[t=11765] DataMover -> LOAD_A
+[t=11765] STATE -> LOAD_A
+[t=11775] STATE -> LOAD_A_WAIT
+[t=11795] STATE -> UNPACK_A
+[t=11805] DataMover -> LOAD_A
+[t=11805] STATE -> LOAD_A
+[t=11815] STATE -> LOAD_A_WAIT
+[t=11835] STATE -> UNPACK_A
+[t=11845] DataMover -> LOAD_A
+[t=11845] STATE -> LOAD_A
+[t=11855] STATE -> LOAD_A_WAIT
+[t=11875] STATE -> UNPACK_A
+[t=11885] DataMover -> LOAD_A
+[t=11885] STATE -> LOAD_A
+[t=11895] STATE -> LOAD_A_WAIT
+[t=11915] STATE -> UNPACK_A
+[t=11925] DataMover -> LOAD_A
+[t=11925] STATE -> LOAD_A
+[t=11935] STATE -> LOAD_A_WAIT
+[t=11955] STATE -> UNPACK_A
+[t=11965] DataMover -> LOAD_A
+[t=11965] STATE -> LOAD_A
+[t=11975] STATE -> LOAD_A_WAIT
+[t=11995] STATE -> UNPACK_A
+[t=12005] DataMover -> LOAD_A
+[t=12005] STATE -> LOAD_A
+[TILE DBG] t=12005 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=12005 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=12005 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=12005 state: 4 -> 0, a_loaded=1, b_loaded=0
+[t=12015] STATE -> LOAD_A_WAIT
+[TILE DBG] t=12015 state: 0 -> 5, a_loaded=1, b_loaded=0
 
 [TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
-  A[          0] = [  1,   2,   3,   4,   5,   6,   7,   8]
-  A[          1] = [  9,  10,  11,  12,  13,  14,  15,  16]
-  A[          2] = [ 17,  18,  19,  20,  21,  22,  23,  24]
-  A[          3] = [ 25,  26,  27,  28,  29,  30,  31,  32]
-  A[          4] = [ 33,  34,  35,  36,  37,  38,  39,  40]
-  A[          5] = [ 41,  42,  43,  44,  45,  46,  47,  48]
-  A[          6] = [ 49,  50,  51,  52,  53,  54,  55,  56]
-  A[          7] = [ 57,  58,  59,  60,  61,  62,  63,  64]
+  A[          0] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          1] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          2] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          3] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          4] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          5] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          6] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          7] = [  0,   0,   0,   0,   0,   0,   0,   0]
 ==========================================
 
-[t=10325] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=10335 storing b_local[  0]=   1 (0x01)
-[TILE LOAD_B DBG] t=10345 storing b_local[  1]=   0 (0x00)
-[TILE LOAD_B DBG] t=10355 storing b_local[  2]=   0 (0x00)
-[t=10365] DataMover -> LOAD_B
-[t=10365] STATE -> LOAD_B
-[TILE LOAD_B DBG] t=10365 storing b_local[  3]=   0 (0x00)
-[t=10375] STATE -> LOAD_B_WAIT
-[t=10395] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=10405 storing b_local[  4]=   0 (0x00)
-[TILE LOAD_B DBG] t=10415 storing b_local[  5]=   0 (0x00)
-[TILE LOAD_B DBG] t=10425 storing b_local[  6]=   0 (0x00)
-[t=10435] STATE -> LOAD_B
-[t=10435] DataMover -> LOAD_B
-[TILE LOAD_B DBG] t=10435 storing b_local[  7]=   0 (0x00)
-[t=10445] STATE -> LOAD_B_WAIT
-[t=10465] STATE -> UNPACK_B
-[t=10505] DataMover -> LOAD_B
-[t=10505] STATE -> LOAD_B
-[t=10515] STATE -> LOAD_B_WAIT
-[t=10535] STATE -> UNPACK_B
-[t=10575] STATE -> LOAD_B
-[t=10575] DataMover -> LOAD_B
-[t=10585] STATE -> LOAD_B_WAIT
-[t=10605] STATE -> UNPACK_B
-[t=10645] DataMover -> LOAD_B
-[t=10645] STATE -> LOAD_B
-[t=10655] STATE -> LOAD_B_WAIT
-[t=10675] STATE -> UNPACK_B
-[t=10715] STATE -> LOAD_B
-[t=10715] DataMover -> LOAD_B
-[t=10725] STATE -> LOAD_B_WAIT
-[t=10745] STATE -> UNPACK_B
-[t=10785] DataMover -> LOAD_B
-[t=10785] STATE -> LOAD_B
-[t=10795] STATE -> LOAD_B_WAIT
-[t=10815] STATE -> UNPACK_B
-[t=10855] STATE -> LOAD_B
-[t=10855] DataMover -> LOAD_B
-[t=10865] STATE -> LOAD_B_WAIT
-[t=10885] STATE -> UNPACK_B
-[t=10925] DataMover -> LOAD_B
-[t=10925] STATE -> LOAD_B
-[t=10935] STATE -> LOAD_B_WAIT
-[t=10955] STATE -> UNPACK_B
-[t=10995] STATE -> LOAD_B
-[t=10995] DataMover -> LOAD_B
-[t=11005] STATE -> LOAD_B_WAIT
-[t=11025] STATE -> UNPACK_B
-[t=11065] DataMover -> LOAD_B
-[t=11065] STATE -> LOAD_B
-[t=11075] STATE -> LOAD_B_WAIT
-[t=11095] STATE -> UNPACK_B
-[t=11135] STATE -> LOAD_B
-[t=11135] DataMover -> LOAD_B
-[t=11145] STATE -> LOAD_B_WAIT
-[t=11165] STATE -> UNPACK_B
-[t=11205] DataMover -> LOAD_B
-[t=11205] STATE -> LOAD_B
-[t=11215] STATE -> LOAD_B_WAIT
-[t=11235] STATE -> UNPACK_B
-[t=11275] STATE -> LOAD_B
-[t=11275] DataMover -> LOAD_B
-[t=11285] STATE -> LOAD_B_WAIT
-[t=11305] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=11315 storing b_local[ 56]=   0 (0x00)
-[TILE LOAD_B DBG] t=11325 storing b_local[ 57]=   0 (0x00)
-[TILE LOAD_B DBG] t=11335 storing b_local[ 58]=   0 (0x00)
-[t=11345] DataMover -> LOAD_B
-[t=11345] STATE -> LOAD_B
-[TILE LOAD_B DBG] t=11345 storing b_local[ 59]=   0 (0x00)
-[t=11355] STATE -> LOAD_B_WAIT
-[DM UNPACK_B DBG] t=11365 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
-[DM UNPACK_B DBG] t=11365 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
-[t=11375] STATE -> UNPACK_B
-[DM UNPACK_B DBG] t=11375 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
-[DM UNPACK_B DBG] t=11375 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
-[TILE LOAD_B DBG] t=11385 storing b_local[ 60]=   0 (0x00)
-[DM UNPACK_B DBG] t=11385 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
-[DM UNPACK_B DBG] t=11385 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
-[TILE LOAD_B DBG] t=11395 storing b_local[ 61]=   0 (0x00)
-[DM UNPACK_B DBG] t=11395 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
-[DM UNPACK_B DBG] t=11395 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
-[TILE LOAD_B DBG] t=11405 storing b_local[ 62]=   0 (0x00)
-[STORE DBG] t=11405 Entering S_STORE, tile_c_valid=1, preparing to read C data
-[t=11415] STATE -> 10
-[t=11415] DataMover -> STORE
-[TILE LOAD_B DBG] t=11415 storing b_local[ 63]=   1 (0x01)
-[TILE DBG] t=11415 state: 5 -> 2, a_loaded=1, b_loaded=1
-[STORE DBG] t=11415 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000000
-[t=11425] STATE -> 11
+[TILE DBG] t=12015 state: 0 -> 5, a_loaded=1, b_loaded=0
 
-[TILE 0] ===== B Matrix Loaded (8×8 INT8) =====
-  B[          0] = [  1,   0,   0,   0,   0,   0,   0,   0]
-  B[          1] = [  0,   1,   0,   0,   0,   0,   0,   0]
-  B[          2] = [  0,   0,   1,   0,   0,   0,   0,   0]
-  B[          3] = [  0,   0,   0,   1,   0,   0,   0,   0]
-  B[          4] = [  0,   0,   0,   0,   1,   0,   0,   0]
-  B[          5] = [  0,   0,   0,   0,   0,   1,   0,   0]
-  B[          6] = [  0,   0,   0,   0,   0,   0,   1,   0]
-  B[          7] = [  0,   0,   0,   0,   0,   0,   0,   1]
+[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
+  A[          0] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          1] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          2] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          3] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          4] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          5] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          6] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          7] = [  0,   0,   0,   0,   0,   0,   0,   0]
 ==========================================
 
-[TILE DBG] t=11495 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=12015 state: 0 -> 5, a_loaded=1, b_loaded=0
 
-[TILE 0] ===== C Matrix Result (8×8 INT32) =====
-  C[          0] = [     1,      2,      3,      4,      5,      6,      7,      8]
-  C[          1] = [     9,     10,     11,     12,     13,     14,     15,     16]
-  C[          2] = [    17,     18,     19,     20,     21,     22,     23,     24]
-  C[          3] = [    25,     26,     27,     28,     29,     30,     31,     32]
-  C[          4] = [    33,     34,     35,     36,     37,     38,     39,     40]
-  C[          5] = [    41,     42,     43,     44,     45,     46,     47,     48]
-  C[          6] = [    49,     50,     51,     52,     53,     54,     55,     56]
-  C[          7] = [    57,     58,     59,     60,     61,     62,     63,     64]
+[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
+  A[          0] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          1] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          2] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          3] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          4] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          5] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          6] = [  0,   0,   0,   0,   0,   0,   0,   0]
+  A[          7] = [  0,   0,   0,   0,   0,   0,   0,   0]
 ==========================================
 
-[t=12065] DataMover -> DONE
-[t=12065] STATE -> DONE
-[t=12075] STATE -> IDLE
-[t=12075] DataMover -> IDLE
-[STORE WAIT] t=12095 Waiting for tile_c_valid...
-[t=12105] DataMover -> STORE
-[t=12105] STATE -> 10
-[STORE DBG] t=12115 Entering S_STORE, tile_c_valid=1, preparing to read C data
-[STORE DBG] t=12125 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000001
-[t=12135] STATE -> 11
-[t=12775] STATE -> DONE
-[t=12775] DataMover -> DONE
-[t=12785] DataMover -> IDLE
-[t=12785] STATE -> IDLE
-[PASS] npu_done 检测到! (timeout=349)
-    STATUS 寄存器 = 0x00000001
-[PASS] status_done = 1
+[TILE DBG] t=12015 state: 0 -> 5, a_loaded=1, b_loaded=0
 
-  测试 7b: 验证 C Buffer 计算结果正确性 (B=I, 期望C[i][j]=A_byte[i*K+j])
-    重新配置并启动 NPU (B=I, K=4)...
-    写入 B 矩阵 (单位矩阵)...
-    启动 NPU...
+[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
+  A[          0] = [  0,   1,   2,   3,   4,   5,   6,   7]
+  A[          1] = [  8,   9,  10,  11,  12,  13,  14,  15]
+  A[          2] = [ 16,  17,  18,  19,  20,  21,  22,  23]
+  A[          3] = [ 24,  25,  26,  27,  28,  29,  30,  31]
+  A[          4] = [ 32,  33,  34,  35,  36,  37,  38,  39]
+  A[          5] = [ 40,  41,  42,  43,  44,  45,  46,  47]
+  A[          6] = [ 48,  49,  50,  51,  52,  53,  54,  55]
+  A[          7] = [ 56,  57,  58,  59,  60,  61,  62,  63]
+==========================================
+
+[t=12035] STATE -> UNPACK_A
+[t=12045] DataMover -> LOAD_A
+[t=12045] STATE -> LOAD_A
+[t=12055] STATE -> LOAD_A_WAIT
+[t=12075] STATE -> UNPACK_A
+[t=12085] DataMover -> LOAD_A
+[t=12085] STATE -> LOAD_A
+[t=12095] STATE -> LOAD_A_WAIT
+[t=12115] STATE -> UNPACK_A
+[t=12125] DataMover -> LOAD_A
+[t=12125] STATE -> LOAD_A
+[t=12135] STATE -> LOAD_A_WAIT
+[t=12155] STATE -> UNPACK_A
+[t=12165] DataMover -> LOAD_A
+[t=12165] STATE -> LOAD_A
+[t=12175] STATE -> LOAD_A_WAIT
+[t=12195] STATE -> UNPACK_A
+[t=12205] DataMover -> LOAD_A
+[t=12205] STATE -> LOAD_A
+[t=12215] STATE -> LOAD_A_WAIT
+[t=12235] STATE -> UNPACK_A
+[t=12245] DataMover -> LOAD_A
+[t=12245] STATE -> LOAD_A
+[t=12255] STATE -> LOAD_A_WAIT
+[t=12275] STATE -> UNPACK_A
+[t=12285] DataMover -> LOAD_A
+[t=12285] STATE -> LOAD_A
+[t=12295] STATE -> LOAD_A_WAIT
+[t=12315] STATE -> UNPACK_A
+[t=12325] DataMover -> LOAD_A
+[t=12325] STATE -> LOAD_A
+[t=12335] STATE -> LOAD_A_WAIT
+[t=12355] STATE -> UNPACK_A
+[t=12365] DataMover -> LOAD_A
+[t=12365] STATE -> LOAD_A
+[t=12375] STATE -> LOAD_A_WAIT
+[t=12395] STATE -> UNPACK_A
+[t=12405] DataMover -> LOAD_A
+[t=12405] STATE -> LOAD_A
+[t=12415] STATE -> LOAD_A_WAIT
+[t=12435] STATE -> UNPACK_A
+[t=12445] DataMover -> LOAD_A
+[t=12445] STATE -> LOAD_A
+[t=12455] STATE -> LOAD_A_WAIT
+[t=12475] STATE -> UNPACK_A
+[t=12485] DataMover -> LOAD_A
+[t=12485] STATE -> LOAD_A
+[t=12495] STATE -> LOAD_A_WAIT
+[t=12515] STATE -> UNPACK_A
+[t=12525] DataMover -> LOAD_A
+[t=12525] STATE -> LOAD_A
+[t=12535] STATE -> LOAD_A_WAIT
+[t=12555] STATE -> UNPACK_A
+[t=12565] DataMover -> LOAD_A
+[t=12565] STATE -> LOAD_A
+[t=12575] STATE -> LOAD_A_WAIT
+[t=12595] STATE -> UNPACK_A
+[t=12605] DataMover -> LOAD_A
+[t=12605] STATE -> LOAD_A
+[t=12615] STATE -> LOAD_A_WAIT
+[t=12635] STATE -> UNPACK_A
+[t=12645] DataMover -> LOAD_A
+[t=12645] STATE -> LOAD_A
+[t=12655] STATE -> LOAD_A_WAIT
+[t=12675] STATE -> UNPACK_A
+[t=12685] DataMover -> LOAD_A
+[t=12685] STATE -> LOAD_A
+[t=12695] STATE -> LOAD_A_WAIT
+[t=12715] STATE -> UNPACK_A
+[t=12725] DataMover -> LOAD_A
+[t=12725] STATE -> LOAD_A
+[t=12735] STATE -> LOAD_A_WAIT
+[t=12755] STATE -> UNPACK_A
+[t=12765] DataMover -> LOAD_A
+[t=12765] STATE -> LOAD_A
+[t=12775] STATE -> LOAD_A_WAIT
+[t=12795] STATE -> UNPACK_A
+[t=12805] DataMover -> LOAD_A
+[t=12805] STATE -> LOAD_A
+[t=12815] STATE -> LOAD_A_WAIT
+[t=12835] STATE -> UNPACK_A
+[t=12845] DataMover -> LOAD_A
+[t=12845] STATE -> LOAD_A
+[t=12855] STATE -> LOAD_A_WAIT
+[t=12875] STATE -> UNPACK_A
+[t=12885] DataMover -> LOAD_A
+[t=12885] STATE -> LOAD_A
+[t=12895] STATE -> LOAD_A_WAIT
+[t=12915] STATE -> UNPACK_A
+[t=12925] DataMover -> LOAD_A
+[t=12925] STATE -> LOAD_A
+[t=12935] STATE -> LOAD_A_WAIT
+[t=12955] STATE -> UNPACK_A
+[t=12965] DataMover -> LOAD_A
+[t=12965] STATE -> LOAD_A
+[t=12975] STATE -> LOAD_A_WAIT
+[t=12995] STATE -> UNPACK_A
+[t=13005] DataMover -> LOAD_A
+[t=13005] STATE -> LOAD_A
+[t=13015] STATE -> LOAD_A_WAIT
+[t=13035] STATE -> UNPACK_A
+[t=13045] DataMover -> LOAD_A
+[t=13045] STATE -> LOAD_A
+[t=13055] STATE -> LOAD_A_WAIT
+[t=13075] STATE -> UNPACK_A
+[t=13085] DataMover -> LOAD_A
+[t=13085] STATE -> LOAD_A
+[t=13095] STATE -> LOAD_A_WAIT
+[t=13115] STATE -> UNPACK_A
+[t=13125] DataMover -> LOAD_A
+[t=13125] STATE -> LOAD_A
+[t=13135] STATE -> LOAD_A_WAIT
+[t=13155] STATE -> UNPACK_A
+[t=13165] DataMover -> LOAD_A
+[t=13165] STATE -> LOAD_A
+[t=13175] STATE -> LOAD_A_WAIT
+[t=13195] STATE -> UNPACK_A
+[t=13205] DataMover -> LOAD_A
+[t=13205] STATE -> LOAD_A
+[t=13215] STATE -> LOAD_A_WAIT
+[t=13235] STATE -> UNPACK_A
+[t=13245] DataMover -> LOAD_A
+[t=13245] STATE -> LOAD_A
+[t=13255] STATE -> LOAD_A_WAIT
+[t=13275] STATE -> UNPACK_A
+[t=13285] DataMover -> LOAD_A
+[t=13285] STATE -> LOAD_A
+[t=13295] STATE -> LOAD_A_WAIT
+[t=13315] STATE -> UNPACK_A
+[t=13325] DataMover -> LOAD_A
+[t=13325] STATE -> LOAD_A
+[t=13335] STATE -> LOAD_A_WAIT
+[t=13355] STATE -> UNPACK_A
+[t=13365] DataMover -> LOAD_A
+[t=13365] STATE -> LOAD_A
+[t=13375] STATE -> LOAD_A_WAIT
+[t=13395] STATE -> UNPACK_A
+[t=13405] DataMover -> LOAD_A
+[t=13405] STATE -> LOAD_A
+[t=13415] STATE -> LOAD_A_WAIT
+[t=13435] STATE -> UNPACK_A
+[t=13445] DataMover -> LOAD_A
+[t=13445] STATE -> LOAD_A
+[t=13455] STATE -> LOAD_A_WAIT
+[t=13475] STATE -> UNPACK_A
+[t=13485] DataMover -> LOAD_A
+[t=13485] STATE -> LOAD_A
+[t=13495] STATE -> LOAD_A_WAIT
+[t=13515] STATE -> UNPACK_A
+[t=13525] DataMover -> LOAD_A
+[t=13525] STATE -> LOAD_A
+[t=13535] STATE -> LOAD_A_WAIT
+[t=13555] STATE -> UNPACK_A
+[t=13565] DataMover -> LOAD_A
+[t=13565] STATE -> LOAD_A
+[t=13575] STATE -> LOAD_A_WAIT
+[t=13595] STATE -> UNPACK_A
+[t=13605] DataMover -> LOAD_A
+[t=13605] STATE -> LOAD_A
+[t=13615] STATE -> LOAD_A_WAIT
+[t=13635] STATE -> UNPACK_A
+[t=13645] DataMover -> LOAD_A
+[t=13645] STATE -> LOAD_A
+[t=13655] STATE -> LOAD_A_WAIT
+[t=13675] STATE -> UNPACK_A
+[t=13685] DataMover -> LOAD_A
+[t=13685] STATE -> LOAD_A
+[t=13695] STATE -> LOAD_A_WAIT
+[t=13715] STATE -> UNPACK_A
+[t=13725] DataMover -> LOAD_A
+[t=13725] STATE -> LOAD_A
+[t=13735] STATE -> LOAD_A_WAIT
+[t=13755] STATE -> UNPACK_A
+[t=13765] DataMover -> LOAD_A
+[t=13765] STATE -> LOAD_A
+[t=13775] STATE -> LOAD_A_WAIT
+[t=13795] STATE -> UNPACK_A
+[t=13805] DataMover -> LOAD_A
+[t=13805] STATE -> LOAD_A
+[t=13815] STATE -> LOAD_A_WAIT
+[t=13835] STATE -> UNPACK_A
+[t=13845] DataMover -> LOAD_A
+[t=13845] STATE -> LOAD_A
+[t=13855] STATE -> LOAD_A_WAIT
+[t=13875] STATE -> UNPACK_A
+[t=13885] DataMover -> LOAD_A
+[t=13885] STATE -> LOAD_A
+[t=13895] STATE -> LOAD_A_WAIT
+[t=13915] STATE -> UNPACK_A
+[t=13925] DataMover -> LOAD_A
+[t=13925] STATE -> LOAD_A
+[t=13935] STATE -> LOAD_A_WAIT
+[t=13955] STATE -> UNPACK_A
+[t=13965] DataMover -> LOAD_A
+[t=13965] STATE -> LOAD_A
+[t=13975] STATE -> LOAD_A_WAIT
+[t=13995] STATE -> UNPACK_A
+[t=14005] DataMover -> LOAD_A
+[t=14005] STATE -> LOAD_A
+[t=14015] STATE -> LOAD_A_WAIT
+[t=14035] STATE -> UNPACK_A
+[t=14045] DataMover -> LOAD_A
+[t=14045] STATE -> LOAD_A
+[t=14055] STATE -> LOAD_A_WAIT
+[t=14075] STATE -> UNPACK_A
+[t=14085] DataMover -> LOAD_A
+[t=14085] STATE -> LOAD_A
+[t=14095] STATE -> LOAD_A_WAIT
+[t=14115] STATE -> UNPACK_A
+[t=14125] DataMover -> LOAD_A
+[t=14125] STATE -> LOAD_A
+[t=14135] STATE -> LOAD_A_WAIT
+[t=14155] STATE -> UNPACK_A
+[t=14165] DataMover -> LOAD_A
+[t=14165] STATE -> LOAD_A
+[t=14175] STATE -> LOAD_A_WAIT
+[t=14195] STATE -> UNPACK_A
+[t=14205] DataMover -> LOAD_A
+[t=14205] STATE -> LOAD_A
+[t=14215] STATE -> LOAD_A_WAIT
+[t=14235] STATE -> UNPACK_A
+[t=14245] DataMover -> LOAD_A
+[t=14245] STATE -> LOAD_A
+[t=14255] STATE -> LOAD_A_WAIT
+[t=14275] STATE -> UNPACK_A
+[t=14285] DataMover -> LOAD_A
+[t=14285] STATE -> LOAD_A
+[t=14295] STATE -> LOAD_A_WAIT
+[t=14315] STATE -> UNPACK_A
+[t=14325] DataMover -> LOAD_A
+[t=14325] STATE -> LOAD_A
+[t=14335] STATE -> LOAD_A_WAIT
+[t=14355] STATE -> UNPACK_A
 [t=14365] DataMover -> LOAD_A
 [t=14365] STATE -> LOAD_A
 [t=14375] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14385 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
-[DM UNPACK_A DBG] t=14385 tile= 0, word_cnt=   0/        15, byte_idx=0, data=0x01
 [t=14395] STATE -> UNPACK_A
-    等待 NPU 完成...
-[DM UNPACK_A DBG] t=14395 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
-[DM UNPACK_A DBG] t=14395 tile= 0, word_cnt=   0/        15, byte_idx=1, data=0x02
-[DM UNPACK_A DBG] t=14405 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
-[DM UNPACK_A DBG] t=14405 tile= 0, word_cnt=   0/        15, byte_idx=2, data=0x03
-[DM UNPACK_A DBG] t=14415 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
-[DM UNPACK_A DBG] t=14415 tile= 0, word_cnt=   0/        15, byte_idx=3, data=0x04
-[t=14435] STATE -> LOAD_A
-[t=14435] DataMover -> LOAD_A
-[t=14445] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14455 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
-[DM UNPACK_A DBG] t=14455 tile= 0, word_cnt=   1/        15, byte_idx=0, data=0x05
-[t=14465] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14465 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
-[DM UNPACK_A DBG] t=14465 tile= 0, word_cnt=   1/        15, byte_idx=1, data=0x06
-[DM UNPACK_A DBG] t=14475 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
-[DM UNPACK_A DBG] t=14475 tile= 0, word_cnt=   1/        15, byte_idx=2, data=0x07
-[DM UNPACK_A DBG] t=14485 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
-[DM UNPACK_A DBG] t=14485 tile= 0, word_cnt=   1/        15, byte_idx=3, data=0x08
-[t=14505] DataMover -> LOAD_A
-[t=14505] STATE -> LOAD_A
-[t=14515] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14525 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
-[DM UNPACK_A DBG] t=14525 tile= 0, word_cnt=   2/        15, byte_idx=0, data=0x09
-[t=14535] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14535 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
-[DM UNPACK_A DBG] t=14535 tile= 0, word_cnt=   2/        15, byte_idx=1, data=0x0a
-[DM UNPACK_A DBG] t=14545 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
-[DM UNPACK_A DBG] t=14545 tile= 0, word_cnt=   2/        15, byte_idx=2, data=0x0b
-[DM UNPACK_A DBG] t=14555 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
-[DM UNPACK_A DBG] t=14555 tile= 0, word_cnt=   2/        15, byte_idx=3, data=0x0c
-[t=14575] STATE -> LOAD_A
-[t=14575] DataMover -> LOAD_A
-[t=14585] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14595 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
-[DM UNPACK_A DBG] t=14595 tile= 0, word_cnt=   3/        15, byte_idx=0, data=0x0d
-[t=14605] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14605 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
-[DM UNPACK_A DBG] t=14605 tile= 0, word_cnt=   3/        15, byte_idx=1, data=0x0e
-[DM UNPACK_A DBG] t=14615 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
-[DM UNPACK_A DBG] t=14615 tile= 0, word_cnt=   3/        15, byte_idx=2, data=0x0f
-[DM UNPACK_A DBG] t=14625 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
-[DM UNPACK_A DBG] t=14625 tile= 0, word_cnt=   3/        15, byte_idx=3, data=0x10
+[t=14405] DataMover -> LOAD_A
+[t=14405] STATE -> LOAD_A
+[t=14415] STATE -> LOAD_A_WAIT
+[t=14435] STATE -> UNPACK_A
+[t=14445] DataMover -> LOAD_A
+[t=14445] STATE -> LOAD_A
+[t=14455] STATE -> LOAD_A_WAIT
+[t=14475] STATE -> UNPACK_A
+[t=14485] DataMover -> LOAD_A
+[t=14485] STATE -> LOAD_A
+[t=14495] STATE -> LOAD_A_WAIT
+[t=14515] STATE -> UNPACK_A
+[t=14525] DataMover -> LOAD_A
+[t=14525] STATE -> LOAD_A
+[t=14535] STATE -> LOAD_A_WAIT
+[t=14555] STATE -> UNPACK_A
+[t=14565] DataMover -> LOAD_A
+[t=14565] STATE -> LOAD_A
+[t=14575] STATE -> LOAD_A_WAIT
+[t=14595] STATE -> UNPACK_A
+[t=14605] DataMover -> LOAD_A
+[t=14605] STATE -> LOAD_A
+[t=14615] STATE -> LOAD_A_WAIT
+[t=14635] STATE -> UNPACK_A
 [t=14645] DataMover -> LOAD_A
 [t=14645] STATE -> LOAD_A
 [t=14655] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14665 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
-[DM UNPACK_A DBG] t=14665 tile= 0, word_cnt=   4/        15, byte_idx=0, data=0x11
 [t=14675] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14675 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
-[DM UNPACK_A DBG] t=14675 tile= 0, word_cnt=   4/        15, byte_idx=1, data=0x12
-[DM UNPACK_A DBG] t=14685 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
-[DM UNPACK_A DBG] t=14685 tile= 0, word_cnt=   4/        15, byte_idx=2, data=0x13
-[DM UNPACK_A DBG] t=14695 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
-[DM UNPACK_A DBG] t=14695 tile= 0, word_cnt=   4/        15, byte_idx=3, data=0x14
-[t=14715] STATE -> LOAD_A
-[t=14715] DataMover -> LOAD_A
-[t=14725] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14735 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
-[DM UNPACK_A DBG] t=14735 tile= 0, word_cnt=   5/        15, byte_idx=0, data=0x15
-[t=14745] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14745 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
-[DM UNPACK_A DBG] t=14745 tile= 0, word_cnt=   5/        15, byte_idx=1, data=0x16
-[DM UNPACK_A DBG] t=14755 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
-[DM UNPACK_A DBG] t=14755 tile= 0, word_cnt=   5/        15, byte_idx=2, data=0x17
-[DM UNPACK_A DBG] t=14765 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
-[DM UNPACK_A DBG] t=14765 tile= 0, word_cnt=   5/        15, byte_idx=3, data=0x18
-[t=14785] DataMover -> LOAD_A
-[t=14785] STATE -> LOAD_A
-[t=14795] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14805 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
-[DM UNPACK_A DBG] t=14805 tile= 0, word_cnt=   6/        15, byte_idx=0, data=0x19
-[t=14815] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14815 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
-[DM UNPACK_A DBG] t=14815 tile= 0, word_cnt=   6/        15, byte_idx=1, data=0x1a
-[DM UNPACK_A DBG] t=14825 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
-[DM UNPACK_A DBG] t=14825 tile= 0, word_cnt=   6/        15, byte_idx=2, data=0x1b
-[DM UNPACK_A DBG] t=14835 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
-[DM UNPACK_A DBG] t=14835 tile= 0, word_cnt=   6/        15, byte_idx=3, data=0x1c
-[t=14855] STATE -> LOAD_A
-[t=14855] DataMover -> LOAD_A
-[t=14865] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14875 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
-[DM UNPACK_A DBG] t=14875 tile= 0, word_cnt=   7/        15, byte_idx=0, data=0x1d
-[t=14885] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14885 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
-[DM UNPACK_A DBG] t=14885 tile= 0, word_cnt=   7/        15, byte_idx=1, data=0x1e
-[DM UNPACK_A DBG] t=14895 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
-[DM UNPACK_A DBG] t=14895 tile= 0, word_cnt=   7/        15, byte_idx=2, data=0x1f
-[DM UNPACK_A DBG] t=14905 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
-[DM UNPACK_A DBG] t=14905 tile= 0, word_cnt=   7/        15, byte_idx=3, data=0x20
+[t=14685] DataMover -> LOAD_A
+[t=14685] STATE -> LOAD_A
+[t=14695] STATE -> LOAD_A_WAIT
+[t=14715] STATE -> UNPACK_A
+[t=14725] DataMover -> LOAD_A
+[t=14725] STATE -> LOAD_A
+[t=14735] STATE -> LOAD_A_WAIT
+[t=14755] STATE -> UNPACK_A
+[t=14765] DataMover -> LOAD_A
+[t=14765] STATE -> LOAD_A
+[t=14775] STATE -> LOAD_A_WAIT
+[t=14795] STATE -> UNPACK_A
+[t=14805] DataMover -> LOAD_A
+[t=14805] STATE -> LOAD_A
+[t=14815] STATE -> LOAD_A_WAIT
+[t=14835] STATE -> UNPACK_A
+[t=14845] DataMover -> LOAD_A
+[t=14845] STATE -> LOAD_A
+[t=14855] STATE -> LOAD_A_WAIT
+[t=14875] STATE -> UNPACK_A
+[t=14885] DataMover -> LOAD_A
+[t=14885] STATE -> LOAD_A
+[t=14895] STATE -> LOAD_A_WAIT
+[t=14915] STATE -> UNPACK_A
 [t=14925] DataMover -> LOAD_A
 [t=14925] STATE -> LOAD_A
 [t=14935] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=14945 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
-[DM UNPACK_A DBG] t=14945 tile= 0, word_cnt=   8/        15, byte_idx=0, data=0x21
 [t=14955] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=14955 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
-[DM UNPACK_A DBG] t=14955 tile= 0, word_cnt=   8/        15, byte_idx=1, data=0x22
-[DM UNPACK_A DBG] t=14965 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
-[DM UNPACK_A DBG] t=14965 tile= 0, word_cnt=   8/        15, byte_idx=2, data=0x23
-[DM UNPACK_A DBG] t=14975 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
-[DM UNPACK_A DBG] t=14975 tile= 0, word_cnt=   8/        15, byte_idx=3, data=0x24
-[t=14995] STATE -> LOAD_A
-[t=14995] DataMover -> LOAD_A
-[t=15005] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15015 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
-[DM UNPACK_A DBG] t=15015 tile= 0, word_cnt=   9/        15, byte_idx=0, data=0x25
-[t=15025] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15025 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
-[DM UNPACK_A DBG] t=15025 tile= 0, word_cnt=   9/        15, byte_idx=1, data=0x26
-[DM UNPACK_A DBG] t=15035 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
-[DM UNPACK_A DBG] t=15035 tile= 0, word_cnt=   9/        15, byte_idx=2, data=0x27
-[DM UNPACK_A DBG] t=15045 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
-[DM UNPACK_A DBG] t=15045 tile= 0, word_cnt=   9/        15, byte_idx=3, data=0x28
-[t=15065] DataMover -> LOAD_A
-[t=15065] STATE -> LOAD_A
-[t=15075] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15085 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
-[DM UNPACK_A DBG] t=15085 tile= 0, word_cnt=  10/        15, byte_idx=0, data=0x29
-[t=15095] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15095 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
-[DM UNPACK_A DBG] t=15095 tile= 0, word_cnt=  10/        15, byte_idx=1, data=0x2a
-[DM UNPACK_A DBG] t=15105 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
-[DM UNPACK_A DBG] t=15105 tile= 0, word_cnt=  10/        15, byte_idx=2, data=0x2b
-[DM UNPACK_A DBG] t=15115 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
-[DM UNPACK_A DBG] t=15115 tile= 0, word_cnt=  10/        15, byte_idx=3, data=0x2c
-[t=15135] STATE -> LOAD_A
-[t=15135] DataMover -> LOAD_A
-[t=15145] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15155 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
-[DM UNPACK_A DBG] t=15155 tile= 0, word_cnt=  11/        15, byte_idx=0, data=0x2d
-[t=15165] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15165 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
-[DM UNPACK_A DBG] t=15165 tile= 0, word_cnt=  11/        15, byte_idx=1, data=0x2e
-[DM UNPACK_A DBG] t=15175 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
-[DM UNPACK_A DBG] t=15175 tile= 0, word_cnt=  11/        15, byte_idx=2, data=0x2f
-[DM UNPACK_A DBG] t=15185 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
-[DM UNPACK_A DBG] t=15185 tile= 0, word_cnt=  11/        15, byte_idx=3, data=0x30
+[t=14965] DataMover -> LOAD_A
+[t=14965] STATE -> LOAD_A
+[t=14975] STATE -> LOAD_A_WAIT
+[t=14995] STATE -> UNPACK_A
+[t=15005] DataMover -> LOAD_A
+[t=15005] STATE -> LOAD_A
+[t=15015] STATE -> LOAD_A_WAIT
+[t=15035] STATE -> UNPACK_A
+[t=15045] DataMover -> LOAD_A
+[t=15045] STATE -> LOAD_A
+[t=15055] STATE -> LOAD_A_WAIT
+[t=15075] STATE -> UNPACK_A
+[t=15085] DataMover -> LOAD_A
+[t=15085] STATE -> LOAD_A
+[t=15095] STATE -> LOAD_A_WAIT
+[t=15115] STATE -> UNPACK_A
+[t=15125] DataMover -> LOAD_A
+[t=15125] STATE -> LOAD_A
+[t=15135] STATE -> LOAD_A_WAIT
+[t=15155] STATE -> UNPACK_A
+[t=15165] DataMover -> LOAD_A
+[t=15165] STATE -> LOAD_A
+[t=15175] STATE -> LOAD_A_WAIT
+[t=15195] STATE -> UNPACK_A
 [t=15205] DataMover -> LOAD_A
 [t=15205] STATE -> LOAD_A
 [t=15215] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15225 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
-[DM UNPACK_A DBG] t=15225 tile= 0, word_cnt=  12/        15, byte_idx=0, data=0x31
 [t=15235] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15235 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
-[DM UNPACK_A DBG] t=15235 tile= 0, word_cnt=  12/        15, byte_idx=1, data=0x32
-[DM UNPACK_A DBG] t=15245 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
-[DM UNPACK_A DBG] t=15245 tile= 0, word_cnt=  12/        15, byte_idx=2, data=0x33
-[DM UNPACK_A DBG] t=15255 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
-[DM UNPACK_A DBG] t=15255 tile= 0, word_cnt=  12/        15, byte_idx=3, data=0x34
-[t=15275] STATE -> LOAD_A
-[t=15275] DataMover -> LOAD_A
-[t=15285] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15295 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
-[DM UNPACK_A DBG] t=15295 tile= 0, word_cnt=  13/        15, byte_idx=0, data=0x35
-[t=15305] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15305 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
-[DM UNPACK_A DBG] t=15305 tile= 0, word_cnt=  13/        15, byte_idx=1, data=0x36
-[DM UNPACK_A DBG] t=15315 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
-[DM UNPACK_A DBG] t=15315 tile= 0, word_cnt=  13/        15, byte_idx=2, data=0x37
-[DM UNPACK_A DBG] t=15325 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
-[DM UNPACK_A DBG] t=15325 tile= 0, word_cnt=  13/        15, byte_idx=3, data=0x38
-[t=15345] DataMover -> LOAD_A
-[t=15345] STATE -> LOAD_A
-[t=15355] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15365 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
-[DM UNPACK_A DBG] t=15365 tile= 0, word_cnt=  14/        15, byte_idx=0, data=0x39
-[t=15375] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15375 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
-[DM UNPACK_A DBG] t=15375 tile= 0, word_cnt=  14/        15, byte_idx=1, data=0x3a
-[DM UNPACK_A DBG] t=15385 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
-[DM UNPACK_A DBG] t=15385 tile= 0, word_cnt=  14/        15, byte_idx=2, data=0x3b
-[DM UNPACK_A DBG] t=15395 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
-[DM UNPACK_A DBG] t=15395 tile= 0, word_cnt=  14/        15, byte_idx=3, data=0x3c
-[t=15415] STATE -> LOAD_A
-[t=15415] DataMover -> LOAD_A
-[t=15425] STATE -> LOAD_A_WAIT
-[DM UNPACK_A DBG] t=15435 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
-[DM UNPACK_A DBG] t=15435 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x3d
-[t=15445] STATE -> UNPACK_A
-[DM UNPACK_A DBG] t=15445 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
-[DM UNPACK_A DBG] t=15445 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x3e
-[DM UNPACK_A DBG] t=15455 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
-[DM UNPACK_A DBG] t=15455 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x3f
-[DM UNPACK_A DBG] t=15465 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
-[DM UNPACK_A DBG] t=15465 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x40
-[t=15485] DataMover -> LOAD_B
-[t=15485] STATE -> LOAD_B
-[t=15495] STATE -> LOAD_B_WAIT
-[t=15515] STATE -> UNPACK_B
-[t=15555] STATE -> LOAD_B
-[t=15555] DataMover -> LOAD_B
-[t=15565] STATE -> LOAD_B_WAIT
-[t=15585] STATE -> UNPACK_B
-[t=15625] DataMover -> LOAD_B
-[t=15625] STATE -> LOAD_B
-[t=15635] STATE -> LOAD_B_WAIT
-[t=15655] STATE -> UNPACK_B
-[t=15695] STATE -> LOAD_B
-[t=15695] DataMover -> LOAD_B
-[t=15705] STATE -> LOAD_B_WAIT
-[t=15725] STATE -> UNPACK_B
-[t=15765] DataMover -> LOAD_B
-[t=15765] STATE -> LOAD_B
-[t=15775] STATE -> LOAD_B_WAIT
-[t=15795] STATE -> UNPACK_B
-[t=15835] STATE -> LOAD_B
-[t=15835] DataMover -> LOAD_B
-[t=15845] STATE -> LOAD_B_WAIT
-[t=15865] STATE -> UNPACK_B
-[t=15905] DataMover -> LOAD_B
-[t=15905] STATE -> LOAD_B
-[t=15915] STATE -> LOAD_B_WAIT
-[t=15935] STATE -> UNPACK_B
-[t=15975] STATE -> LOAD_B
-[t=15975] DataMover -> LOAD_B
-[t=15985] STATE -> LOAD_B_WAIT
-[t=16005] STATE -> UNPACK_B
-[t=16045] DataMover -> LOAD_B
-[t=16045] STATE -> LOAD_B
-[t=16055] STATE -> LOAD_B_WAIT
-[t=16075] STATE -> UNPACK_B
-[t=16115] STATE -> LOAD_B
-[t=16115] DataMover -> LOAD_B
-[t=16125] STATE -> LOAD_B_WAIT
-[t=16145] STATE -> UNPACK_B
-[t=16185] DataMover -> LOAD_B
-[t=16185] STATE -> LOAD_B
-[t=16195] STATE -> LOAD_B_WAIT
-[t=16215] STATE -> UNPACK_B
-[t=16255] STATE -> LOAD_B
-[t=16255] DataMover -> LOAD_B
-[t=16265] STATE -> LOAD_B_WAIT
-[t=16285] STATE -> UNPACK_B
-[t=16325] DataMover -> LOAD_B
-[t=16325] STATE -> LOAD_B
-[t=16335] STATE -> LOAD_B_WAIT
-[t=16355] STATE -> UNPACK_B
-[t=16395] STATE -> LOAD_B
-[t=16395] DataMover -> LOAD_B
-[t=16405] STATE -> LOAD_B_WAIT
-[t=16425] STATE -> UNPACK_B
-[t=16465] DataMover -> LOAD_B
-[t=16465] STATE -> LOAD_B
-[t=16475] STATE -> LOAD_B_WAIT
-[t=16495] STATE -> UNPACK_B
-[t=16535] STATE -> LOAD_B
-[t=16535] DataMover -> LOAD_B
-[t=16545] STATE -> LOAD_B_WAIT
-[DM UNPACK_B DBG] t=16555 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
-[DM UNPACK_B DBG] t=16555 tile= 0, word_cnt=  15/        15, byte_idx=0, data=0x00
-[t=16565] STATE -> UNPACK_B
-[DM UNPACK_B DBG] t=16565 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
-[DM UNPACK_B DBG] t=16565 tile= 0, word_cnt=  15/        15, byte_idx=1, data=0x00
-[DM UNPACK_B DBG] t=16575 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
-[DM UNPACK_B DBG] t=16575 tile= 0, word_cnt=  15/        15, byte_idx=2, data=0x00
-[DM UNPACK_B DBG] t=16585 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
-[DM UNPACK_B DBG] t=16585 tile= 0, word_cnt=  15/        15, byte_idx=3, data=0x01
-[STORE DBG] t=16595 Entering S_STORE, tile_c_valid=1, preparing to read C data
-[t=16605] DataMover -> STORE
-[t=16605] STATE -> 10
-[STORE DBG] t=16605 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000001
-[t=16615] STATE -> 11
-[t=17255] STATE -> DONE
-[t=17255] DataMover -> DONE
-[t=17265] DataMover -> IDLE
-[t=17265] STATE -> IDLE
-[STORE WAIT] t=17285 Waiting for tile_c_valid...
-[t=17295] STATE -> 10
-[t=17295] DataMover -> STORE
-[STORE DBG] t=17305 Entering S_STORE, tile_c_valid=1, preparing to read C data
-[STORE DBG] t=17315 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000001
-[t=17325] STATE -> 11
-[t=17965] DataMover -> DONE
-[t=17965] STATE -> DONE
-[t=17975] STATE -> IDLE
-[t=17975] DataMover -> IDLE
-[PASS] npu_done 检测到! (timeout=359)
-    STATUS 寄存器 = 0x00000001
-[PASS] status_done = 1
+[t=15245] DataMover -> LOAD_A
+[t=15245] STATE -> LOAD_A
+[t=15255] STATE -> LOAD_A_WAIT
+[t=15275] STATE -> UNPACK_A
+[t=15285] DataMover -> LOAD_A
+[t=15285] STATE -> LOAD_A
+[t=15295] STATE -> LOAD_A_WAIT
+[t=15315] STATE -> UNPACK_A
+[t=15325] DataMover -> LOAD_A
+[t=15325] STATE -> LOAD_A
+[t=15335] STATE -> LOAD_A_WAIT
+[t=15355] STATE -> UNPACK_A
+[t=15365] DataMover -> LOAD_A
+[t=15365] STATE -> LOAD_A
+[t=15375] STATE -> LOAD_A_WAIT
+[t=15395] STATE -> UNPACK_A
+[t=15405] DataMover -> LOAD_A
+[t=15405] STATE -> LOAD_A
+[t=15415] STATE -> LOAD_A_WAIT
+[t=15435] STATE -> UNPACK_A
+[t=15445] DataMover -> LOAD_A
+[t=15445] STATE -> LOAD_A
+[t=15455] STATE -> LOAD_A_WAIT
+[t=15475] STATE -> UNPACK_A
+[t=15485] DataMover -> LOAD_A
+[t=15485] STATE -> LOAD_A
+[t=15495] STATE -> LOAD_A_WAIT
+[t=15515] STATE -> UNPACK_A
+[t=15525] DataMover -> LOAD_A
+[t=15525] STATE -> LOAD_A
+[t=15535] STATE -> LOAD_A_WAIT
+[t=15555] STATE -> UNPACK_A
+[t=15565] DataMover -> LOAD_A
+[t=15565] STATE -> LOAD_A
+[t=15575] STATE -> LOAD_A_WAIT
+[t=15595] STATE -> UNPACK_A
+[t=15605] DataMover -> LOAD_A
+[t=15605] STATE -> LOAD_A
+[t=15615] STATE -> LOAD_A_WAIT
+[t=15635] STATE -> UNPACK_A
+[t=15645] DataMover -> LOAD_A
+[t=15645] STATE -> LOAD_A
+[t=15655] STATE -> LOAD_A_WAIT
+[t=15675] STATE -> UNPACK_A
+[t=15685] DataMover -> LOAD_A
+[t=15685] STATE -> LOAD_A
+[t=15695] STATE -> LOAD_A_WAIT
+[t=15715] STATE -> UNPACK_A
+[t=15725] DataMover -> LOAD_A
+[t=15725] STATE -> LOAD_A
+[t=15735] STATE -> LOAD_A_WAIT
+[t=15755] STATE -> UNPACK_A
+[t=15765] DataMover -> LOAD_A
+[t=15765] STATE -> LOAD_A
+[t=15775] STATE -> LOAD_A_WAIT
+[t=15795] STATE -> UNPACK_A
+[t=15805] DataMover -> LOAD_A
+[t=15805] STATE -> LOAD_A
+[t=15815] STATE -> LOAD_A_WAIT
+[t=15835] STATE -> UNPACK_A
+[t=15845] DataMover -> LOAD_A
+[t=15845] STATE -> LOAD_A
+[t=15855] STATE -> LOAD_A_WAIT
+[t=15875] STATE -> UNPACK_A
+[t=15885] DataMover -> LOAD_A
+[t=15885] STATE -> LOAD_A
+[t=15895] STATE -> LOAD_A_WAIT
+[t=15915] STATE -> UNPACK_A
+[t=15925] DataMover -> LOAD_A
+[t=15925] STATE -> LOAD_A
+[t=15935] STATE -> LOAD_A_WAIT
+[t=15955] STATE -> UNPACK_A
+[t=15965] DataMover -> LOAD_A
+[t=15965] STATE -> LOAD_A
+[t=15975] STATE -> LOAD_A_WAIT
+[t=15995] STATE -> UNPACK_A
+[t=16005] DataMover -> LOAD_A
+[t=16005] STATE -> LOAD_A
+[t=16015] STATE -> LOAD_A_WAIT
+[t=16035] STATE -> UNPACK_A
+[t=16045] DataMover -> LOAD_A
+[t=16045] STATE -> LOAD_A
+[t=16055] STATE -> LOAD_A_WAIT
+[t=16075] STATE -> UNPACK_A
+[t=16085] DataMover -> LOAD_A
+[t=16085] STATE -> LOAD_A
+[t=16095] STATE -> LOAD_A_WAIT
+[t=16115] STATE -> UNPACK_A
+[t=16125] DataMover -> LOAD_A
+[t=16125] STATE -> LOAD_A
+[t=16135] STATE -> LOAD_A_WAIT
+[t=16155] STATE -> UNPACK_A
+[t=16165] DataMover -> LOAD_A
+[t=16165] STATE -> LOAD_A
+[t=16175] STATE -> LOAD_A_WAIT
+[t=16195] STATE -> UNPACK_A
+[t=16205] DataMover -> LOAD_A
+[t=16205] STATE -> LOAD_A
+[t=16215] STATE -> LOAD_A_WAIT
+[t=16235] STATE -> UNPACK_A
+[t=16245] DataMover -> LOAD_A
+[t=16245] STATE -> LOAD_A
+[t=16255] STATE -> LOAD_A_WAIT
+[t=16275] STATE -> UNPACK_A
+[t=16285] DataMover -> LOAD_A
+[t=16285] STATE -> LOAD_A
+[t=16295] STATE -> LOAD_A_WAIT
+[t=16315] STATE -> UNPACK_A
+[t=16325] DataMover -> LOAD_A
+[t=16325] STATE -> LOAD_A
+[t=16335] STATE -> LOAD_A_WAIT
+[t=16355] STATE -> UNPACK_A
+[t=16365] DataMover -> LOAD_A
+[t=16365] STATE -> LOAD_A
+[t=16375] STATE -> LOAD_A_WAIT
+[t=16395] STATE -> UNPACK_A
+[t=16405] DataMover -> LOAD_A
+[t=16405] STATE -> LOAD_A
+[t=16415] STATE -> LOAD_A_WAIT
+[t=16435] STATE -> UNPACK_A
+[t=16445] DataMover -> LOAD_A
+[t=16445] STATE -> LOAD_A
+[t=16455] STATE -> LOAD_A_WAIT
+[t=16475] STATE -> UNPACK_A
+[t=16485] DataMover -> LOAD_A
+[t=16485] STATE -> LOAD_A
+[t=16495] STATE -> LOAD_A_WAIT
+[t=16515] STATE -> UNPACK_A
+[t=16525] DataMover -> LOAD_A
+[t=16525] STATE -> LOAD_A
+[t=16535] STATE -> LOAD_A_WAIT
+[t=16555] STATE -> UNPACK_A
+[t=16565] DataMover -> LOAD_A
+[t=16565] STATE -> LOAD_A
+[t=16575] STATE -> LOAD_A_WAIT
+[t=16595] STATE -> UNPACK_A
+[t=16605] DataMover -> LOAD_A
+[t=16605] STATE -> LOAD_A
+[t=16615] STATE -> LOAD_A_WAIT
+[t=16635] STATE -> UNPACK_A
+[t=16645] DataMover -> LOAD_A
+[t=16645] STATE -> LOAD_A
+[t=16655] STATE -> LOAD_A_WAIT
+[t=16675] STATE -> UNPACK_A
+[t=16685] DataMover -> LOAD_A
+[t=16685] STATE -> LOAD_A
+[t=16695] STATE -> LOAD_A_WAIT
+[t=16715] STATE -> UNPACK_A
+[t=16725] DataMover -> LOAD_A
+[t=16725] STATE -> LOAD_A
+[t=16735] STATE -> LOAD_A_WAIT
+[t=16755] STATE -> UNPACK_A
+[t=16765] DataMover -> LOAD_A
+[t=16765] STATE -> LOAD_A
+[t=16775] STATE -> LOAD_A_WAIT
+[t=16795] STATE -> UNPACK_A
+[t=16805] DataMover -> LOAD_A
+[t=16805] STATE -> LOAD_A
+[t=16815] STATE -> LOAD_A_WAIT
+[t=16835] STATE -> UNPACK_A
+[t=16845] DataMover -> LOAD_A
+[t=16845] STATE -> LOAD_A
+[t=16855] STATE -> LOAD_A_WAIT
+[t=16875] STATE -> UNPACK_A
+[t=16885] DataMover -> LOAD_A
+[t=16885] STATE -> LOAD_A
+[t=16895] STATE -> LOAD_A_WAIT
+[t=16915] STATE -> UNPACK_A
+[t=16925] DataMover -> LOAD_A
+[t=16925] STATE -> LOAD_A
+[t=16935] STATE -> LOAD_A_WAIT
+[t=16955] STATE -> UNPACK_A
+[t=16965] DataMover -> LOAD_A
+[t=16965] STATE -> LOAD_A
+[t=16975] STATE -> LOAD_A_WAIT
+[t=16995] STATE -> UNPACK_A
+[t=17005] DataMover -> LOAD_A
+[t=17005] STATE -> LOAD_A
+[t=17015] STATE -> LOAD_A_WAIT
+[t=17035] STATE -> UNPACK_A
+[t=17045] DataMover -> LOAD_A
+[t=17045] STATE -> LOAD_A
+[t=17055] STATE -> LOAD_A_WAIT
+[t=17075] STATE -> UNPACK_A
+[t=17085] DataMover -> LOAD_A
+[t=17085] STATE -> LOAD_A
+[t=17095] STATE -> LOAD_A_WAIT
+[t=17115] STATE -> UNPACK_A
+[t=17125] DataMover -> LOAD_A
+[t=17125] STATE -> LOAD_A
+[t=17135] STATE -> LOAD_A_WAIT
+[t=17155] STATE -> UNPACK_A
+[t=17165] DataMover -> LOAD_A
+[t=17165] STATE -> LOAD_A
+[t=17175] STATE -> LOAD_A_WAIT
+[t=17195] STATE -> UNPACK_A
+[t=17205] DataMover -> LOAD_A
+[t=17205] STATE -> LOAD_A
+[t=17215] STATE -> LOAD_A_WAIT
+[t=17235] STATE -> UNPACK_A
+[t=17245] DataMover -> LOAD_A
+[t=17245] STATE -> LOAD_A
+[t=17255] STATE -> LOAD_A_WAIT
+[t=17275] STATE -> UNPACK_A
+[t=17285] DataMover -> LOAD_A
+[t=17285] STATE -> LOAD_A
+[t=17295] STATE -> LOAD_A_WAIT
+[t=17315] STATE -> UNPACK_A
+[t=17325] DataMover -> LOAD_A
+[t=17325] STATE -> LOAD_A
+[t=17335] STATE -> LOAD_A_WAIT
+[t=17355] STATE -> UNPACK_A
+[t=17365] DataMover -> LOAD_A
+[t=17365] STATE -> LOAD_A
+[t=17375] STATE -> LOAD_A_WAIT
+[t=17395] STATE -> UNPACK_A
+[t=17405] DataMover -> LOAD_A
+[t=17405] STATE -> LOAD_A
+[t=17415] STATE -> LOAD_A_WAIT
+[t=17435] STATE -> UNPACK_A
+[t=17445] DataMover -> LOAD_A
+[t=17445] STATE -> LOAD_A
+[t=17455] STATE -> LOAD_A_WAIT
+[t=17475] STATE -> UNPACK_A
+[t=17485] DataMover -> LOAD_A
+[t=17485] STATE -> LOAD_A
+[t=17495] STATE -> LOAD_A_WAIT
+[t=17515] STATE -> UNPACK_A
+[t=17525] DataMover -> LOAD_A
+[t=17525] STATE -> LOAD_A
+[t=17535] STATE -> LOAD_A_WAIT
+[t=17555] STATE -> UNPACK_A
+[t=17565] DataMover -> LOAD_A
+[t=17565] STATE -> LOAD_A
+[t=17575] STATE -> LOAD_A_WAIT
+[t=17595] STATE -> UNPACK_A
+[t=17605] DataMover -> LOAD_A
+[t=17605] STATE -> LOAD_A
+[t=17615] STATE -> LOAD_A_WAIT
+[t=17635] STATE -> UNPACK_A
+[t=17645] DataMover -> LOAD_A
+[t=17645] STATE -> LOAD_A
+[t=17655] STATE -> LOAD_A_WAIT
+[t=17675] STATE -> UNPACK_A
+[t=17685] DataMover -> LOAD_A
+[t=17685] STATE -> LOAD_A
+[t=17695] STATE -> LOAD_A_WAIT
+[t=17715] STATE -> UNPACK_A
+[t=17725] DataMover -> LOAD_A
+[t=17725] STATE -> LOAD_A
+[t=17735] STATE -> LOAD_A_WAIT
+[t=17755] STATE -> UNPACK_A
+[t=17765] DataMover -> LOAD_A
+[t=17765] STATE -> LOAD_A
+[t=17775] STATE -> LOAD_A_WAIT
+[t=17795] STATE -> UNPACK_A
+[t=17805] DataMover -> LOAD_A
+[t=17805] STATE -> LOAD_A
+[t=17815] STATE -> LOAD_A_WAIT
+[t=17835] STATE -> UNPACK_A
+[t=17845] DataMover -> LOAD_A
+[t=17845] STATE -> LOAD_A
+[t=17855] STATE -> LOAD_A_WAIT
+[t=17875] STATE -> UNPACK_A
+[t=17885] DataMover -> LOAD_A
+[t=17885] STATE -> LOAD_A
+[t=17895] STATE -> LOAD_A_WAIT
+[t=17915] STATE -> UNPACK_A
+[t=17925] DataMover -> LOAD_A
+[t=17925] STATE -> LOAD_A
+[t=17935] STATE -> LOAD_A_WAIT
+[t=17955] STATE -> UNPACK_A
+[t=17965] DataMover -> LOAD_A
+[t=17965] STATE -> LOAD_A
+[t=17975] STATE -> LOAD_A_WAIT
+[t=17995] STATE -> UNPACK_A
+[t=18005] DataMover -> LOAD_A
+[t=18005] STATE -> LOAD_A
+[t=18015] STATE -> LOAD_A_WAIT
+[t=18035] STATE -> UNPACK_A
+[t=18045] DataMover -> LOAD_A
+[t=18045] STATE -> LOAD_A
+[t=18055] STATE -> LOAD_A_WAIT
+[t=18075] STATE -> UNPACK_A
+[t=18085] DataMover -> LOAD_A
+[t=18085] STATE -> LOAD_A
+[t=18095] STATE -> LOAD_A_WAIT
+[t=18115] STATE -> UNPACK_A
+[t=18125] DataMover -> LOAD_A
+[t=18125] STATE -> LOAD_A
+[t=18135] STATE -> LOAD_A_WAIT
+[t=18155] STATE -> UNPACK_A
+[t=18165] DataMover -> LOAD_A
+[t=18165] STATE -> LOAD_A
+[t=18175] STATE -> LOAD_A_WAIT
+[t=18195] STATE -> UNPACK_A
+[t=18205] DataMover -> LOAD_A
+[t=18205] STATE -> LOAD_A
+[t=18215] STATE -> LOAD_A_WAIT
+[t=18235] STATE -> UNPACK_A
+[t=18245] DataMover -> LOAD_A
+[t=18245] STATE -> LOAD_A
+[t=18255] STATE -> LOAD_A_WAIT
+[t=18275] STATE -> UNPACK_A
+[t=18285] DataMover -> LOAD_A
+[t=18285] STATE -> LOAD_A
+[t=18295] STATE -> LOAD_A_WAIT
+[t=18315] STATE -> UNPACK_A
+[t=18325] DataMover -> LOAD_A
+[t=18325] STATE -> LOAD_A
+[t=18335] STATE -> LOAD_A_WAIT
+[t=18355] STATE -> UNPACK_A
+[t=18365] DataMover -> LOAD_A
+[t=18365] STATE -> LOAD_A
+[t=18375] STATE -> LOAD_A_WAIT
+[t=18395] STATE -> UNPACK_A
+[t=18405] DataMover -> LOAD_A
+[t=18405] STATE -> LOAD_A
+[t=18415] STATE -> LOAD_A_WAIT
+[t=18435] STATE -> UNPACK_A
+[t=18445] DataMover -> LOAD_A
+[t=18445] STATE -> LOAD_A
+[t=18455] STATE -> LOAD_A_WAIT
+[t=18475] STATE -> UNPACK_A
+[t=18485] DataMover -> LOAD_A
+[t=18485] STATE -> LOAD_A
+[t=18495] STATE -> LOAD_A_WAIT
+[t=18515] STATE -> UNPACK_A
+[t=18525] DataMover -> LOAD_A
+[t=18525] STATE -> LOAD_A
+[t=18535] STATE -> LOAD_A_WAIT
+[t=18555] STATE -> UNPACK_A
+[t=18565] DataMover -> LOAD_A
+[t=18565] STATE -> LOAD_A
+[t=18575] STATE -> LOAD_A_WAIT
+[t=18595] STATE -> UNPACK_A
+[t=18605] DataMover -> LOAD_A
+[t=18605] STATE -> LOAD_A
+[t=18615] STATE -> LOAD_A_WAIT
+[t=18635] STATE -> UNPACK_A
+[t=18645] DataMover -> LOAD_A
+[t=18645] STATE -> LOAD_A
+[t=18655] STATE -> LOAD_A_WAIT
+[t=18675] STATE -> UNPACK_A
+[t=18685] DataMover -> LOAD_A
+[t=18685] STATE -> LOAD_A
+[t=18695] STATE -> LOAD_A_WAIT
+[t=18715] STATE -> UNPACK_A
+[t=18725] DataMover -> LOAD_A
+[t=18725] STATE -> LOAD_A
+[t=18735] STATE -> LOAD_A_WAIT
+[t=18755] STATE -> UNPACK_A
+[t=18765] DataMover -> LOAD_A
+[t=18765] STATE -> LOAD_A
+[t=18775] STATE -> LOAD_A_WAIT
+[t=18795] STATE -> UNPACK_A
+[t=18805] DataMover -> LOAD_A
+[t=18805] STATE -> LOAD_A
+[t=18815] STATE -> LOAD_A_WAIT
+[t=18835] STATE -> UNPACK_A
+[t=18845] DataMover -> LOAD_A
+[t=18845] STATE -> LOAD_A
+[t=18855] STATE -> LOAD_A_WAIT
+[t=18875] STATE -> UNPACK_A
+[t=18885] DataMover -> LOAD_A
+[t=18885] STATE -> LOAD_A
+[t=18895] STATE -> LOAD_A_WAIT
+[t=18915] STATE -> UNPACK_A
+[t=18925] DataMover -> LOAD_A
+[t=18925] STATE -> LOAD_A
+[t=18935] STATE -> LOAD_A_WAIT
+[t=18955] STATE -> UNPACK_A
+[t=18965] DataMover -> LOAD_A
+[t=18965] STATE -> LOAD_A
+[t=18975] STATE -> LOAD_A_WAIT
+[t=18995] STATE -> UNPACK_A
+[t=19005] DataMover -> LOAD_A
+[t=19005] STATE -> LOAD_A
+[t=19015] STATE -> LOAD_A_WAIT
+[t=19035] STATE -> UNPACK_A
+[t=19045] DataMover -> LOAD_A
+[t=19045] STATE -> LOAD_A
+[t=19055] STATE -> LOAD_A_WAIT
+[t=19075] STATE -> UNPACK_A
+[t=19085] DataMover -> LOAD_A
+[t=19085] STATE -> LOAD_A
+[t=19095] STATE -> LOAD_A_WAIT
+[t=19115] STATE -> UNPACK_A
+[t=19125] DataMover -> LOAD_A
+[t=19125] STATE -> LOAD_A
+[t=19135] STATE -> LOAD_A_WAIT
+[t=19155] STATE -> UNPACK_A
+[t=19165] DataMover -> LOAD_A
+[t=19165] STATE -> LOAD_A
+[t=19175] STATE -> LOAD_A_WAIT
+[t=19195] STATE -> UNPACK_A
+[t=19205] DataMover -> LOAD_A
+[t=19205] STATE -> LOAD_A
+[t=19215] STATE -> LOAD_A_WAIT
+[t=19235] STATE -> UNPACK_A
+[t=19245] DataMover -> LOAD_A
+[t=19245] STATE -> LOAD_A
+[t=19255] STATE -> LOAD_A_WAIT
+[t=19275] STATE -> UNPACK_A
+[t=19285] DataMover -> LOAD_A
+[t=19285] STATE -> LOAD_A
+[t=19295] STATE -> LOAD_A_WAIT
+[t=19315] STATE -> UNPACK_A
+[t=19325] DataMover -> LOAD_A
+[t=19325] STATE -> LOAD_A
+[t=19335] STATE -> LOAD_A_WAIT
+[t=19355] STATE -> UNPACK_A
+[t=19365] DataMover -> LOAD_A
+[t=19365] STATE -> LOAD_A
+[t=19375] STATE -> LOAD_A_WAIT
+[t=19395] STATE -> UNPACK_A
+[t=19405] DataMover -> LOAD_A
+[t=19405] STATE -> LOAD_A
+[t=19415] STATE -> LOAD_A_WAIT
+[t=19435] STATE -> UNPACK_A
+[t=19445] DataMover -> LOAD_A
+[t=19445] STATE -> LOAD_A
+[t=19455] STATE -> LOAD_A_WAIT
+[t=19475] STATE -> UNPACK_A
+[t=19485] DataMover -> LOAD_A
+[t=19485] STATE -> LOAD_A
+[t=19495] STATE -> LOAD_A_WAIT
+[t=19515] STATE -> UNPACK_A
+[t=19525] DataMover -> LOAD_A
+[t=19525] STATE -> LOAD_A
+[t=19535] STATE -> LOAD_A_WAIT
+[t=19555] STATE -> UNPACK_A
+[t=19565] DataMover -> LOAD_A
+[t=19565] STATE -> LOAD_A
+[t=19575] STATE -> LOAD_A_WAIT
+[t=19595] STATE -> UNPACK_A
+[t=19605] DataMover -> LOAD_A
+[t=19605] STATE -> LOAD_A
+[t=19615] STATE -> LOAD_A_WAIT
+[t=19635] STATE -> UNPACK_A
+[t=19645] DataMover -> LOAD_A
+[t=19645] STATE -> LOAD_A
+[t=19655] STATE -> LOAD_A_WAIT
+[t=19675] STATE -> UNPACK_A
+[t=19685] DataMover -> LOAD_B
+[t=19685] STATE -> LOAD_B
+[t=19695] STATE -> LOAD_B_WAIT
+[t=19715] STATE -> UNPACK_B
+[TILE LOAD_B DBG] t=19725 storing b_local[  0]=   1 (0x01)
+[TILE LOAD_B DBG] t=19725 storing b_local[  0]=   1 (0x01)
+[TILE LOAD_B DBG] t=19725 storing b_local[  0]=   1 (0x01)
+[TILE LOAD_B DBG] t=19725 storing b_local[  0]=   1 (0x01)
+[TILE LOAD_B DBG] t=19735 storing b_local[  1]=   0 (0x00)
+[TILE LOAD_B DBG] t=19735 storing b_local[  1]=   0 (0x00)
+[TILE LOAD_B DBG] t=19735 storing b_local[  1]=   0 (0x00)
+[TILE LOAD_B DBG] t=19735 storing b_local[  1]=   0 (0x00)
+[TILE LOAD_B DBG] t=19745 storing b_local[  2]=   0 (0x00)
+[TILE LOAD_B DBG] t=19745 storing b_local[  2]=   0 (0x00)
+[TILE LOAD_B DBG] t=19745 storing b_local[  2]=   0 (0x00)
+[TILE LOAD_B DBG] t=19745 storing b_local[  2]=   0 (0x00)
+[t=19755] STATE -> LOAD_B
+[t=19755] DataMover -> LOAD_B
+[TILE LOAD_B DBG] t=19755 storing b_local[  3]=   0 (0x00)
+[TILE LOAD_B DBG] t=19755 storing b_local[  3]=   0 (0x00)
+[TILE LOAD_B DBG] t=19755 storing b_local[  3]=   0 (0x00)
+[TILE LOAD_B DBG] t=19755 storing b_local[  3]=   0 (0x00)
+[t=19765] STATE -> LOAD_B_WAIT
+[t=19785] STATE -> UNPACK_B
+[t=19795] STATE -> LOAD_B
+[t=19795] DataMover -> LOAD_B
+[TILE LOAD_B DBG] t=19795 storing b_local[  4]=   0 (0x00)
+[TILE LOAD_B DBG] t=19795 storing b_local[  4]=   0 (0x00)
+[TILE LOAD_B DBG] t=19795 storing b_local[  4]=   0 (0x00)
+[TILE LOAD_B DBG] t=19795 storing b_local[  4]=   0 (0x00)
+[t=19805] STATE -> LOAD_B_WAIT
+[t=19825] STATE -> UNPACK_B
+[t=19835] STATE -> LOAD_B
+[t=19835] DataMover -> LOAD_B
+[TILE LOAD_B DBG] t=19835 storing b_local[  5]=   0 (0x00)
+[TILE LOAD_B DBG] t=19835 storing b_local[  5]=   0 (0x00)
+[TILE LOAD_B DBG] t=19835 storing b_local[  5]=   0 (0x00)
+[TILE LOAD_B DBG] t=19835 storing b_local[  5]=   0 (0x00)
+[t=19845] STATE -> LOAD_B_WAIT
+[t=19865] STATE -> UNPACK_B
+[t=19875] STATE -> LOAD_B
+[t=19875] DataMover -> LOAD_B
+[TILE LOAD_B DBG] t=19875 storing b_local[  6]=   0 (0x00)
+[TILE LOAD_B DBG] t=19875 storing b_local[  6]=   0 (0x00)
+[TILE LOAD_B DBG] t=19875 storing b_local[  6]=   0 (0x00)
+[TILE LOAD_B DBG] t=19875 storing b_local[  6]=   0 (0x00)
+[t=19885] STATE -> LOAD_B_WAIT
+[t=19905] STATE -> UNPACK_B
+[t=19915] STATE -> LOAD_B
+[t=19915] DataMover -> LOAD_B
+[TILE LOAD_B DBG] t=19915 storing b_local[  7]=   0 (0x00)
+[TILE LOAD_B DBG] t=19915 storing b_local[  7]=   0 (0x00)
+[TILE LOAD_B DBG] t=19915 storing b_local[  7]=   0 (0x00)
+[TILE LOAD_B DBG] t=19915 storing b_local[  7]=   0 (0x00)
+[t=19925] STATE -> LOAD_B_WAIT
+[t=19945] STATE -> UNPACK_B
+[t=19955] STATE -> LOAD_B
+[t=19955] DataMover -> LOAD_B
+[t=19965] STATE -> LOAD_B_WAIT
+[t=19985] STATE -> UNPACK_B
+[t=19995] STATE -> LOAD_B
+[t=19995] DataMover -> LOAD_B
+[t=20005] STATE -> LOAD_B_WAIT
+[t=20025] STATE -> UNPACK_B
+[t=20035] STATE -> LOAD_B
+[t=20035] DataMover -> LOAD_B
+[t=20045] STATE -> LOAD_B_WAIT
+[t=20065] STATE -> UNPACK_B
+[t=20075] STATE -> LOAD_B
+[t=20075] DataMover -> LOAD_B
+[t=20085] STATE -> LOAD_B_WAIT
+[t=20105] STATE -> UNPACK_B
+[t=20115] STATE -> LOAD_B
+[t=20115] DataMover -> LOAD_B
+[t=20125] STATE -> LOAD_B_WAIT
+[t=20145] STATE -> UNPACK_B
+[t=20155] STATE -> LOAD_B
+[t=20155] DataMover -> LOAD_B
+[t=20165] STATE -> LOAD_B_WAIT
+[t=20185] STATE -> UNPACK_B
+[t=20195] STATE -> LOAD_B
+[t=20195] DataMover -> LOAD_B
+[t=20205] STATE -> LOAD_B_WAIT
+[t=20225] STATE -> UNPACK_B
+[t=20235] STATE -> LOAD_B
+[t=20235] DataMover -> LOAD_B
+[t=20245] STATE -> LOAD_B_WAIT
+[t=20265] STATE -> UNPACK_B
+[t=20275] STATE -> LOAD_B
+[t=20275] DataMover -> LOAD_B
+[t=20285] STATE -> LOAD_B_WAIT
+[t=20305] STATE -> UNPACK_B
+[t=20315] STATE -> LOAD_B
+[t=20315] DataMover -> LOAD_B
+[t=20325] STATE -> LOAD_B_WAIT
+[t=20345] STATE -> UNPACK_B
+[t=20355] STATE -> 10
+[t=20355] DataMover -> STORE
+      [FAIL] 等待超时! npu_done 未置位 (timeout=50000)
+    [步骤8] 验证状态寄存器...
+      STATUS 寄存器 = 0x00000000
+      [FAIL] status_done = 0 (期望 1)
+      [PASS] status_error = 0
+    [步骤9] 验证 C 矩阵计算结果...
+      开始验证 C 矩阵 (32×8, 共 256 个元素)...
+        [FAIL] C[0][0]: 期望=0x00000000 (0), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][1]: 期望=0x00000001 (1), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][2]: 期望=0x00000002 (2), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][3]: 期望=0x00000003 (3), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][4]: 期望=0x00000004 (4), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][5]: 期望=0x00000005 (5), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][6]: 期望=0x00000006 (6), 实际=0xxxxxxxxx (x)
+        [FAIL] C[0][7]: 期望=0x00000007 (7), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][0]: 期望=0x00000008 (8), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][1]: 期望=0x00000009 (9), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][2]: 期望=0x0000000a (10), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][3]: 期望=0x0000000b (11), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][4]: 期望=0x0000000c (12), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][5]: 期望=0x0000000d (13), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][6]: 期望=0x0000000e (14), 实际=0xxxxxxxxx (x)
+        [FAIL] C[1][7]: 期望=0x0000000f (15), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][0]: 期望=0x00000010 (16), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][1]: 期望=0x00000011 (17), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][2]: 期望=0x00000012 (18), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][3]: 期望=0x00000013 (19), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][4]: 期望=0x00000014 (20), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][5]: 期望=0x00000015 (21), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][6]: 期望=0x00000016 (22), 实际=0xxxxxxxxx (x)
+        [FAIL] C[2][7]: 期望=0x00000017 (23), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][0]: 期望=0x00000018 (24), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][1]: 期望=0x00000019 (25), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][2]: 期望=0x0000001a (26), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][3]: 期望=0x0000001b (27), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][4]: 期望=0x0000001c (28), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][5]: 期望=0x0000001d (29), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][6]: 期望=0x0000001e (30), 实际=0xxxxxxxxx (x)
+        [FAIL] C[3][7]: 期望=0x0000001f (31), 实际=0xxxxxxxxx (x)
+        进度: 已验证 8/32 行, 发现 64 个错误
+        进度: 已验证 16/32 行, 发现 128 个错误
+        进度: 已验证 24/32 行, 发现 192 个错误
+        进度: 已验证 32/32 行, 发现 256 个错误
 
-    ===== 调试信息：计算完成后 A/B/C 矩阵数据 =====
-    --- A 矩阵 (8×8布局,地址 0x00000100 - 0x0000013c) ---
-      Row           0 [k=0-3] @0x00000100 = 0x04030201 (bytes: 01 02 03 04)
-      Row           0 [k=4-7] @0x00000104 = 0x08070605 (应全0)
-      Row           1 [k=0-3] @0x00000108 = 0x0c0b0a09 (bytes: 09 0a 0b 0c)
-      Row           1 [k=4-7] @0x0000010c = 0x100f0e0d (应全0)
-      Row           2 [k=0-3] @0x00000110 = 0x14131211 (bytes: 11 12 13 14)
-      Row           2 [k=4-7] @0x00000114 = 0x18171615 (应全0)
-      Row           3 [k=0-3] @0x00000118 = 0x1c1b1a19 (bytes: 19 1a 1b 1c)
-      Row           3 [k=4-7] @0x0000011c = 0x201f1e1d (应全0)
-      Row           4 [k=0-3] @0x00000120 = 0x24232221 (bytes: 21 22 23 24)
-      Row           4 [k=4-7] @0x00000124 = 0x28272625 (应全0)
-      Row           5 [k=0-3] @0x00000128 = 0x2c2b2a29 (bytes: 29 2a 2b 2c)
-      Row           5 [k=4-7] @0x0000012c = 0x302f2e2d (应全0)
-      Row           6 [k=0-3] @0x00000130 = 0x34333231 (bytes: 31 32 33 34)
-      Row           6 [k=4-7] @0x00000134 = 0x38373635 (应全0)
-      Row           7 [k=0-3] @0x00000138 = 0x3c3b3a39 (bytes: 39 3a 3b 3c)
-      Row           7 [k=4-7] @0x0000013c = 0x403f3e3d (应全0)
-    --- B 矩阵 (地址 0x00004000 - 0x0000401c) ---
-      B[0] @0x00004000 = 0x00000001
-      B[1] @0x00004004 = 0x00000000
-      B[2] @0x00004008 = 0x00000100
-      B[3] @0x0000400c = 0x00000000
-      B[4] @0x00004010 = 0x00010000
-      B[5] @0x00004014 = 0x00000000
-      B[6] @0x00004018 = 0x01000000
-      B[7] @0x0000401c = 0x00000000
-    --- C 矩阵 (8x8 INT32, 共64个word) ---
-      C[0][0..3] = 0x00000001
-      C[1][0..3] = 0x00000009
-      C[2][0..3] = 0x00000011
-      C[3][0..3] = 0x00000019
-      C[4][0..3] = 0x00000021
-      C[5][0..3] = 0x00000029
-      C[6][0..3] = 0x00000031
-      C[7][0..3] = 0x00000039
-    =================================================
-
-    验证 Tile 0 的计算结果 (B=I, K=8, 期望 C[i][j]=A_byte[i*K+j])...
-    验证通过！
-
-    [PASS] 测试 7b: Tile 0 计算结果正确，共验证 64 个元素
+      [FAIL] MERGE 模式计算结果有误!
+             共 256 / 256 个元素不匹配 (100.00% 错误率)
+    [步骤10] 打印 C 矩阵前8行（调试用）...
+      --- C 矩阵前16行 ---
+        C[          0] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          1] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          2] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          3] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          4] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          5] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          6] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          7] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          8] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[          9] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         10] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         11] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         12] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         13] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         14] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         15] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         16] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         17] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         18] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         19] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         20] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         21] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         22] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         23] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         24] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         25] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         26] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         27] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         28] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         29] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         30] = [   x,    x,    x,    x,    x,    x,    x,    x]
+        C[         31] = [   x,    x,    x,    x,    x,    x,    x,    x]
 
 ============================================================
   NPU 联合测试总结
 ============================================================
-  总测试数:           8
+  总测试数:           1
 
   测试覆盖:
     - 阶段1: 基础通信 (AXI + Config + Buffer) - 4个测试
@@ -823,7 +1387,7 @@ VCD info: dumpfile npu_integration_test.vcd opened for output.
     - 阶段8: 中断验证 - 1个测试
     - 阶段9: 多 Tile 并行 - 1个测试
 
-  结果: 全部测试通过!
-  结束时间:                26135
+  结果: 部分测试失败!
+  结束时间:               535225
 ============================================================
-F:\complication-6\NPU\TB\tb_npu_integration_test.v:1456: $finish called at 26185 (1s)
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1709: $finish called at 535275 (1s)

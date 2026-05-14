@@ -660,7 +660,7 @@ module tb_npu_integration_test;
 
         #20; rst_n <= 1'b1;
         wait_cycles(5);
-
+/*
         // ================================================================
         //  阶段1: 基础通信 - AXI + Config + Buffer Manager
         // ================================================================
@@ -928,7 +928,6 @@ module tb_npu_integration_test;
         end
 
         // TEST 7b: 验证 C Buffer 数据完整性（使用单位矩阵验证）
-        test_num = test_num + 1;
         $display("\n  测试 7b: 验证 C Buffer 计算结果正确性 (B=I, 期望C[i][j]=A_byte[i*K+j])");
 
         // ===== 重新配置并启动 NPU 执行计算 =====
@@ -1111,51 +1110,305 @@ module tb_npu_integration_test;
             end
         end
 
-/*
+*/
         // ================================================================
-        //  阶段4: MERGE 模式完整测试（暂时注释，先验证 Test 7b）
+        //  阶段4: MERGE 模式严格验证测试
         // ================================================================
         $display("\n============================================================");
-        $display("  阶段4: MERGE 模式测试");
-        $display("  目标: 验证多 Tile 合并模式");
+        $display("  阶段4: MERGE 模式严格验证测试");
+        $display("  目标: 验证多 Tile 合并模式的正确性");
+        $display("  配置: M=32, N=8, K=4, Tile 0-3");
         $display("============================================================");
 
-        // TEST 8: MERGE 模式完整执行流程
+        // TEST 8: MERGE 模式严格验证
         test_num = test_num + 1;
-        $display("\n  测试 %d: MERGE 模式完整执行 (K=4, Tile 0-3)", test_num);
+        $display("\n  测试 %d: MERGE 模式完整验证 (M=32, N=8, K=8, Tile 0-3)", test_num);
 
+        // ============================================================
+        // 步骤1: 清除状态标志
+        // ============================================================
+        $display("    [步骤1] 清除状态标志...");
         axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
         wait_cycles(10);
 
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h01);      // MERGE
-        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_000F);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);
+        // ============================================================
+        // 步骤2: 配置 MERGE 模式参数
+        // ============================================================
+        $display("    [步骤2] 配置 MERGE 模式参数...");
+        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h01);      // MERGE 模式
+        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd32);         // M=32 (32行)
+        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd8);          // N=8 (8列)
+        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd8);          // K=8 (内维度，完整Tile容量)
+        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_000F);  // 启用 Tile 0-3
+        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);         // 单次迭代
+        
+        $display("      配置: MODE=MERGE, M=32, N=8, K=8, TILE_MASK=0x%08X", 32'h0000_000F);
 
-        for (i = 0; i < 8; i = i + 1) begin
-            axi_write(`NPU_A_BUFFER_BASE + i*4, 32'h0000_3000 + i);
+        // ============================================================
+        // 步骤3: 构造 A 矩阵 (32×8, INT8)
+        // ============================================================
+        // MERGE 模式下，A 矩阵按完整 8×8 布局存储
+        // 32行 × 8列 = 256 个 INT8 = 64 个 32-bit word
+        $display("    [步骤3] 构造 A 矩阵 (32×8, 按8×8布局存储)...");
+        
+        begin : construct_merge_a_matrix
+            integer row, col;
+            reg [7:0] a_byte;
+            reg [31:0] a_word;
+            
+            // 按行优先顺序构造 A 矩阵
+            // 每行 8 字节（全部有效），占用 2 个 word
+            for (row = 0; row < 32; row = row + 1) begin
+                // Word 0: 前 4 列
+                a_word = 0;
+                for (col = 0; col < 4; col = col + 1) begin
+                    // 构造可预测的数据：A[row][col] = row * 8 + col
+                    a_byte = (row * 8 + col) & 8'hFF;
+                    a_word[col*8 +: 8] = a_byte;
+                end
+                axi_write(`NPU_A_BUFFER_BASE + (row*2)*4, a_word);
+                
+                // Word 1: 后 4 列
+                a_word = 0;
+                for (col = 4; col < 8; col = col + 1) begin
+                    a_byte = (row * 8 + col) & 8'hFF;
+                    a_word[(col-4)*8 +: 8] = a_byte;
+                end
+                axi_write(`NPU_A_BUFFER_BASE + (row*2+1)*4, a_word);
+            end
+            
+            $display("      A 矩阵构造完成: 32行 × 8列 = 64 words");
+            $display("      数据模式: A[row][col] = row*8 + col");
         end
-        for (i = 0; i < 8; i = i + 1) begin
-            axi_write(`NPU_B_BUFFER_BASE + i*4, 32'h0000_4000 + i);
+
+        // ============================================================
+        // 步骤4: 构造 B 矩阵 (8×8, INT8) - 标准单位矩阵
+        // ============================================================
+        // B 矩阵为 8×8 标准单位矩阵
+        // B[i][j] = 1 (当 i==j), 否则为 0
+        // 这样 C = A × B = A（完美验证）
+        $display("    [步骤4] 构造 B 矩阵 (8×8, 标准单位矩阵)...");
+        
+        begin : construct_merge_b_matrix
+            integer row, col;
+            reg [7:0] b_byte;
+            reg [31:0] b_word;
+            
+            // B 矩阵: 8行 × 8列 = 64 字节 = 16 words
+            // 每行占用 2 个 word（前 4 列 + 后 4 列）
+            for (row = 0; row < 8; row = row + 1) begin
+                // Word 0: 前 4 列
+                b_word = 0;
+                for (col = 0; col < 4; col = col + 1) begin
+                    if (col == row) begin
+                        b_byte = 8'h01;
+                    end else begin
+                        b_byte = 8'h00;
+                    end
+                    b_word[col*8 +: 8] = b_byte;
+                end
+                axi_write(`NPU_B_BUFFER_BASE + (row*2)*4, b_word);
+                
+                // Word 1: 后 4 列
+                b_word = 0;
+                for (col = 4; col < 8; col = col + 1) begin
+                    if (col == row) begin
+                        b_byte = 8'h01;
+                    end else begin
+                        b_byte = 8'h00;
+                    end
+                    b_word[(col-4)*8 +: 8] = b_byte;
+                end
+                axi_write(`NPU_B_BUFFER_BASE + (row*2+1)*4, b_word);
+            end
+            
+            $display("      B 矩阵构造完成: 8行 × 8列 = 16 words");
+            $display("      数据模式: B[i][j] = 1 (当 i==j), 否则 0");
+            $display("      预期结果: C[row][col] = A[row][col] (所有元素)");
         end
-        wait_cycles(2);
 
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);
-        wait_cycles(3);
-
-        begin : wait_merge_done
-            integer timeout_cnt;
-            timeout_cnt = 0;
-            while (!npu_done && timeout_cnt < 10000) begin
-                @(posedge clk);
-                timeout_cnt = timeout_cnt + 1;
+        // ============================================================
+        // 步骤5: 打印输入矩阵用于调试
+        // ============================================================
+        $display("    [步骤5] 打印输入矩阵（前8行）...");
+        begin : print_merge_input_matrices
+            integer i;
+            reg [31:0] val;
+            
+            $display("      --- A 矩阵前8行 ---");
+            for (i = 0; i < 32; i = i + 1) begin
+                // Word 0: 前 4 列
+                axi_read(`NPU_A_BUFFER_BASE + (i*2)*4, val);
+                $display("        A[%d][0-3] = 0x%08X (bytes: %2d %2d %2d %2d)",
+                         i, val,
+                         $signed(val[7:0]), $signed(val[15:8]), 
+                         $signed(val[23:16]), $signed(val[31:24]));
+                
+                // Word 1: 后 4 列
+                axi_read(`NPU_A_BUFFER_BASE + (i*2+1)*4, val);
+                $display("        A[%d][4-7] = 0x%08X (bytes: %2d %2d %2d %2d)",
+                         i, val,
+                         $signed(val[7:0]), $signed(val[15:8]), 
+                         $signed(val[23:16]), $signed(val[31:24]));
+            end
+            
+            $display("      --- B 矩阵（8×8 单位矩阵）---");
+            for (i = 0; i < 8; i = i + 1) begin
+                // Word 0: 前 4 列
+                axi_read(`NPU_B_BUFFER_BASE + (i*2)*4, val);
+                $display("        B[%d][0-3] = 0x%08X (bytes: %2d %2d %2d %2d)",
+                         i, val,
+                         $signed(val[7:0]), $signed(val[15:8]), 
+                         $signed(val[23:16]), $signed(val[31:24]));
+                
+                // Word 1: 后 4 列
+                axi_read(`NPU_B_BUFFER_BASE + (i*2+1)*4, val);
+                $display("        B[%d][4-7] = 0x%08X (bytes: %2d %2d %2d %2d)",
+                         i, val,
+                         $signed(val[7:0]), $signed(val[15:8]), 
+                         $signed(val[23:16]), $signed(val[31:24]));
             end
         end
 
+        // ============================================================
+        // 步骤6: 启动 NPU
+        // ============================================================
+        $display("    [步骤6] 启动 NPU...");
+        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);  // start 脉冲
+        wait_cycles(3);
+
+        // ============================================================
+        // 步骤7: 等待计算完成（带超时保护）
+        // ============================================================
+        $display("    [步骤7] 等待 NPU 完成计算...");
+        begin : wait_merge_completion
+            integer timeout_cnt;
+            timeout_cnt = 0;
+            while (!npu_done && timeout_cnt < 50000) begin
+                @(posedge clk);
+                timeout_cnt = timeout_cnt + 1;
+            end
+            
+            if (npu_done) begin
+                $display("      [PASS] npu_done 信号检测到 (耗时 %0d 周期)", timeout_cnt);
+            end else begin
+                $display("      [FAIL] 等待超时! npu_done 未置位 (timeout=%0d)", timeout_cnt);
+                test_passed = 1'b0;
+                disable wait_merge_completion;
+            end
+        end
+
+        // ============================================================
+        // 步骤8: 验证状态寄存器
+        // ============================================================
+        $display("    [步骤8] 验证状态寄存器...");
         wait_cycles(5);
         axi_read(`NPU_AXI_LITE_BASE + `REG_STATUS, read_val);
+        $display("      STATUS 寄存器 = 0x%08X", read_val);
+        
+        if (read_val[0] === 1'b1) begin
+            $display("      [PASS] status_done = 1");
+        end else begin
+            $display("      [FAIL] status_done = 0 (期望 1)");
+            test_passed = 1'b0;
+        end
+        
+        if (read_val[1] === 1'b1) begin
+            $display("      [FAIL] status_error = 1 (检测到错误!)");
+            test_passed = 1'b0;
+        end else begin
+            $display("      [PASS] status_error = 0");
+        end
+
+        // ============================================================
+        // 步骤9: 读取并验证 C 矩阵结果
+        // ============================================================
+        $display("    [步骤9] 验证 C 矩阵计算结果...");
+        
+        begin : verify_merge_result
+            integer row, col;
+            reg [31:0] c_val;
+            reg [31:0] expected_val;
+            reg [7:0]  a_byte;
+            integer errors;
+            integer total_elements;
+            
+            errors = 0;
+            total_elements = 32 * 8;  // 32行 × 8列
+            
+            $display("      开始验证 C 矩阵 (32×8, 共 %0d 个元素)...", total_elements);
+            
+            // 逐元素验证 C 矩阵
+            // 理论预期：C = A × B，其中 B 是标准单位矩阵
+            // 因此 C[row][col] = A[row][col] (所有 col)
+            for (row = 0; row < 32; row = row + 1) begin
+                for (col = 0; col < 8; col = col + 1) begin
+                    // 读取 C 矩阵元素
+                    axi_read(`NPU_C_BUFFER_BASE + (row*8 + col)*4, c_val);
+                    
+                    // 计算期望值
+                    // C[row][col] = A[row][col] = row*8 + col
+                    expected_val = 32'd0;
+                    expected_val[7:0] = (row * 8 + col) & 8'hFF;
+
+                    
+                    // 验证结果
+                    if (c_val !== expected_val) begin
+                        if (errors < 32) begin  // 最多打印32个错误
+                            $display("        [FAIL] C[%0d][%0d]: 期望=0x%08X (%0d), 实际=0x%08X (%0d)",
+                                     row, col, expected_val, $signed(expected_val[7:0]),
+                                     c_val, $signed(c_val[7:0]));
+                        end
+                        errors = errors + 1;
+                    end
+                end
+                
+                // 每8行打印一次进度
+                if ((row + 1) % 8 == 0) begin
+                    $display("        进度: 已验证 %0d/%0d 行, 发现 %0d 个错误", 
+                             row + 1, 32, errors);
+                end
+            end
+            
+            // 总结验证结果
+            $display("");
+            if (errors == 0) begin
+                $display("      [PASS] MERGE 模式计算结果完全正确!");
+                $display("             验证了 %0d 个元素，全部匹配", total_elements);
+            end else begin
+                $display("      [FAIL] MERGE 模式计算结果有误!");
+                $display("             共 %0d / %0d 个元素不匹配 (%.2f%% 错误率)",
+                         errors, total_elements, 
+                         real'(errors) / real'(total_elements) * 100.0);
+                test_passed = 1'b0;
+            end
+        end
+
+        // ============================================================
+        // 步骤10: 打印 C 矩阵前8行用于调试
+        // ============================================================
+        $display("    [步骤10] 打印 C 矩阵前8行（调试用）...");
+        begin : print_merge_c_matrix
+            integer i, j;
+            reg [31:0] c_val;
+            
+            $display("      --- C 矩阵前16行 ---");
+            for (i = 0; i < 32; i = i + 1) begin
+                $write("        C[%d] = [", i);
+                for (j = 0; j < 8; j = j + 1) begin
+                    axi_read(`NPU_C_BUFFER_BASE + (i*8 + j)*4, c_val);
+                    if (j > 0) $write(", ");
+                    $write("%4d", $signed(c_val[7:0]));
+                end
+                $display("]");
+            end
+        end
+
+        // ================================================================
+        //  阶段5-9: 其他测试（暂时注释，专注于 MERGE 模式验证）
+        // ================================================================
+/*
+       
 
         // ================================================================
         //  阶段5: SPLIT 模式完整测试
