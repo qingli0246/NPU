@@ -224,9 +224,7 @@ module npu_data_mover (clk, rst_n,
                     end else begin
                         next_state    = S_LOAD_A;
                     end
-                end else begin   
-                    next_state    = S_LOAD_A;
-                end
+                end 
 
             end
 
@@ -349,15 +347,46 @@ module npu_data_mover (clk, rst_n,
         wr_data_buf_next    = wr_data_buf;
         split_group_cnt_next = split_group_cnt;
         split_b_buf_next    = split_b_buf;
-        // ---- Tile 使能逻辑 ----
-        if (state >= S_LOAD_A && state <= S_SPLIT_UNPACK_B) begin
-            if (is_merge)
-                mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0];
+          // ---- Tile 使能逻辑 [FINAL FIX] ----
+        // 原则：
+        // 1. Load A: 串行加载。A 数据在 Buffer 中按 Tile 分块，Data Mover 串行读取。
+        //            必须只使能当前 tile_idx，防止其他 Tile 读到无效数据。
+        // 2. Load B: 并行广播。B 数据共享，Data Mover 读取一次发给所有 Tile。
+        //            必须使能所有 cfg_tile_mask 中的 Tile。
+        // 3. Compute: 并行计算。所有 Tile 同时工作。
+        //            必须使能所有 cfg_tile_mask 中的 Tile。
+        // 4. Store: 串行存储。Data Mover 串行读取 C 数据写回 Buffer。
+        //            必须只使能当前 tile_idx。
+        
+        if (state == S_LOAD_A || state == S_LOAD_A_WAIT || state == S_UNPACK_A) begin
+            // 【加载 A 阶段】：串行使能
+            // 无论是 MERGE 还是 INDEP/SPLIT，A 都是按 Tile 分块存储的，必须串行加载
+            mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << tile_idx) & cfg_tile_mask[TILE_COUNT-1:0];
+        end 
+        else if (state == S_LOAD_B || state == S_LOAD_B_WAIT || state == S_UNPACK_B || 
+                 state == S_SPLIT_LOAD_B || state == S_SPLIT_LOAD_B_WAIT || state == S_SPLIT_UNPACK_B) begin
+            // 【加载 B 阶段】：并行使能
+            // B 矩阵是广播的，所有 Tile 需要同时接收
+            if (is_merge || is_split) // MERGE 和 SPLIT 模式下 B 通常也是共享或需并行加载
+                 mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0]; 
             else
-                mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << tile_idx) & cfg_tile_mask[TILE_COUNT-1:0];
-        end else if (state >= S_STORE && state <= S_STORE_WR) begin
+                 // INDEP 模式下，如果 B 也是按 Tile 分块存储（通常不是，但为了兼容），可以串行
+                 // 但根据你的代码，INDEP 下 B 也是广播逻辑（见 S_UNPACK_B 的 for 循环缺失，但通常 B 是共享的）
+                 // 这里假设 INDEP 模式下 B 也是每个 Tile 独立的或者共享的，若共享则并行，若独立则串行
+                 // 鉴于你之前的代码在 S_UNPACK_B 中对 is_merge 做了特殊处理，这里保守起见：
+                 // 如果 is_merge，肯定并行。如果不是 merge，看具体需求。
+                 // 通常 NPU 中 B 权重是共享的，所以建议并行：
+                 mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0];
+        end
+        else if (state == S_COMPUTE_WAIT) begin
+            // 【计算等待阶段】：并行使能
+            mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0]; 
+        end
+        else if (state >= S_STORE && state <= S_STORE_WR) begin
+            // 【存储阶段】：串行使能
             mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << tile_idx) & cfg_tile_mask[TILE_COUNT-1:0];
         end else begin
+            // 【IDLE/DONE 阶段】
             mover_tile_en = {TILE_COUNT{1'b0}};
         end
 
@@ -455,6 +484,7 @@ module npu_data_mover (clk, rst_n,
                 end               
                 
                 if (byte_idx == 2'd3) begin
+                    byte_idx_next = 2'd0;
                     // 当前字的4个字节都处理完了
                     if (word_cnt + 11'd1 >= tile_b_words) begin
                         // 当前 Tile 的 B 矩阵全部加载完成

@@ -46,6 +46,38 @@ module npu_tile #(
     integer debug_i, debug_j;
 
     // ========================================================
+    //  调试信号：将 c_local 数组压平为单一向量以便观察波形
+    // ========================================================
+    wire [2047:0] c_local_debug; 
+      // ========================================================
+    //  【新增】调试探针：监控 MAC 单元的输入数据
+    // ========================================================
+    // 监控 C[0][0] 的计算输入 (i=0, j=0)
+    wire signed [7:0]  debug_a_00;
+    wire signed [7:0]  debug_b_00;
+    wire signed [15:0] debug_prod_00;
+    
+    // 监控 C[0][1] 的计算输入 (i=0, j=1) - 用于验证 B 的列索引
+    wire signed [7:0]  debug_a_01;
+    wire signed [7:0]  debug_b_01;
+    wire signed [15:0] debug_prod_01;
+
+    // 监控当前的索引值
+    wire [8:0] debug_a_idx_00; // a_local 的索引 for C[0][0]
+    wire [8:0] debug_b_idx_00; // b_local 的索引 for C[0][0]
+    
+    // 赋值逻辑
+    assign debug_a_idx_00 = 0 * cfg_k + k_cnt; // i=0
+    assign debug_b_idx_00 = k_cnt * 8 + 0;     // j=0
+    
+    assign debug_a_00 = a_local[debug_a_idx_00];
+    assign debug_b_00 = b_local[debug_b_idx_00];
+    assign debug_prod_00 = debug_a_00 * debug_b_00;
+
+    assign debug_a_01 = a_local[0 * cfg_k + k_cnt];
+    assign debug_b_01 = b_local[k_cnt * 8 + 1]; // j=1
+    assign debug_prod_01 = debug_a_01 * debug_b_01;
+    // ========================================================
     //  状态机寄存器（时序逻辑块2：状态寄存器）
     // ========================================================
     reg [2:0]  state;
@@ -109,6 +141,68 @@ module npu_tile #(
     always @(*) begin
         // 默认值
         next_state      = state;
+
+        case (state)
+            // ---- TILE_IDLE: 空闲 ----
+            `TILE_IDLE: begin
+                if (!tile_en) begin
+                    // Data Mover不活跃，保持IDLE状态，等待tile_en=1
+                    next_state = `TILE_IDLE;
+                end else if (tile_en) begin
+                    if (!a_loaded) begin
+                        next_state = `TILE_LOAD_A;
+                    end else if (!b_loaded) begin
+                        next_state = `TILE_LOAD_B;
+                    end else begin
+                        next_state = `TILE_COMPUTE;
+                    end
+                end
+            end
+
+            // ---- TILE_LOAD_A: 加载 A 数据 ----
+            `TILE_LOAD_A: begin
+                if (a_valid && a_load_cnt + 9'd1 >= load_target) begin                  
+                    next_state = `TILE_IDLE;  // 返回IDLE，等待B数据或下一步
+                end
+            end
+
+            // ---- TILE_LOAD_B: 加载 B 数据 ----
+            `TILE_LOAD_B: begin
+                if (b_valid && b_load_cnt + 9'd1 >= load_target) begin
+                    next_state = `TILE_COMPUTE;  // B也加载完，开始计算
+                end
+            end
+
+            // ---- TILE_COMPUTE: 计算（K 个周期）----
+            `TILE_COMPUTE: begin
+                if (k_cnt + 6'd1 >= cfg_k) begin
+                    next_state = `TILE_DONE;
+                end
+            end
+
+            // ---- TILE_DONE: 完成，输出结果 ----
+            // tile_en=0 表示 Data Mover 已完成 store（S_DONE）
+            // 此时 c_local 数据已全部读取，可以安全清除加载标志
+            `TILE_DONE: begin
+                if (!tile_en) begin
+                    next_state = `TILE_IDLE;
+                end
+            end
+
+            default: next_state = `TILE_IDLE;
+        endcase
+    end
+
+    // ========================================================
+    //  输出逻辑（组合逻辑块2：输出控制）
+    // ========================================================
+    reg tile_a_ready;
+    reg tile_b_ready;
+
+    always @(*) begin
+        // 默认值
+        tile_a_ready = 1'b0;
+        tile_b_ready = 1'b0;
         load_cnt_next   = load_cnt;
         k_cnt_next      = k_cnt;
         a_loaded_next   = a_loaded;
@@ -129,120 +223,56 @@ module npu_tile #(
                     b_printed = 1'b0;          // 清除B矩阵打印标志
                 end else if (tile_en) begin
                     if (!a_loaded) begin
-                        next_state = `TILE_LOAD_A;
                         a_load_cnt_next = 9'd0;
+                        tile_a_ready = 1'b1;
                     end else if (!b_loaded) begin
-                        next_state = `TILE_LOAD_B;
                         b_load_cnt_next = 9'd0;
+                        tile_b_ready = 1'b1;
                     end else begin
-                        next_state = `TILE_COMPUTE;
                         k_cnt_next = 6'd0;
                     end
                 end
-            end
 
-            // ---- TILE_LOAD_A: 加载 A 数据 ----
-            `TILE_LOAD_A: begin
-                if (a_valid) begin
-                    a_load_cnt_next = a_load_cnt + 9'd1;
-                    
-                    if (a_load_cnt + 9'd1 >= load_target) begin
-                        // [NEW] A数据加载完成
-                        a_loaded_next = 1'b1;
-                        next_state = `TILE_IDLE;  // 返回IDLE，等待B数据或下一步
-                    end
-                end
-            end
-
-            // ---- TILE_LOAD_B: 加载 B 数据 ----
-            `TILE_LOAD_B: begin
-                if (b_valid) begin
-                    b_load_cnt_next = b_load_cnt + 9'd1;
-                    if (b_load_cnt + 9'd1 >= load_target) begin
-                        // [NEW] B数据加载完成
-                        b_loaded_next = 1'b1;
-                        next_state = `TILE_COMPUTE;  // B也加载完，开始计算
-                        k_cnt_next = 6'd0;
-                    end
-                end
-            end
-
-            // ---- TILE_COMPUTE: 计算（K 个周期）----
-            `TILE_COMPUTE: begin
-                k_cnt_next = k_cnt + 6'd1;
-                if (k_cnt + 6'd1 >= cfg_k) begin
-                    next_state = `TILE_DONE;
-                end
-            end
-
-            // ---- TILE_DONE: 完成，输出结果 ----
-            // tile_en=0 表示 Data Mover 已完成 store（S_DONE）
-            // 此时 c_local 数据已全部读取，可以安全清除加载标志
-            `TILE_DONE: begin
-                if (!tile_en) begin
-                    next_state = `TILE_IDLE;
-                    a_loaded_next = 1'b0;
-                    b_loaded_next = 1'b0;
-                end
-            end
-
-            // ---- TILE_IDLE: 空闲，清除残留加载标志 ----
-            // 当 tile_en=0 时（Data Mover 不活跃），确保加载标志为0
-            // 防止 tile_en 恢复后直接跳到 COMPUTE 而不重新 LOAD
-            `TILE_IDLE: begin
-                if (!tile_en) begin
-                    a_loaded_next = 1'b0;
-                    b_loaded_next = 1'b0;
-                end
-            end
-
-            default: next_state = `TILE_IDLE;
-        endcase
-    end
-
-    // ========================================================
-    //  输出逻辑（组合逻辑块2：输出控制）
-    // ========================================================
-    reg tile_a_ready;
-    reg tile_b_ready;
-
-    always @(*) begin
-        // 默认值
-        tile_a_ready = 1'b0;
-        tile_b_ready = 1'b0;
-
-        case (state)
-            // ---- TILE_IDLE: 空闲 ----
-            `TILE_IDLE: begin
-                if (tile_en && !a_loaded) begin
-                    // [NEW] 准备接收A数据
-                    tile_a_ready = 1'b1;
-                end else if (tile_en && a_loaded && !b_loaded) begin
-                    // [NEW] 准备接收B数据
-                    tile_b_ready = 1'b1;
-                end
             end
 
             // ---- TILE_LOAD_A: 加载A数据 ----
             `TILE_LOAD_A: begin
+                if (a_valid) begin
+                    a_load_cnt_next = a_load_cnt + 9'd1;                    
+                    if (a_load_cnt + 9'd1 >= load_target) begin
+                        // [NEW] A数据加载完成
+                        a_loaded_next = 1'b1;
+                    end
+                end
                 // Tile在LOAD_A状态下始终准备好接收A数据
                 tile_a_ready = 1'b1;
             end
 
             // ---- TILE_LOAD_B: 加载B数据 ----
             `TILE_LOAD_B: begin
+                if (b_valid) begin
+                    b_load_cnt_next = b_load_cnt + 9'd1;
+                    if (b_load_cnt + 9'd1 >= load_target) begin
+                        // [NEW] B数据加载完成
+                        b_loaded_next = 1'b1;
+                        k_cnt_next = 6'd0;
+                    end
+                end
                 // Tile在LOAD_B状态下始终准备好接收B数据
                 tile_b_ready = 1'b1;
             end
 
             // ---- TILE_COMPUTE: 计算 ----
             `TILE_COMPUTE: begin
-                // 无特殊输出
+                k_cnt_next = k_cnt + 6'd1;
             end
 
             // ---- TILE_DONE: 完成 ----
             `TILE_DONE: begin
-                // 输出信号由时序逻辑块控制
+                if (!tile_en) begin
+                    a_loaded_next = 1'b0;
+                    b_loaded_next = 1'b0;
+                end
             end
 
             default: ;
@@ -400,5 +430,25 @@ module npu_tile #(
             end
         end
     endgenerate
+        // 将 c_local[0] 放在低位，c_local[63] 放在高位
+    // 注意：不同仿真器对数组索引映射可能不同，这里假设 c_local[0] 对应 bit [31:0]
+    assign c_local_debug = {
+        c_local[63], c_local[62], c_local[61], c_local[60],
+        c_local[59], c_local[58], c_local[57], c_local[56],
+        c_local[55], c_local[54], c_local[53], c_local[52],
+        c_local[51], c_local[50], c_local[49], c_local[48],
+        c_local[47], c_local[46], c_local[45], c_local[44],
+        c_local[43], c_local[42], c_local[41], c_local[40],
+        c_local[39], c_local[38], c_local[37], c_local[36],
+        c_local[35], c_local[34], c_local[33], c_local[32],
+        c_local[31], c_local[30], c_local[29], c_local[28],
+        c_local[27], c_local[26], c_local[25], c_local[24],
+        c_local[23], c_local[22], c_local[21], c_local[20],
+        c_local[19], c_local[18], c_local[17], c_local[16],
+        c_local[15], c_local[14], c_local[13], c_local[12],
+        c_local[11], c_local[10], c_local[9],  c_local[8],
+        c_local[7],  c_local[6],  c_local[5],  c_local[4],
+        c_local[3],  c_local[2],  c_local[1],  c_local[0]
+    };
 
 endmodule
