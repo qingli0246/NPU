@@ -12,8 +12,8 @@
 // ============================================================
 module npu_compute_pool (clk, rst_n,
     cfg_k, cfg_tile_mask,
-    tile_en, tile_a_data, tile_a_valid,
-    tile_b_data, tile_b_valid,
+    tile_en, tile_a_data, tile_a_valid, tile_a_ready,  // 新增: tile_a_ready
+    tile_b_data, tile_b_valid, tile_b_ready,          // 新增: tile_b_ready
     tile_c_data, tile_c_valid, tile_c_ready,
     tile_done, pool_done
 );
@@ -21,7 +21,7 @@ module npu_compute_pool (clk, rst_n,
     parameter TILE_COUNT  = `NPU_NUM_TILES;
     parameter K_MAX       = `NPU_K_MAX;
     parameter A_BUS_WIDTH = 8 * `NPU_NUM_TILES;
-    parameter C_BUS_WIDTH = `NPU_TILE_C_BITS * `NPU_NUM_TILES;  // 2048 * 32 = 65536位
+    parameter C_BUS_WIDTH = `NPU_TILE_C_BITS * `NPU_NUM_TILES;  // 2048 * 32 = 65536位  
 
     input  wire                       clk;
     input  wire                       rst_n;
@@ -30,8 +30,10 @@ module npu_compute_pool (clk, rst_n,
     input  wire [TILE_COUNT-1:0]      tile_en;
     input  wire [A_BUS_WIDTH-1:0]     tile_a_data;
     input  wire                       tile_a_valid;
+    output wire [TILE_COUNT-1:0]      tile_a_ready;
     input  wire [A_BUS_WIDTH-1:0]     tile_b_data;
     input  wire                       tile_b_valid;
+    output wire [TILE_COUNT-1:0]      tile_b_ready;
     output wire [C_BUS_WIDTH-1:0]     tile_c_data;
     output wire                       tile_c_valid;
     input  wire                       tile_c_ready;
@@ -44,6 +46,9 @@ module npu_compute_pool (clk, rst_n,
     wire [TILE_COUNT-1:0] tile_compute_done;
     wire [TILE_COUNT-1:0] tile_gated_clk;  // 每个 Tile 的门控时钟
 
+    // 【新增】用于收集每个 Tile 的 A/B Ready 信号
+    wire [TILE_COUNT-1:0] tile_a_ready_vec;
+    wire [TILE_COUNT-1:0] tile_b_ready_vec;
     // ========================================================
     //  时钟门控 + Tile 实例化（时序逻辑块1：Tile阵列）
     // ========================================================
@@ -68,10 +73,10 @@ module npu_compute_pool (clk, rst_n,
                 .tile_en      (tile_en[t]),
                 .a_data       (tile_a_data[t*8 +: 8]),
                 .a_valid      (tile_a_valid),
-                .a_ready      (),
+                .a_ready      (tile_a_ready_vec[t]),
                 .b_data       (tile_b_data[t*8 +: 8]),
                 .b_valid      (tile_b_valid),
-                .b_ready      (),
+                .b_ready      (tile_b_ready_vec[t]),
                 .c_data       (tile_c_data[t*`NPU_TILE_C_BITS +: `NPU_TILE_C_BITS]),  // 2048位宽
                 .c_valid      (),
                 .c_ready      (tile_c_ready),
@@ -86,6 +91,12 @@ module npu_compute_pool (clk, rst_n,
     wire [TILE_COUNT-1:0] tile_active;
     
     assign tile_active = tile_en & cfg_tile_mask;
+    
+    // 【关键】直接组合逻辑输出向量，无延迟
+    // 注意：对于未被 tile_en 使能的 Tile，其 ready 信号可能无效或为 0，
+    // 但 Mover 只会检查它当前使能的那些位。
+    assign tile_a_ready = tile_a_ready_vec;
+    assign tile_b_ready = tile_b_ready_vec;
 /*    
     // [DEBUG] Compute Pool使能监控
     always @(posedge clk or negedge rst_n) begin

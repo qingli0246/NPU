@@ -67,11 +67,11 @@ module npu_tile #(
     wire [8:0] debug_b_idx_00; // b_local 的索引 for C[0][0]
     
     // 赋值逻辑
-    assign debug_a_idx_00 = 0 * cfg_k + k_cnt; // i=0
+    assign debug_a_idx_00 =  0* cfg_k + k_cnt; // i=0
     assign debug_b_idx_00 = k_cnt * 8 + 0;     // j=0
     
-    assign debug_a_00 = a_local[debug_a_idx_00];
-    assign debug_b_00 = b_local[debug_b_idx_00];
+    assign debug_a_00 = a_local[63];
+    assign debug_b_00 = b_local[0];
     assign debug_prod_00 = debug_a_00 * debug_b_00;
 
     assign debug_a_01 = a_local[0 * cfg_k + k_cnt];
@@ -216,8 +216,8 @@ module npu_tile #(
                 if (!tile_en) begin
                     // Data Mover 不活跃时，清除残留加载标志
                     // 防止 tile_en 恢复后 a_loaded/b_loaded=1 直接跳到 COMPUTE
-                    a_loaded_next = 1'b0;
-                    b_loaded_next = 1'b0;
+                 //   a_loaded_next = 1'b0;
+                 //   b_loaded_next = 1'b0;
                     c_result_printed = 1'b0;  // 清除C矩阵打印标志
                     a_printed = 1'b0;          // 清除A矩阵打印标志
                     b_printed = 1'b0;          // 清除B矩阵打印标志
@@ -335,6 +335,11 @@ module npu_tile #(
                 // a_local[i*K_MAX + k] = a_data
                 // byte_idx = a_load_cnt, row = byte_idx / K_MAX, col_k = byte_idx % K_MAX
                 a_local[a_load_cnt] <= a_data;
+            
+                if (a_load_cnt == 9'd63) begin
+                    $display("[TILE LOAD_A DBG] t=%0t storing a_local[%d]=%d (0x%02X)", 
+                             $time, a_load_cnt, $signed(a_data), a_data);
+                end
             end
             
             // [NEW] 在LOAD_B阶段存储B数据
@@ -450,5 +455,6 @@ module npu_tile #(
         c_local[7],  c_local[6],  c_local[5],  c_local[4],
         c_local[3],  c_local[2],  c_local[1],  c_local[0]
     };
+    
 
 endmodule

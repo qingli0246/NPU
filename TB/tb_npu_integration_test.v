@@ -106,8 +106,10 @@ module tb_npu_integration_test;
     wire [TILE_COUNT-1:0]    tile_en;
     wire [A_BUS_WIDTH-1:0]   tile_a_data;
     wire                     tile_a_valid;
+    wire [TILE_COUNT-1:0]    tile_a_ready;
     wire [A_BUS_WIDTH-1:0]   tile_b_data;
     wire                     tile_b_valid;
+    wire [TILE_COUNT-1:0]    tile_b_ready;
     wire [C_BUS_WIDTH-1:0]   tile_c_data;
     wire                     tile_c_valid;
     wire                     tile_c_ready;
@@ -286,8 +288,10 @@ module tb_npu_integration_test;
         .tile_en        (tile_en),
         .tile_a_data    (tile_a_data),
         .tile_a_valid   (tile_a_valid),
+        .tile_a_ready   (tile_a_ready),
         .tile_b_data    (tile_b_data),
         .tile_b_valid   (tile_b_valid),
+        .tile_b_ready   (tile_b_ready),
         .tile_c_data    (tile_c_data),
         .tile_c_valid   (tile_c_valid),
         .tile_c_ready   (tile_c_ready)
@@ -307,8 +311,10 @@ module tb_npu_integration_test;
         .tile_en        (tile_en),
         .tile_a_data    (tile_a_data),
         .tile_a_valid   (tile_a_valid),
+        .tile_a_ready   (tile_a_ready),
         .tile_b_data    (tile_b_data),
         .tile_b_valid   (tile_b_valid),
+        .tile_b_ready   (tile_b_ready),
         .tile_c_data    (tile_c_data),
         .tile_c_valid   (tile_c_valid),
         .tile_c_ready   (tile_c_ready),
@@ -1332,7 +1338,7 @@ module tb_npu_integration_test;
             reg [7:0]  a_byte;
             integer errors;
             integer total_elements;
-            
+            reg [7:0] temp_byte;
             errors = 0;
             total_elements = 32 * 8;  // 32行 × 8列
             
@@ -1348,8 +1354,10 @@ module tb_npu_integration_test;
                     
                     // 计算期望值
                     // C[row][col] = A[row][col] = row*8 + col
-                    expected_val = 32'd0;
-                    expected_val[7:0] = (row * 8 + col) & 8'hFF;
+                    // 修改后：强制进行符号扩展
+
+                    temp_byte = (row * 8 + col) & 8'hFF;
+                    expected_val = $signed(temp_byte); // $signed 会将 8-bit 有符号数扩展为 32-bit 有符号数
 
                     
                     // 验证结果
