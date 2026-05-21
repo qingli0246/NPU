@@ -335,11 +335,12 @@ module npu_tile #(
                 // a_local[i*K_MAX + k] = a_data
                 // byte_idx = a_load_cnt, row = byte_idx / K_MAX, col_k = byte_idx % K_MAX
                 a_local[a_load_cnt] <= a_data;
-            
+            /*
                 if (a_load_cnt == 9'd63) begin
                     $display("[TILE LOAD_A DBG] t=%0t storing a_local[%d]=%d (0x%02X)", 
                              $time, a_load_cnt, $signed(a_data), a_data);
                 end
+            */    
             end
             
             // [NEW] 在LOAD_B阶段存储B数据
@@ -348,15 +349,16 @@ module npu_tile #(
                 // b_local[k*8 + j] = b_data
                 // byte_idx = b_load_cnt, col_k = byte_idx / 8, row_j = byte_idx % 8
                 b_local[b_load_cnt] <= b_data;
-                
+            /*   
                 // [DEBUG] B数据存储监控 - 打印前8个和最后8个字节
                 if (b_load_cnt < 9'd8 || b_load_cnt >= 9'd56) begin
                     $display("[TILE LOAD_B DBG] t=%0t storing b_local[%d]=%d (0x%02X)", 
                              $time, b_load_cnt, $signed(b_data), b_data);
                 end
+            */  
             end
             
-            // [DEBUG] 加载完成后打印完整的A/B矩阵（仅在第一个使能的Tile中打印）
+            /*  // [DEBUG] 加载完成后打印完整的A/B矩阵（仅在第一个使能的Tile中打印）
             if (tile_en && ((state == `TILE_IDLE || state == `TILE_COMPUTE) && a_loaded && !a_printed)) begin
                 integer ai, aj;
                 $display("\n[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====");
@@ -370,6 +372,7 @@ module npu_tile #(
                 end
                 $display("==========================================\n");
                 a_printed = 1'b1;
+            
             end
             
             if (tile_en && ((state == `TILE_COMPUTE) && b_loaded && !b_printed)) begin
@@ -388,6 +391,8 @@ module npu_tile #(
                 b_printed = 1'b1;
             end
             
+            */
+
             // 初始化C矩阵：在LOAD_A状态的首个周期清零
             // 不能在IDLE清零，因为Data Mover此时可能还在读取上一轮的c_local结果
             // 只在a_load_cnt==0时清零（LOAD_A的第一个周期），避免重复清零
@@ -404,7 +409,9 @@ module npu_tile #(
                                            {{16{prod[i][j][15]}}, prod[i][j]};
                     end
                 end
-            end else if (state == `TILE_DONE) begin
+            end 
+            /*
+            else if (state == `TILE_DONE) begin
                 // [DEBUG] 计算结果监控 - 输出完整的C矩阵（只打印一次，仅Tile 0）
                 if (tile_en && !c_result_printed) begin
                     integer ci, cj;
@@ -421,6 +428,7 @@ module npu_tile #(
                     c_result_printed <= 1'b1;
                 end
             end
+            */
         end
     end
 

@@ -570,7 +570,7 @@ module npu_data_mover (clk, rst_n,
                 end else begin
                     store_word_next = store_word + 6'd1;
                 end
-
+                /*
                 // [DEBUG] Store阶段监控 - 输出写入C Buffer的数据
                 if (store_word == 6'd0) begin
                     $display("[STORE DBG] t=%0t Writing C Buffer for Tile %d, addr=0x%08X, data[0]=0x%08X",
@@ -578,6 +578,7 @@ module npu_data_mover (clk, rst_n,
                              `NPU_C_BUFFER_BASE + {1'd0, tile_idx, 8'd0},
                              tile_c_data[tile_idx * `NPU_TILE_C_BITS + 0*32 +: 32]);
                 end
+                */
             end
 
             S_DONE: begin
@@ -647,7 +648,7 @@ module npu_data_mover (clk, rst_n,
         else
             prev_state <= state;
     end
-    
+    /* 
     always @(posedge clk) begin
         if (state != prev_state) begin
             case (state)
@@ -663,5 +664,5 @@ module npu_data_mover (clk, rst_n,
             endcase
         end
     end
-
+    */
 endmodule

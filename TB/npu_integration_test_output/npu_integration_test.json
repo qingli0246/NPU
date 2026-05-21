@@ -1,16 +1,16 @@
 {
   "extensionVersion": "1.5.2",
   "fileName": "f:\\complication-6\\NPU\\TB\\npu_integration_test_output\\npu_integration_test.vcd",
-  "markerTime": 10575,
+  "markerTime": 16840,
   "altMarkerTime": null,
   "displayTimeUnit": "s",
   "selectedSignal": {
-    "name": "tb_npu_integration_test.mover_buf_rd_addr",
-    "msb": 15,
-    "lsb": 0
+    "name": "tb_npu_integration_test.u_compute_pool.gen_tile[0].u_tile.a_valid",
+    "msb": -1,
+    "lsb": -1
   },
-  "zoomRatio": 3.2,
-  "scrollLeft": 10470,
+  "zoomRatio": 0.05,
+  "scrollLeft": 8960,
   "displayedSignals": [
     {
       "dataType": "netlist-variable",
@@ -27,7 +27,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7363,
+      "netlistId": 7171,
       "name": "tb_npu_integration_test.u_scheduler.npu_state",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -40,7 +40,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7320,
+      "netlistId": 7128,
       "name": "tb_npu_integration_test.u_data_mover.state",
       "numberFormat": "decimal",
       "colorIndex": 0,
@@ -105,7 +105,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7246,
+      "netlistId": 7054,
       "name": "tb_npu_integration_test.u_data_mover.tile_a_ready",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -170,7 +170,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7237,
+      "netlistId": 7045,
       "name": "tb_npu_integration_test.u_data_mover.buf_rd_data",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -183,7 +183,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7304,
+      "netlistId": 7112,
       "name": "tb_npu_integration_test.u_data_mover.mover_tile_a_data",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -196,7 +196,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7333,
+      "netlistId": 7141,
       "name": "tb_npu_integration_test.u_data_mover.wr_data_buf",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -209,7 +209,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7290,
+      "netlistId": 7098,
       "name": "tb_npu_integration_test.u_data_mover.byte_idx",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -235,7 +235,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7331,
+      "netlistId": 7139,
       "name": "tb_npu_integration_test.u_data_mover.word_cnt",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -248,7 +248,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7251,
+      "netlistId": 7059,
       "name": "tb_npu_integration_test.u_data_mover.tile_offset_bytes",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -261,7 +261,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7309,
+      "netlistId": 7117,
       "name": "tb_npu_integration_test.u_data_mover.mover_tile_en",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -274,7 +274,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7310,
+      "netlistId": 7118,
       "name": "tb_npu_integration_test.u_data_mover.mover_tile_w_done",
       "numberFormat": "binary",
       "colorIndex": 0,
@@ -287,7 +287,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 957,
+      "netlistId": 939,
       "name": "tb_npu_integration_test.u_compute_pool.gen_tile[3].u_tile.state",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -300,7 +300,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 919,
+      "netlistId": 901,
       "name": "tb_npu_integration_test.u_compute_pool.gen_tile[3].u_tile.debug_a_00",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -313,7 +313,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7311,
+      "netlistId": 7119,
       "name": "tb_npu_integration_test.u_data_mover.next_mover_tile_en",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,
@@ -326,7 +326,7 @@
     },
     {
       "dataType": "netlist-variable",
-      "netlistId": 7329,
+      "netlistId": 7137,
       "name": "tb_npu_integration_test.u_data_mover.tile_idx",
       "numberFormat": "hexadecimal",
       "colorIndex": 0,

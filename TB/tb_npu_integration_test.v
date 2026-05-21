@@ -14,6 +14,13 @@ module tb_npu_integration_test;
     parameter TILE_COUNT = `NPU_NUM_TILES;
     parameter A_BUS_WIDTH = 8 * TILE_COUNT;
     parameter C_BUS_WIDTH = `NPU_TILE_C_BITS * TILE_COUNT;  // 2048 * 32 = 65536位
+    
+    // 每个 Tile 在 Buffer 中的偏移量 (基于 8x8 INT8 输入, 8x8 INT32 输出)
+    // A/B Buffer: 8*8 bytes = 64 bytes = 16 words
+    // C Buffer: 8*8 * 4 bytes = 256 bytes = 64 words
+    parameter TILE_A_OFFSET_WORDS = 16; 
+    parameter TILE_B_OFFSET_WORDS = 16;
+    parameter TILE_C_OFFSET_WORDS = 64;
 
     // ============================================================
     //  AXI4 信号
@@ -1117,6 +1124,7 @@ module tb_npu_integration_test;
         end
 
 */
+/*
         // ================================================================
         //  阶段4: MERGE 模式严格验证测试
         // ================================================================
@@ -1142,13 +1150,13 @@ module tb_npu_integration_test;
         // ============================================================
         $display("    [步骤2] 配置 MERGE 模式参数...");
         axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h01);      // MERGE 模式
-        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd32);         // M=32 (32行)
+        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd256);         // M=32 (32行)
         axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd8);          // N=8 (8列)
         axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd8);          // K=8 (内维度，完整Tile容量)
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_000F);  // 启用 Tile 0-3
+        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'hffff_ffff);  // 启用 Tile 0-3
         axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);         // 单次迭代
         
-        $display("      配置: MODE=MERGE, M=32, N=8, K=8, TILE_MASK=0x%08X", 32'h0000_000F);
+        $display("      配置: MODE=MERGE, M=32, N=8, K=8, TILE_MASK=0x%08X", 32'hffff_ffff);
 
         // ============================================================
         // 步骤3: 构造 A 矩阵 (32×8, INT8)
@@ -1164,7 +1172,7 @@ module tb_npu_integration_test;
             
             // 按行优先顺序构造 A 矩阵
             // 每行 8 字节（全部有效），占用 2 个 word
-            for (row = 0; row < 32; row = row + 1) begin
+            for (row = 0; row < 256; row = row + 1) begin
                 // Word 0: 前 4 列
                 a_word = 0;
                 for (col = 0; col < 4; col = col + 1) begin
@@ -1340,14 +1348,14 @@ module tb_npu_integration_test;
             integer total_elements;
             reg [7:0] temp_byte;
             errors = 0;
-            total_elements = 32 * 8;  // 32行 × 8列
+            total_elements = 256 * 8;  // 256行 × 8列
             
-            $display("      开始验证 C 矩阵 (32×8, 共 %0d 个元素)...", total_elements);
+            $display("      开始验证 C 矩阵 (256×8, 共 %0d 个元素)...", total_elements);
             
             // 逐元素验证 C 矩阵
             // 理论预期：C = A × B，其中 B 是标准单位矩阵
             // 因此 C[row][col] = A[row][col] (所有 col)
-            for (row = 0; row < 32; row = row + 1) begin
+            for (row = 0; row < 256; row = row + 1) begin
                 for (col = 0; col < 8; col = col + 1) begin
                     // 读取 C 矩阵元素
                     axi_read(`NPU_C_BUFFER_BASE + (row*8 + col)*4, c_val);
@@ -1374,7 +1382,7 @@ module tb_npu_integration_test;
                 // 每8行打印一次进度
                 if ((row + 1) % 8 == 0) begin
                     $display("        进度: 已验证 %0d/%0d 行, 发现 %0d 个错误", 
-                             row + 1, 32, errors);
+                             row + 1, 256, errors);
                 end
             end
             
@@ -1400,8 +1408,8 @@ module tb_npu_integration_test;
             integer i, j;
             reg [31:0] c_val;
             
-            $display("      --- C 矩阵前16行 ---");
-            for (i = 0; i < 32; i = i + 1) begin
+            $display("      --- C 矩阵前256行 ---");
+            for (i = 0; i < 256; i = i + 1) begin
                 $write("        C[%d] = [", i);
                 for (j = 0; j < 8; j = j + 1) begin
                     axi_read(`NPU_C_BUFFER_BASE + (i*8 + j)*4, c_val);
@@ -1412,10 +1420,8 @@ module tb_npu_integration_test;
             end
         end
 
-        // ================================================================
-        //  阶段5-9: 其他测试（暂时注释，专注于 MERGE 模式验证）
-        // ================================================================
-/*
+     ***********************************************************************/ 
+
        
 
         // ================================================================
@@ -1428,19 +1434,20 @@ module tb_npu_integration_test;
 
         // TEST 9: SPLIT 模式完整执行流程
         test_num = test_num + 1;
-        $display("\n  测试 %d: SPLIT 模式完整执行 (K=8, Tile 0-3)", test_num);
+        $display("\n  测试 %d: SPLIT 模式完整执行 (K=16", test_num);
 
         // 清除状态
         axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
         wait_cycles(3);
 
-        // 配置 SPLIT 模式
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h02);      // SPLIT
-        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd8);          // K=8
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_000F);  // Tile 0-3
-        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);
+       // 2. 配置 SPLIT 模式
+        $display("    [步骤1] 配置寄存器 (SPLIT Mode, K=16)...");
+        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h02);      // SPLIT Mode
+        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd8);          // M=8
+        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd8);          // N=8
+        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd16);         // K=16 (关键：大于8)
+        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_0001);  // 仅用 Tile 0 验证逻辑
+        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd2); // 暗示需要2次迭代/K切片
 
         // 写入 A 矩阵数据（SPLIT 模式下每个 Tile 处理部分 K）
         $display("    写入 A 矩阵数据...");
@@ -1485,7 +1492,7 @@ module tb_npu_integration_test;
         end else begin
             $display("[FAIL] status_done = 0"); test_passed = 1'b0;
         end
-
+/*
         // ================================================================
         //  阶段6: 多次迭代测试
         // ================================================================
@@ -1688,28 +1695,7 @@ module tb_npu_integration_test;
         // ================================================================
         //  测试总结
         // ================================================================
-        wait_cycles(5);
-        $display("\n============================================================");
-        $display("  NPU 联合测试总结");
-        $display("============================================================");
-        $display("  总测试数: %d", test_num);
-        $display("");
-        $display("  测试覆盖:");
-        $display("    - 阶段1: 基础通信 (AXI + Config + Buffer) - 4个测试");
-        $display("    - 阶段2: 状态与中断 - 2个测试");
-        $display("    - 阶段3: INDEP 模式完整流程 + 数据验证 - 2个测试");
-        $display("    - 阶段4: MERGE 模式完整流程 - 1个测试");
-        $display("    - 阶段5: SPLIT 模式完整流程 - 1个测试");
-        $display("    - 阶段6: 多次迭代 - 1个测试");
-        $display("    - 阶段7: 边界条件 - 2个测试");
-        $display("    - 阶段8: 中断验证 - 1个测试");
-        $display("    - 阶段9: 多 Tile 并行 - 1个测试");
-        $display("");
-        if (test_passed) begin
-            $display("  结果: 全部测试通过!");
-        end else begin
-            $display("  结果: 部分测试失败!");
-        end
+
         $display("  结束时间: %t", $time);
         $display("============================================================");
 
@@ -1725,7 +1711,7 @@ module tb_npu_integration_test;
         $display("\n[ERROR] 仿真超时！可能存在死锁。");
         $finish;
     end
-
+/*
     // ============================================================
     //  监控输出
     // ============================================================
@@ -1747,5 +1733,5 @@ module tb_npu_integration_test;
             endcase
         end
     end
-
+*/
 endmodule

@@ -15,7 +15,7 @@ VCD info: dumpfile npu_integration_test.vcd opened for output.
   测试           1: MERGE 模式完整验证 (M=32, N=8, K=8, Tile 0-3)
     [步骤1] 清除状态标志...
     [步骤2] 配置 MERGE 模式参数...
-      配置: MODE=MERGE, M=32, N=8, K=8, TILE_MASK=0x0000000f
+      配置: MODE=MERGE, M=32, N=8, K=8, TILE_MASK=0xffffffff
     [步骤3] 构造 A 矩阵 (32×8, 按8×8布局存储)...
       A 矩阵构造完成: 32行 × 8列 = 64 words
       数据模式: A[row][col] = row*8 + col
@@ -107,596 +107,211 @@ VCD info: dumpfile npu_integration_test.vcd opened for output.
         B[          7][0-3] = 0x00000000 (bytes:  0  0  0  0)
         B[          7][4-7] = 0x01000000 (bytes:  0  0  0  1)
     [步骤6] 启动 NPU...
-[t=9445] DataMover -> LOAD_A
-[t=9445] STATE -> LOAD_A
-[TILE DBG] t=9445 state: 0 -> 4, a_loaded=0, b_loaded=0
-[t=9455] STATE -> LOAD_A_WAIT
-[t=9475] STATE -> UNPACK_A
+[TILE DBG] t=36325 state: 0 -> 4, a_loaded=0, b_loaded=0
     [步骤7] 等待 NPU 完成计算...
-[t=9515] STATE -> LOAD_A
-[t=9515] DataMover -> LOAD_A
-[t=9525] STATE -> LOAD_A_WAIT
-[t=9545] STATE -> UNPACK_A
-[t=9585] DataMover -> LOAD_A
-[t=9585] STATE -> LOAD_A
-[t=9595] STATE -> LOAD_A_WAIT
-[t=9615] STATE -> UNPACK_A
-[t=9655] STATE -> LOAD_A
-[t=9655] DataMover -> LOAD_A
-[t=9665] STATE -> LOAD_A_WAIT
-[t=9685] STATE -> UNPACK_A
-[t=9725] DataMover -> LOAD_A
-[t=9725] STATE -> LOAD_A
-[t=9735] STATE -> LOAD_A_WAIT
-[t=9755] STATE -> UNPACK_A
-[t=9795] STATE -> LOAD_A
-[t=9795] DataMover -> LOAD_A
-[t=9805] STATE -> LOAD_A_WAIT
-[t=9825] STATE -> UNPACK_A
-[t=9865] DataMover -> LOAD_A
-[t=9865] STATE -> LOAD_A
-[t=9875] STATE -> LOAD_A_WAIT
-[t=9895] STATE -> UNPACK_A
-[t=9935] STATE -> LOAD_A
-[t=9935] DataMover -> LOAD_A
-[t=9945] STATE -> LOAD_A_WAIT
-[t=9965] STATE -> UNPACK_A
-[t=10005] DataMover -> LOAD_A
-[t=10005] STATE -> LOAD_A
-[t=10015] STATE -> LOAD_A_WAIT
-[t=10035] STATE -> UNPACK_A
-[t=10075] STATE -> LOAD_A
-[t=10075] DataMover -> LOAD_A
-[t=10085] STATE -> LOAD_A_WAIT
-[t=10105] STATE -> UNPACK_A
-[t=10145] DataMover -> LOAD_A
-[t=10145] STATE -> LOAD_A
-[t=10155] STATE -> LOAD_A_WAIT
-[t=10175] STATE -> UNPACK_A
-[t=10215] STATE -> LOAD_A
-[t=10215] DataMover -> LOAD_A
-[t=10225] STATE -> LOAD_A_WAIT
-[t=10245] STATE -> UNPACK_A
-[t=10285] DataMover -> LOAD_A
-[t=10285] STATE -> LOAD_A
-[t=10295] STATE -> LOAD_A_WAIT
-[t=10315] STATE -> UNPACK_A
-[t=10355] STATE -> LOAD_A
-[t=10355] DataMover -> LOAD_A
-[t=10365] STATE -> LOAD_A_WAIT
-[t=10385] STATE -> UNPACK_A
-[t=10425] DataMover -> LOAD_A
-[t=10425] STATE -> LOAD_A
-[t=10435] STATE -> LOAD_A_WAIT
-[t=10455] STATE -> UNPACK_A
-[t=10495] STATE -> LOAD_A
-[t=10495] DataMover -> LOAD_A
-[t=10505] STATE -> LOAD_A_WAIT
-[t=10525] STATE -> UNPACK_A
-[t=10565] DataMover -> LOAD_A
-[t=10565] STATE -> LOAD_A
-[TILE DBG] t=10565 state: 4 -> 0, a_loaded=1, b_loaded=0
-[TILE LOAD_A DBG] t=10565 storing a_local[ 63]=  63 (0x3f)
-[t=10575] STATE -> LOAD_A_WAIT
-[TILE DBG] t=10575 state: 0 -> 4, a_loaded=0, b_loaded=0
-[t=10595] STATE -> UNPACK_A
-[t=10635] STATE -> LOAD_A
-[t=10635] DataMover -> LOAD_A
-[t=10645] STATE -> LOAD_A_WAIT
-[t=10665] STATE -> UNPACK_A
-[t=10705] DataMover -> LOAD_A
-[t=10705] STATE -> LOAD_A
-[t=10715] STATE -> LOAD_A_WAIT
-[t=10735] STATE -> UNPACK_A
-[t=10775] STATE -> LOAD_A
-[t=10775] DataMover -> LOAD_A
-[t=10785] STATE -> LOAD_A_WAIT
-[t=10805] STATE -> UNPACK_A
-[t=10845] DataMover -> LOAD_A
-[t=10845] STATE -> LOAD_A
-[t=10855] STATE -> LOAD_A_WAIT
-[t=10875] STATE -> UNPACK_A
-[t=10915] STATE -> LOAD_A
-[t=10915] DataMover -> LOAD_A
-[t=10925] STATE -> LOAD_A_WAIT
-[t=10945] STATE -> UNPACK_A
-[t=10985] DataMover -> LOAD_A
-[t=10985] STATE -> LOAD_A
-[t=10995] STATE -> LOAD_A_WAIT
-[t=11015] STATE -> UNPACK_A
-[t=11055] STATE -> LOAD_A
-[t=11055] DataMover -> LOAD_A
-[t=11065] STATE -> LOAD_A_WAIT
-[t=11085] STATE -> UNPACK_A
-[t=11125] DataMover -> LOAD_A
-[t=11125] STATE -> LOAD_A
-[t=11135] STATE -> LOAD_A_WAIT
-[t=11155] STATE -> UNPACK_A
-[t=11195] STATE -> LOAD_A
-[t=11195] DataMover -> LOAD_A
-[t=11205] STATE -> LOAD_A_WAIT
-[t=11225] STATE -> UNPACK_A
-[t=11265] DataMover -> LOAD_A
-[t=11265] STATE -> LOAD_A
-[t=11275] STATE -> LOAD_A_WAIT
-[t=11295] STATE -> UNPACK_A
-[t=11335] STATE -> LOAD_A
-[t=11335] DataMover -> LOAD_A
-[t=11345] STATE -> LOAD_A_WAIT
-[t=11365] STATE -> UNPACK_A
-[t=11405] DataMover -> LOAD_A
-[t=11405] STATE -> LOAD_A
-[t=11415] STATE -> LOAD_A_WAIT
-[t=11435] STATE -> UNPACK_A
-[t=11475] STATE -> LOAD_A
-[t=11475] DataMover -> LOAD_A
-[t=11485] STATE -> LOAD_A_WAIT
-[t=11505] STATE -> UNPACK_A
-[t=11545] DataMover -> LOAD_A
-[t=11545] STATE -> LOAD_A
-[t=11555] STATE -> LOAD_A_WAIT
-[t=11575] STATE -> UNPACK_A
-[t=11615] STATE -> LOAD_A
-[t=11615] DataMover -> LOAD_A
-[t=11625] STATE -> LOAD_A_WAIT
-[t=11645] STATE -> UNPACK_A
-[t=11685] DataMover -> LOAD_A
-[t=11685] STATE -> LOAD_A
-[TILE LOAD_A DBG] t=11685 storing a_local[ 63]= 127 (0x7f)
-[TILE DBG] t=11685 state: 4 -> 0, a_loaded=1, b_loaded=0
-[t=11695] STATE -> LOAD_A_WAIT
-[TILE DBG] t=11695 state: 0 -> 4, a_loaded=0, b_loaded=0
-[t=11715] STATE -> UNPACK_A
-[t=11755] STATE -> LOAD_A
-[t=11755] DataMover -> LOAD_A
-[t=11765] STATE -> LOAD_A_WAIT
-[t=11785] STATE -> UNPACK_A
-[t=11825] DataMover -> LOAD_A
-[t=11825] STATE -> LOAD_A
-[t=11835] STATE -> LOAD_A_WAIT
-[t=11855] STATE -> UNPACK_A
-[t=11895] STATE -> LOAD_A
-[t=11895] DataMover -> LOAD_A
-[t=11905] STATE -> LOAD_A_WAIT
-[t=11925] STATE -> UNPACK_A
-[t=11965] DataMover -> LOAD_A
-[t=11965] STATE -> LOAD_A
-[t=11975] STATE -> LOAD_A_WAIT
-[t=11995] STATE -> UNPACK_A
-[t=12035] STATE -> LOAD_A
-[t=12035] DataMover -> LOAD_A
-[t=12045] STATE -> LOAD_A_WAIT
-[t=12065] STATE -> UNPACK_A
-[t=12105] DataMover -> LOAD_A
-[t=12105] STATE -> LOAD_A
-[t=12115] STATE -> LOAD_A_WAIT
-[t=12135] STATE -> UNPACK_A
-[t=12175] STATE -> LOAD_A
-[t=12175] DataMover -> LOAD_A
-[t=12185] STATE -> LOAD_A_WAIT
-[t=12205] STATE -> UNPACK_A
-[t=12245] DataMover -> LOAD_A
-[t=12245] STATE -> LOAD_A
-[t=12255] STATE -> LOAD_A_WAIT
-[t=12275] STATE -> UNPACK_A
-[t=12315] STATE -> LOAD_A
-[t=12315] DataMover -> LOAD_A
-[t=12325] STATE -> LOAD_A_WAIT
-[t=12345] STATE -> UNPACK_A
-[t=12385] DataMover -> LOAD_A
-[t=12385] STATE -> LOAD_A
-[t=12395] STATE -> LOAD_A_WAIT
-[t=12415] STATE -> UNPACK_A
-[t=12455] STATE -> LOAD_A
-[t=12455] DataMover -> LOAD_A
-[t=12465] STATE -> LOAD_A_WAIT
-[t=12485] STATE -> UNPACK_A
-[t=12525] DataMover -> LOAD_A
-[t=12525] STATE -> LOAD_A
-[t=12535] STATE -> LOAD_A_WAIT
-[t=12555] STATE -> UNPACK_A
-[t=12595] STATE -> LOAD_A
-[t=12595] DataMover -> LOAD_A
-[t=12605] STATE -> LOAD_A_WAIT
-[t=12625] STATE -> UNPACK_A
-[t=12665] DataMover -> LOAD_A
-[t=12665] STATE -> LOAD_A
-[t=12675] STATE -> LOAD_A_WAIT
-[t=12695] STATE -> UNPACK_A
-[t=12735] STATE -> LOAD_A
-[t=12735] DataMover -> LOAD_A
-[t=12745] STATE -> LOAD_A_WAIT
-[t=12765] STATE -> UNPACK_A
-[t=12805] DataMover -> LOAD_A
-[t=12805] STATE -> LOAD_A
-[TILE LOAD_A DBG] t=12805 storing a_local[ 63]= -65 (0xbf)
-[TILE DBG] t=12805 state: 4 -> 0, a_loaded=1, b_loaded=0
-[t=12815] STATE -> LOAD_A_WAIT
-[TILE DBG] t=12815 state: 0 -> 4, a_loaded=0, b_loaded=0
-[t=12835] STATE -> UNPACK_A
-[t=12875] STATE -> LOAD_A
-[t=12875] DataMover -> LOAD_A
-[t=12885] STATE -> LOAD_A_WAIT
-[t=12905] STATE -> UNPACK_A
-[t=12945] DataMover -> LOAD_A
-[t=12945] STATE -> LOAD_A
-[t=12955] STATE -> LOAD_A_WAIT
-[t=12975] STATE -> UNPACK_A
-[t=13015] STATE -> LOAD_A
-[t=13015] DataMover -> LOAD_A
-[t=13025] STATE -> LOAD_A_WAIT
-[t=13045] STATE -> UNPACK_A
-[t=13085] DataMover -> LOAD_A
-[t=13085] STATE -> LOAD_A
-[t=13095] STATE -> LOAD_A_WAIT
-[t=13115] STATE -> UNPACK_A
-[t=13155] STATE -> LOAD_A
-[t=13155] DataMover -> LOAD_A
-[t=13165] STATE -> LOAD_A_WAIT
-[t=13185] STATE -> UNPACK_A
-[t=13225] DataMover -> LOAD_A
-[t=13225] STATE -> LOAD_A
-[t=13235] STATE -> LOAD_A_WAIT
-[t=13255] STATE -> UNPACK_A
-[t=13295] STATE -> LOAD_A
-[t=13295] DataMover -> LOAD_A
-[t=13305] STATE -> LOAD_A_WAIT
-[t=13325] STATE -> UNPACK_A
-[t=13365] DataMover -> LOAD_A
-[t=13365] STATE -> LOAD_A
-[t=13375] STATE -> LOAD_A_WAIT
-[t=13395] STATE -> UNPACK_A
-[t=13435] STATE -> LOAD_A
-[t=13435] DataMover -> LOAD_A
-[t=13445] STATE -> LOAD_A_WAIT
-[t=13465] STATE -> UNPACK_A
-[t=13505] DataMover -> LOAD_A
-[t=13505] STATE -> LOAD_A
-[t=13515] STATE -> LOAD_A_WAIT
-[t=13535] STATE -> UNPACK_A
-[t=13575] STATE -> LOAD_A
-[t=13575] DataMover -> LOAD_A
-[t=13585] STATE -> LOAD_A_WAIT
-[t=13605] STATE -> UNPACK_A
-[t=13645] DataMover -> LOAD_A
-[t=13645] STATE -> LOAD_A
-[t=13655] STATE -> LOAD_A_WAIT
-[t=13675] STATE -> UNPACK_A
-[t=13715] STATE -> LOAD_A
-[t=13715] DataMover -> LOAD_A
-[t=13725] STATE -> LOAD_A_WAIT
-[t=13745] STATE -> UNPACK_A
-[t=13785] DataMover -> LOAD_A
-[t=13785] STATE -> LOAD_A
-[t=13795] STATE -> LOAD_A_WAIT
-[t=13815] STATE -> UNPACK_A
-[t=13855] STATE -> LOAD_A
-[t=13855] DataMover -> LOAD_A
-[t=13865] STATE -> LOAD_A_WAIT
-[t=13885] STATE -> UNPACK_A
-[t=13925] DataMover -> LOAD_B
-[t=13925] STATE -> LOAD_B
-[TILE LOAD_A DBG] t=13925 storing a_local[ 63]=  -1 (0xff)
-[TILE DBG] t=13925 state: 4 -> 0, a_loaded=1, b_loaded=0
-[t=13935] STATE -> LOAD_B_WAIT
-[TILE DBG] t=13935 state: 0 -> 5, a_loaded=1, b_loaded=0
-
-[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
-  A[          0] = [-64, -63, -62, -61, -60, -59, -58, -57]
-  A[          1] = [-56, -55, -54, -53, -52, -51, -50, -49]
-  A[          2] = [-48, -47, -46, -45, -44, -43, -42, -41]
-  A[          3] = [-40, -39, -38, -37, -36, -35, -34, -33]
-  A[          4] = [-32, -31, -30, -29, -28, -27, -26, -25]
-  A[          5] = [-24, -23, -22, -21, -20, -19, -18, -17]
-  A[          6] = [-16, -15, -14, -13, -12, -11, -10,  -9]
-  A[          7] = [ -8,  -7,  -6,  -5,  -4,  -3,  -2,  -1]
-==========================================
-
-[TILE DBG] t=13935 state: 0 -> 5, a_loaded=1, b_loaded=0
-
-[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
-  A[          0] = [-128, -127, -126, -125, -124, -123, -122, -121]
-  A[          1] = [-120, -119, -118, -117, -116, -115, -114, -113]
-  A[          2] = [-112, -111, -110, -109, -108, -107, -106, -105]
-  A[          3] = [-104, -103, -102, -101, -100, -99, -98, -97]
-  A[          4] = [-96, -95, -94, -93, -92, -91, -90, -89]
-  A[          5] = [-88, -87, -86, -85, -84, -83, -82, -81]
-  A[          6] = [-80, -79, -78, -77, -76, -75, -74, -73]
-  A[          7] = [-72, -71, -70, -69, -68, -67, -66, -65]
-==========================================
-
-[TILE DBG] t=13935 state: 0 -> 5, a_loaded=1, b_loaded=0
-
-[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
-  A[          0] = [ 64,  65,  66,  67,  68,  69,  70,  71]
-  A[          1] = [ 72,  73,  74,  75,  76,  77,  78,  79]
-  A[          2] = [ 80,  81,  82,  83,  84,  85,  86,  87]
-  A[          3] = [ 88,  89,  90,  91,  92,  93,  94,  95]
-  A[          4] = [ 96,  97,  98,  99, 100, 101, 102, 103]
-  A[          5] = [104, 105, 106, 107, 108, 109, 110, 111]
-  A[          6] = [112, 113, 114, 115, 116, 117, 118, 119]
-  A[          7] = [120, 121, 122, 123, 124, 125, 126, 127]
-==========================================
-
-[TILE DBG] t=13935 state: 0 -> 5, a_loaded=1, b_loaded=0
-
-[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====
-  A[          0] = [  0,   1,   2,   3,   4,   5,   6,   7]
-  A[          1] = [  8,   9,  10,  11,  12,  13,  14,  15]
-  A[          2] = [ 16,  17,  18,  19,  20,  21,  22,  23]
-  A[          3] = [ 24,  25,  26,  27,  28,  29,  30,  31]
-  A[          4] = [ 32,  33,  34,  35,  36,  37,  38,  39]
-  A[          5] = [ 40,  41,  42,  43,  44,  45,  46,  47]
-  A[          6] = [ 48,  49,  50,  51,  52,  53,  54,  55]
-  A[          7] = [ 56,  57,  58,  59,  60,  61,  62,  63]
-==========================================
-
-[t=13955] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=13965 storing b_local[  0]=   1 (0x01)
-[TILE LOAD_B DBG] t=13965 storing b_local[  0]=   1 (0x01)
-[TILE LOAD_B DBG] t=13965 storing b_local[  0]=   1 (0x01)
-[TILE LOAD_B DBG] t=13965 storing b_local[  0]=   1 (0x01)
-[TILE LOAD_B DBG] t=13975 storing b_local[  1]=   0 (0x00)
-[TILE LOAD_B DBG] t=13975 storing b_local[  1]=   0 (0x00)
-[TILE LOAD_B DBG] t=13975 storing b_local[  1]=   0 (0x00)
-[TILE LOAD_B DBG] t=13975 storing b_local[  1]=   0 (0x00)
-[TILE LOAD_B DBG] t=13985 storing b_local[  2]=   0 (0x00)
-[TILE LOAD_B DBG] t=13985 storing b_local[  2]=   0 (0x00)
-[TILE LOAD_B DBG] t=13985 storing b_local[  2]=   0 (0x00)
-[TILE LOAD_B DBG] t=13985 storing b_local[  2]=   0 (0x00)
-[t=13995] STATE -> LOAD_B
-[t=13995] DataMover -> LOAD_B
-[TILE LOAD_B DBG] t=13995 storing b_local[  3]=   0 (0x00)
-[TILE LOAD_B DBG] t=13995 storing b_local[  3]=   0 (0x00)
-[TILE LOAD_B DBG] t=13995 storing b_local[  3]=   0 (0x00)
-[TILE LOAD_B DBG] t=13995 storing b_local[  3]=   0 (0x00)
-[t=14005] STATE -> LOAD_B_WAIT
-[t=14025] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=14035 storing b_local[  4]=   0 (0x00)
-[TILE LOAD_B DBG] t=14035 storing b_local[  4]=   0 (0x00)
-[TILE LOAD_B DBG] t=14035 storing b_local[  4]=   0 (0x00)
-[TILE LOAD_B DBG] t=14035 storing b_local[  4]=   0 (0x00)
-[TILE LOAD_B DBG] t=14045 storing b_local[  5]=   0 (0x00)
-[TILE LOAD_B DBG] t=14045 storing b_local[  5]=   0 (0x00)
-[TILE LOAD_B DBG] t=14045 storing b_local[  5]=   0 (0x00)
-[TILE LOAD_B DBG] t=14045 storing b_local[  5]=   0 (0x00)
-[TILE LOAD_B DBG] t=14055 storing b_local[  6]=   0 (0x00)
-[TILE LOAD_B DBG] t=14055 storing b_local[  6]=   0 (0x00)
-[TILE LOAD_B DBG] t=14055 storing b_local[  6]=   0 (0x00)
-[TILE LOAD_B DBG] t=14055 storing b_local[  6]=   0 (0x00)
-[t=14065] DataMover -> LOAD_B
-[t=14065] STATE -> LOAD_B
-[TILE LOAD_B DBG] t=14065 storing b_local[  7]=   0 (0x00)
-[TILE LOAD_B DBG] t=14065 storing b_local[  7]=   0 (0x00)
-[TILE LOAD_B DBG] t=14065 storing b_local[  7]=   0 (0x00)
-[TILE LOAD_B DBG] t=14065 storing b_local[  7]=   0 (0x00)
-[t=14075] STATE -> LOAD_B_WAIT
-[t=14095] STATE -> UNPACK_B
-[t=14135] STATE -> LOAD_B
-[t=14135] DataMover -> LOAD_B
-[t=14145] STATE -> LOAD_B_WAIT
-[t=14165] STATE -> UNPACK_B
-[t=14205] DataMover -> LOAD_B
-[t=14205] STATE -> LOAD_B
-[t=14215] STATE -> LOAD_B_WAIT
-[t=14235] STATE -> UNPACK_B
-[t=14275] STATE -> LOAD_B
-[t=14275] DataMover -> LOAD_B
-[t=14285] STATE -> LOAD_B_WAIT
-[t=14305] STATE -> UNPACK_B
-[t=14345] DataMover -> LOAD_B
-[t=14345] STATE -> LOAD_B
-[t=14355] STATE -> LOAD_B_WAIT
-[t=14375] STATE -> UNPACK_B
-[t=14415] STATE -> LOAD_B
-[t=14415] DataMover -> LOAD_B
-[t=14425] STATE -> LOAD_B_WAIT
-[t=14445] STATE -> UNPACK_B
-[t=14485] DataMover -> LOAD_B
-[t=14485] STATE -> LOAD_B
-[t=14495] STATE -> LOAD_B_WAIT
-[t=14515] STATE -> UNPACK_B
-[t=14555] STATE -> LOAD_B
-[t=14555] DataMover -> LOAD_B
-[t=14565] STATE -> LOAD_B_WAIT
-[t=14585] STATE -> UNPACK_B
-[t=14625] DataMover -> LOAD_B
-[t=14625] STATE -> LOAD_B
-[t=14635] STATE -> LOAD_B_WAIT
-[t=14655] STATE -> UNPACK_B
-[t=14695] STATE -> LOAD_B
-[t=14695] DataMover -> LOAD_B
-[t=14705] STATE -> LOAD_B_WAIT
-[t=14725] STATE -> UNPACK_B
-[t=14765] DataMover -> LOAD_B
-[t=14765] STATE -> LOAD_B
-[t=14775] STATE -> LOAD_B_WAIT
-[t=14795] STATE -> UNPACK_B
-[t=14835] STATE -> LOAD_B
-[t=14835] DataMover -> LOAD_B
-[t=14845] STATE -> LOAD_B_WAIT
-[t=14865] STATE -> UNPACK_B
-[t=14905] DataMover -> LOAD_B
-[t=14905] STATE -> LOAD_B
-[t=14915] STATE -> LOAD_B_WAIT
-[t=14935] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=14945 storing b_local[ 56]=   0 (0x00)
-[TILE LOAD_B DBG] t=14945 storing b_local[ 56]=   0 (0x00)
-[TILE LOAD_B DBG] t=14945 storing b_local[ 56]=   0 (0x00)
-[TILE LOAD_B DBG] t=14945 storing b_local[ 56]=   0 (0x00)
-[TILE LOAD_B DBG] t=14955 storing b_local[ 57]=   0 (0x00)
-[TILE LOAD_B DBG] t=14955 storing b_local[ 57]=   0 (0x00)
-[TILE LOAD_B DBG] t=14955 storing b_local[ 57]=   0 (0x00)
-[TILE LOAD_B DBG] t=14955 storing b_local[ 57]=   0 (0x00)
-[TILE LOAD_B DBG] t=14965 storing b_local[ 58]=   0 (0x00)
-[TILE LOAD_B DBG] t=14965 storing b_local[ 58]=   0 (0x00)
-[TILE LOAD_B DBG] t=14965 storing b_local[ 58]=   0 (0x00)
-[TILE LOAD_B DBG] t=14965 storing b_local[ 58]=   0 (0x00)
-[t=14975] STATE -> LOAD_B
-[t=14975] DataMover -> LOAD_B
-[TILE LOAD_B DBG] t=14975 storing b_local[ 59]=   0 (0x00)
-[TILE LOAD_B DBG] t=14975 storing b_local[ 59]=   0 (0x00)
-[TILE LOAD_B DBG] t=14975 storing b_local[ 59]=   0 (0x00)
-[TILE LOAD_B DBG] t=14975 storing b_local[ 59]=   0 (0x00)
-[t=14985] STATE -> LOAD_B_WAIT
-[t=15005] STATE -> UNPACK_B
-[TILE LOAD_B DBG] t=15015 storing b_local[ 60]=   0 (0x00)
-[TILE LOAD_B DBG] t=15015 storing b_local[ 60]=   0 (0x00)
-[TILE LOAD_B DBG] t=15015 storing b_local[ 60]=   0 (0x00)
-[TILE LOAD_B DBG] t=15015 storing b_local[ 60]=   0 (0x00)
-[TILE LOAD_B DBG] t=15025 storing b_local[ 61]=   0 (0x00)
-[TILE LOAD_B DBG] t=15025 storing b_local[ 61]=   0 (0x00)
-[TILE LOAD_B DBG] t=15025 storing b_local[ 61]=   0 (0x00)
-[TILE LOAD_B DBG] t=15025 storing b_local[ 61]=   0 (0x00)
-[TILE LOAD_B DBG] t=15035 storing b_local[ 62]=   0 (0x00)
-[TILE LOAD_B DBG] t=15035 storing b_local[ 62]=   0 (0x00)
-[TILE LOAD_B DBG] t=15035 storing b_local[ 62]=   0 (0x00)
-[TILE LOAD_B DBG] t=15035 storing b_local[ 62]=   0 (0x00)
-[t=15045] DataMover -> STORE
-[t=15045] STATE -> 10
-[TILE LOAD_B DBG] t=15045 storing b_local[ 63]=   1 (0x01)
-[TILE DBG] t=15045 state: 5 -> 2, a_loaded=1, b_loaded=1
-[TILE LOAD_B DBG] t=15045 storing b_local[ 63]=   1 (0x01)
-[TILE DBG] t=15045 state: 5 -> 2, a_loaded=1, b_loaded=1
-[TILE LOAD_B DBG] t=15045 storing b_local[ 63]=   1 (0x01)
-[TILE DBG] t=15045 state: 5 -> 2, a_loaded=1, b_loaded=1
-[TILE LOAD_B DBG] t=15045 storing b_local[ 63]=   1 (0x01)
-[TILE DBG] t=15045 state: 5 -> 2, a_loaded=1, b_loaded=1
-
-[TILE 0] ===== B Matrix Loaded (8×8 INT8) =====
-  B[          0] = [  1,   0,   0,   0,   0,   0,   0,   0]
-  B[          1] = [  0,   1,   0,   0,   0,   0,   0,   0]
-  B[          2] = [  0,   0,   1,   0,   0,   0,   0,   0]
-  B[          3] = [  0,   0,   0,   1,   0,   0,   0,   0]
-  B[          4] = [  0,   0,   0,   0,   1,   0,   0,   0]
-  B[          5] = [  0,   0,   0,   0,   0,   1,   0,   0]
-  B[          6] = [  0,   0,   0,   0,   0,   0,   1,   0]
-  B[          7] = [  0,   0,   0,   0,   0,   0,   0,   1]
-==========================================
-
-
-[TILE 0] ===== B Matrix Loaded (8×8 INT8) =====
-  B[          0] = [  1,   0,   0,   0,   0,   0,   0,   0]
-  B[          1] = [  0,   1,   0,   0,   0,   0,   0,   0]
-  B[          2] = [  0,   0,   1,   0,   0,   0,   0,   0]
-  B[          3] = [  0,   0,   0,   1,   0,   0,   0,   0]
-  B[          4] = [  0,   0,   0,   0,   1,   0,   0,   0]
-  B[          5] = [  0,   0,   0,   0,   0,   1,   0,   0]
-  B[          6] = [  0,   0,   0,   0,   0,   0,   1,   0]
-  B[          7] = [  0,   0,   0,   0,   0,   0,   0,   1]
-==========================================
-
-
-[TILE 0] ===== B Matrix Loaded (8×8 INT8) =====
-  B[          0] = [  1,   0,   0,   0,   0,   0,   0,   0]
-  B[          1] = [  0,   1,   0,   0,   0,   0,   0,   0]
-  B[          2] = [  0,   0,   1,   0,   0,   0,   0,   0]
-  B[          3] = [  0,   0,   0,   1,   0,   0,   0,   0]
-  B[          4] = [  0,   0,   0,   0,   1,   0,   0,   0]
-  B[          5] = [  0,   0,   0,   0,   0,   1,   0,   0]
-  B[          6] = [  0,   0,   0,   0,   0,   0,   1,   0]
-  B[          7] = [  0,   0,   0,   0,   0,   0,   0,   1]
-==========================================
-
-
-[TILE 0] ===== B Matrix Loaded (8×8 INT8) =====
-  B[          0] = [  1,   0,   0,   0,   0,   0,   0,   0]
-  B[          1] = [  0,   1,   0,   0,   0,   0,   0,   0]
-  B[          2] = [  0,   0,   1,   0,   0,   0,   0,   0]
-  B[          3] = [  0,   0,   0,   1,   0,   0,   0,   0]
-  B[          4] = [  0,   0,   0,   0,   1,   0,   0,   0]
-  B[          5] = [  0,   0,   0,   0,   0,   1,   0,   0]
-  B[          6] = [  0,   0,   0,   0,   0,   0,   1,   0]
-  B[          7] = [  0,   0,   0,   0,   0,   0,   0,   1]
-==========================================
-
-[TILE DBG] t=15125 state: 2 -> 3, a_loaded=1, b_loaded=1
-[TILE DBG] t=15125 state: 2 -> 3, a_loaded=1, b_loaded=1
-[TILE DBG] t=15125 state: 2 -> 3, a_loaded=1, b_loaded=1
-[TILE DBG] t=15125 state: 2 -> 3, a_loaded=1, b_loaded=1
-
-[TILE 0] ===== C Matrix Result (8×8 INT32) =====
-  C[          0] = [   -64,    -63,    -62,    -61,    -60,    -59,    -58,    -57]
-  C[          1] = [   -56,    -55,    -54,    -53,    -52,    -51,    -50,    -49]
-  C[          2] = [   -48,    -47,    -46,    -45,    -44,    -43,    -42,    -41]
-  C[          3] = [   -40,    -39,    -38,    -37,    -36,    -35,    -34,    -33]
-  C[          4] = [   -32,    -31,    -30,    -29,    -28,    -27,    -26,    -25]
-  C[          5] = [   -24,    -23,    -22,    -21,    -20,    -19,    -18,    -17]
-  C[          6] = [   -16,    -15,    -14,    -13,    -12,    -11,    -10,     -9]
-  C[          7] = [    -8,     -7,     -6,     -5,     -4,     -3,     -2,     -1]
-==========================================
-
-
-[TILE 0] ===== C Matrix Result (8×8 INT32) =====
-  C[          0] = [  -128,   -127,   -126,   -125,   -124,   -123,   -122,   -121]
-  C[          1] = [  -120,   -119,   -118,   -117,   -116,   -115,   -114,   -113]
-  C[          2] = [  -112,   -111,   -110,   -109,   -108,   -107,   -106,   -105]
-  C[          3] = [  -104,   -103,   -102,   -101,   -100,    -99,    -98,    -97]
-  C[          4] = [   -96,    -95,    -94,    -93,    -92,    -91,    -90,    -89]
-  C[          5] = [   -88,    -87,    -86,    -85,    -84,    -83,    -82,    -81]
-  C[          6] = [   -80,    -79,    -78,    -77,    -76,    -75,    -74,    -73]
-  C[          7] = [   -72,    -71,    -70,    -69,    -68,    -67,    -66,    -65]
-==========================================
-
-
-[TILE 0] ===== C Matrix Result (8×8 INT32) =====
-  C[          0] = [    64,     65,     66,     67,     68,     69,     70,     71]
-  C[          1] = [    72,     73,     74,     75,     76,     77,     78,     79]
-  C[          2] = [    80,     81,     82,     83,     84,     85,     86,     87]
-  C[          3] = [    88,     89,     90,     91,     92,     93,     94,     95]
-  C[          4] = [    96,     97,     98,     99,    100,    101,    102,    103]
-  C[          5] = [   104,    105,    106,    107,    108,    109,    110,    111]
-  C[          6] = [   112,    113,    114,    115,    116,    117,    118,    119]
-  C[          7] = [   120,    121,    122,    123,    124,    125,    126,    127]
-==========================================
-
-
-[TILE 0] ===== C Matrix Result (8×8 INT32) =====
-  C[          0] = [     0,      1,      2,      3,      4,      5,      6,      7]
-  C[          1] = [     8,      9,     10,     11,     12,     13,     14,     15]
-  C[          2] = [    16,     17,     18,     19,     20,     21,     22,     23]
-  C[          3] = [    24,     25,     26,     27,     28,     29,     30,     31]
-  C[          4] = [    32,     33,     34,     35,     36,     37,     38,     39]
-  C[          5] = [    40,     41,     42,     43,     44,     45,     46,     47]
-  C[          6] = [    48,     49,     50,     51,     52,     53,     54,     55]
-  C[          7] = [    56,     57,     58,     59,     60,     61,     62,     63]
-==========================================
-
-[t=15165] STATE -> 11
-[STORE DBG] t=15165 Writing C Buffer for Tile  0, addr=0x00008000, data[0]=0x00000000
-[t=15175] STATE -> 12
-[t=15175] DataMover -> DONE
-[t=15815] STATE -> 11
-[STORE DBG] t=15815 Writing C Buffer for Tile  1, addr=0x00008100, data[0]=0x00000040
-[t=15825] DataMover -> DONE
-[t=15825] STATE -> 12
-[t=16465] STATE -> 11
-[STORE DBG] t=16465 Writing C Buffer for Tile  2, addr=0x00008200, data[0]=0xffffff80
-[t=16475] STATE -> 12
-[t=16475] DataMover -> DONE
-[t=17115] STATE -> 11
-[STORE DBG] t=17115 Writing C Buffer for Tile  3, addr=0x00008300, data[0]=0xffffffc0
-[t=17125] DataMover -> DONE
-[t=17125] STATE -> 12
-[t=17765] STATE -> DONE
-[t=17775] STATE -> IDLE
-[t=17775] DataMover -> IDLE
+[TILE DBG] t=37445 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=37455 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=38565 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=38575 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=39685 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=39695 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=40805 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=40815 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=41925 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=41935 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=43045 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=43055 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=44165 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=44175 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=45285 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=45295 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=46405 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=46415 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=47525 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=47535 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=48645 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=48655 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=49765 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=49775 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=50885 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=50895 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=52005 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=52015 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=53125 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=53135 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=54245 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=54255 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=55365 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=55375 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=56485 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=56495 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=57605 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=57615 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=58725 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=58735 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=59845 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=59855 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=60965 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=60975 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=62085 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=62095 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=63205 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=63215 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=64325 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=64335 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=65445 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=65455 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=66565 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=66575 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=67685 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=67695 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=68805 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=68815 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=69925 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=69935 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=71045 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=71055 state: 0 -> 4, a_loaded=0, b_loaded=0
+[TILE DBG] t=72165 state: 4 -> 0, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=72175 state: 0 -> 5, a_loaded=1, b_loaded=0
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73285 state: 5 -> 2, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
+[TILE DBG] t=73365 state: 2 -> 3, a_loaded=1, b_loaded=1
       [FAIL] 等待超时! npu_done 未置位 (timeout=50000)
     [步骤8] 验证状态寄存器...
       STATUS 寄存器 = 0x00000000
       [FAIL] status_done = 0 (期望 1)
       [PASS] status_error = 0
     [步骤9] 验证 C 矩阵计算结果...
-      开始验证 C 矩阵 (32×8, 共 256 个元素)...
-        进度: 已验证 8/32 行, 发现 0 个错误
-        进度: 已验证 16/32 行, 发现 0 个错误
-        进度: 已验证 24/32 行, 发现 0 个错误
-        进度: 已验证 32/32 行, 发现 0 个错误
+      开始验证 C 矩阵 (256×8, 共 2048 个元素)...
+        进度: 已验证 8/256 行, 发现 0 个错误
+        进度: 已验证 16/256 行, 发现 0 个错误
+        进度: 已验证 24/256 行, 发现 0 个错误
+        进度: 已验证 32/256 行, 发现 0 个错误
+        进度: 已验证 40/256 行, 发现 0 个错误
+        进度: 已验证 48/256 行, 发现 0 个错误
+        进度: 已验证 56/256 行, 发现 0 个错误
+        进度: 已验证 64/256 行, 发现 0 个错误
+        进度: 已验证 72/256 行, 发现 0 个错误
+        进度: 已验证 80/256 行, 发现 0 个错误
+        进度: 已验证 88/256 行, 发现 0 个错误
+        进度: 已验证 96/256 行, 发现 0 个错误
+        进度: 已验证 104/256 行, 发现 0 个错误
+        进度: 已验证 112/256 行, 发现 0 个错误
+        进度: 已验证 120/256 行, 发现 0 个错误
+        进度: 已验证 128/256 行, 发现 0 个错误
+        进度: 已验证 136/256 行, 发现 0 个错误
+        进度: 已验证 144/256 行, 发现 0 个错误
+        进度: 已验证 152/256 行, 发现 0 个错误
+        进度: 已验证 160/256 行, 发现 0 个错误
+        进度: 已验证 168/256 行, 发现 0 个错误
+        进度: 已验证 176/256 行, 发现 0 个错误
+        进度: 已验证 184/256 行, 发现 0 个错误
+        进度: 已验证 192/256 行, 发现 0 个错误
+        进度: 已验证 200/256 行, 发现 0 个错误
+        进度: 已验证 208/256 行, 发现 0 个错误
+        进度: 已验证 216/256 行, 发现 0 个错误
+        进度: 已验证 224/256 行, 发现 0 个错误
+        进度: 已验证 232/256 行, 发现 0 个错误
+        进度: 已验证 240/256 行, 发现 0 个错误
+        进度: 已验证 248/256 行, 发现 0 个错误
+        进度: 已验证 256/256 行, 发现 0 个错误
 
       [PASS] MERGE 模式计算结果完全正确!
-             验证了 256 个元素，全部匹配
+             验证了 2048 个元素，全部匹配
     [步骤10] 打印 C 矩阵前8行（调试用）...
-      --- C 矩阵前16行 ---
+      --- C 矩阵前256行 ---
         C[          0] = [   0,    1,    2,    3,    4,    5,    6,    7]
         C[          1] = [   8,    9,   10,   11,   12,   13,   14,   15]
         C[          2] = [  16,   17,   18,   19,   20,   21,   22,   23]
@@ -729,6 +344,230 @@ VCD info: dumpfile npu_integration_test.vcd opened for output.
         C[         29] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
         C[         30] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
         C[         31] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[         32] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[         33] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[         34] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[         35] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[         36] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[         37] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[         38] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[         39] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[         40] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[         41] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[         42] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[         43] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[         44] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[         45] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[         46] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[         47] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[         48] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[         49] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[         50] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[         51] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[         52] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[         53] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[         54] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[         55] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[         56] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[         57] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[         58] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[         59] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[         60] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[         61] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[         62] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[         63] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[         64] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[         65] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[         66] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[         67] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[         68] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[         69] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[         70] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[         71] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[         72] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[         73] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[         74] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[         75] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[         76] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[         77] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[         78] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[         79] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[         80] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[         81] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[         82] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[         83] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[         84] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[         85] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[         86] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[         87] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[         88] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[         89] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[         90] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[         91] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[         92] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[         93] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[         94] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[         95] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[         96] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[         97] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[         98] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[         99] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[        100] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[        101] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[        102] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[        103] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[        104] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[        105] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[        106] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[        107] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[        108] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[        109] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[        110] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[        111] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[        112] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[        113] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[        114] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[        115] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[        116] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[        117] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[        118] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[        119] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[        120] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[        121] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[        122] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[        123] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[        124] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[        125] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[        126] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[        127] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[        128] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[        129] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[        130] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[        131] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[        132] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[        133] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[        134] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[        135] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[        136] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[        137] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[        138] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[        139] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[        140] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[        141] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[        142] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[        143] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[        144] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[        145] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[        146] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[        147] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[        148] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[        149] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[        150] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[        151] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[        152] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[        153] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[        154] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[        155] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[        156] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[        157] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[        158] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[        159] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[        160] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[        161] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[        162] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[        163] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[        164] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[        165] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[        166] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[        167] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[        168] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[        169] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[        170] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[        171] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[        172] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[        173] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[        174] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[        175] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[        176] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[        177] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[        178] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[        179] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[        180] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[        181] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[        182] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[        183] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[        184] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[        185] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[        186] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[        187] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[        188] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[        189] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[        190] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[        191] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[        192] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[        193] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[        194] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[        195] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[        196] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[        197] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[        198] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[        199] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[        200] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[        201] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[        202] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[        203] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[        204] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[        205] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[        206] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[        207] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[        208] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[        209] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[        210] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[        211] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[        212] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[        213] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[        214] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[        215] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[        216] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[        217] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[        218] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[        219] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[        220] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[        221] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[        222] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[        223] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
+        C[        224] = [   0,    1,    2,    3,    4,    5,    6,    7]
+        C[        225] = [   8,    9,   10,   11,   12,   13,   14,   15]
+        C[        226] = [  16,   17,   18,   19,   20,   21,   22,   23]
+        C[        227] = [  24,   25,   26,   27,   28,   29,   30,   31]
+        C[        228] = [  32,   33,   34,   35,   36,   37,   38,   39]
+        C[        229] = [  40,   41,   42,   43,   44,   45,   46,   47]
+        C[        230] = [  48,   49,   50,   51,   52,   53,   54,   55]
+        C[        231] = [  56,   57,   58,   59,   60,   61,   62,   63]
+        C[        232] = [  64,   65,   66,   67,   68,   69,   70,   71]
+        C[        233] = [  72,   73,   74,   75,   76,   77,   78,   79]
+        C[        234] = [  80,   81,   82,   83,   84,   85,   86,   87]
+        C[        235] = [  88,   89,   90,   91,   92,   93,   94,   95]
+        C[        236] = [  96,   97,   98,   99,  100,  101,  102,  103]
+        C[        237] = [ 104,  105,  106,  107,  108,  109,  110,  111]
+        C[        238] = [ 112,  113,  114,  115,  116,  117,  118,  119]
+        C[        239] = [ 120,  121,  122,  123,  124,  125,  126,  127]
+        C[        240] = [-128, -127, -126, -125, -124, -123, -122, -121]
+        C[        241] = [-120, -119, -118, -117, -116, -115, -114, -113]
+        C[        242] = [-112, -111, -110, -109, -108, -107, -106, -105]
+        C[        243] = [-104, -103, -102, -101, -100,  -99,  -98,  -97]
+        C[        244] = [ -96,  -95,  -94,  -93,  -92,  -91,  -90,  -89]
+        C[        245] = [ -88,  -87,  -86,  -85,  -84,  -83,  -82,  -81]
+        C[        246] = [ -80,  -79,  -78,  -77,  -76,  -75,  -74,  -73]
+        C[        247] = [ -72,  -71,  -70,  -69,  -68,  -67,  -66,  -65]
+        C[        248] = [ -64,  -63,  -62,  -61,  -60,  -59,  -58,  -57]
+        C[        249] = [ -56,  -55,  -54,  -53,  -52,  -51,  -50,  -49]
+        C[        250] = [ -48,  -47,  -46,  -45,  -44,  -43,  -42,  -41]
+        C[        251] = [ -40,  -39,  -38,  -37,  -36,  -35,  -34,  -33]
+        C[        252] = [ -32,  -31,  -30,  -29,  -28,  -27,  -26,  -25]
+        C[        253] = [ -24,  -23,  -22,  -21,  -20,  -19,  -18,  -17]
+        C[        254] = [ -16,  -15,  -14,  -13,  -12,  -11,  -10,   -9]
+        C[        255] = [  -8,   -7,   -6,   -5,   -4,   -3,   -2,   -1]
 
 ============================================================
   NPU 联合测试总结
@@ -747,6 +586,6 @@ VCD info: dumpfile npu_integration_test.vcd opened for output.
     - 阶段9: 多 Tile 并行 - 1个测试
 
   结果: 部分测试失败!
-  结束时间:               535225
+  结束时间:               741305
 ============================================================
-F:\complication-6\NPU\TB\tb_npu_integration_test.v:1717: $finish called at 535275 (1s)
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1724: $finish called at 741355 (1s)
