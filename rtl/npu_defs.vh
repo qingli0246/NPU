@@ -62,7 +62,7 @@
 
 `define NPU_MODE_INDEP       2'b00
 `define NPU_MODE_MERGE       2'b01
-`define NPU_MODE_SPLIT       2'b10
+
 
 // 权重加载模式编码（reg_mode[3:2]位控制）
 `define NPU_WEIGHT_DYNAMIC   1'b0

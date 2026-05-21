@@ -3,7 +3,7 @@
 // ============================================================
 // npu_data_mover - 数据搬运模块（标准FSM三分法重构）
 // 从 A/B Buffer 读取数据分发到 Tile，收集 C 结果写回 C Buffer
-// 支持 INDEP / MERGE / SPLIT 三种模式
+// 支持 INDEP / MERGE  两种种模式
 // 
 // FSM设计原则：
 // 1. 时序逻辑块：状态寄存器和计数器
@@ -62,10 +62,9 @@ module npu_data_mover (clk, rst_n,
     // ========================================================
     wire [10:0] tile_a_words = {5'd0, cfg_k} << 1;   // 2*K words per tile (A)
     wire [10:0] tile_b_words = {5'd0, cfg_k} << 1;   // 2*K words per tile (INDEP/MERGE B)
-    wire [10:0] split_b_group_words = {5'd0, cfg_k} >> 1; // K/4 words per column group
 
     wire is_merge = (cfg_mode == `NPU_MODE_MERGE);
-    wire is_split = (cfg_mode == `NPU_MODE_SPLIT);
+    wire is_indep = (cfg_mode == `NPU_MODE_INDEP);
 
     // ========================================================
     //  状态定义
@@ -77,9 +76,7 @@ module npu_data_mover (clk, rst_n,
     localparam S_LOAD_B      = 5'd4;
     localparam S_LOAD_B_WAIT = 5'd5;
     localparam S_UNPACK_B    = 5'd6;
-    localparam S_SPLIT_LOAD_B      = 5'd7;
-    localparam S_SPLIT_LOAD_B_WAIT = 5'd8;
-    localparam S_SPLIT_UNPACK_B    = 5'd9;
+
     localparam S_COMPUTE_WAIT      = 5'd10;
     localparam S_STORE       = 5'd11;
     localparam S_STORE_WR    = 5'd12;
@@ -94,8 +91,7 @@ module npu_data_mover (clk, rst_n,
     reg [1:0]  byte_idx;
     reg [5:0]  store_word;
     reg [31:0] wr_data_buf;
-    reg [2:0]  split_group_cnt;
-    reg [13:0] split_b_buf;
+
     reg        is_load_op;  // ✅ 新增：标记当前是Load操作还是Store操作
     reg [TILE_COUNT-1:0] mover_tile_en;       
     reg [TILE_COUNT-1:0] next_mover_tile_en; 
@@ -149,8 +145,7 @@ module npu_data_mover (clk, rst_n,
     reg [1:0]  byte_idx_next;
     reg [5:0]  store_word_next;
     reg [31:0] wr_data_buf_next;
-    reg [2:0]  split_group_cnt_next;
-    reg [13:0] split_b_buf_next;
+  
 
     // ---- 状态寄存器更新（时序）----
     always @(posedge clk or negedge rst_n) begin
@@ -161,8 +156,7 @@ module npu_data_mover (clk, rst_n,
             byte_idx        <= 2'd0;
             store_word      <= 6'd0;
             wr_data_buf     <= 32'd0;
-            split_group_cnt <= 3'd0;
-            split_b_buf     <= 14'd0;
+
             is_load_op      <= 1'b0;
             mover_tile_en   <= {TILE_COUNT{1'b0}};
         end else begin
@@ -172,8 +166,7 @@ module npu_data_mover (clk, rst_n,
             byte_idx        <= byte_idx_next;
             store_word      <= store_word_next;
             wr_data_buf     <= wr_data_buf_next;
-            split_group_cnt <= split_group_cnt_next;
-            split_b_buf     <= split_b_buf_next;    
+ 
             mover_tile_en   <= next_mover_tile_en;
             // ✅ 在IDLE状态捕获操作类型
             if (state == S_IDLE) begin
@@ -213,19 +206,13 @@ module npu_data_mover (clk, rst_n,
                 //如果是最后一个启用的tile且当前tile的word_cnt已经大于等于tile_a_words，就进入LOAD_B，否则继续LOAD_A
                 if (byte_idx == 2'd3) begin
                     if (word_cnt + 11'd1 >= tile_a_words) begin
-                        if (is_merge) begin
+                        if (is_merge||is_indep) begin
                             if (is_last_enabled_tile) begin
                                 next_state = S_LOAD_B;
                             end else begin
                                 next_state = S_LOAD_A;
                             end
-                        end else if (is_split) begin
-                             if (is_last_enabled_tile) begin
-                                next_state = S_SPLIT_LOAD_B;
-                            end else begin
-                                next_state = S_LOAD_A;
-                            end   
-                        end
+                        end 
                     end else begin
                         next_state    = S_LOAD_A;
                     end
@@ -252,33 +239,21 @@ module npu_data_mover (clk, rst_n,
                         // 当前 Tile 的 B 矩阵全部加载完成
                         if (is_merge) begin
                             next_state = S_COMPUTE_WAIT;  // ✅ 进入计算等待状态，等待Tile C的结果
-                        end else if (is_split) begin
-                             if (is_last_enabled_tile) begin
+                        end else if (is_indep) begin
+                            if (is_last_enabled_tile) begin
                                 next_state = S_COMPUTE_WAIT;
                             end else begin
                                 next_state = S_LOAD_B;
-                            end   
-                        end
+                            end
+                        end 
                     end else begin
                         next_state = S_LOAD_B;  // 回到 LOAD_B 读取下一个字
                     end
                 end 
             end
 
-            S_SPLIT_LOAD_B: begin
 
-                next_state = S_SPLIT_LOAD_B_WAIT;
-            end
 
-            S_SPLIT_LOAD_B_WAIT: begin
-                if (buf_rd_valid) begin
-                    next_state       = S_SPLIT_UNPACK_B;
-                end
-            end
-
-            S_SPLIT_UNPACK_B: begin
-
-            end
             S_COMPUTE_WAIT : begin
                 if (store_start) begin
                     next_state      = S_STORE;
@@ -329,12 +304,14 @@ module npu_data_mover (clk, rst_n,
     reg mover_tile_w_done;  
 
     integer ti;
-    wire [15:0] tile_offset_bytes = tile_idx * tile_a_words * 4;  // 字节偏移
+    wire [15:0] tile_offset_bytes_a = tile_idx * tile_a_words * 4;  // 字节偏移
+    wire [15:0] tile_offset_bytes_b = tile_idx * tile_b_words * 4;  // 字节偏移  
     // 【新增】判断握手是否成功
     // 逻辑：对于所有 tile_en[i]==1 的位，必须 tile_a_ready[i]==1
     // ~(mover_tile_en & ~tile_a_ready) 结果为全1表示所有使能位都Ready
     wire a_all_ready = &(~(mover_tile_en & ~tile_a_ready));
     wire a_current_tile_ready = tile_a_ready[tile_idx];
+    wire b_current_tile_ready = tile_b_ready[tile_idx];
     
     always @(*) begin
         // 默认值
@@ -357,8 +334,6 @@ module npu_data_mover (clk, rst_n,
         byte_idx_next       = byte_idx;
         store_word_next     = store_word;
         wr_data_buf_next    = wr_data_buf;
-        split_group_cnt_next = split_group_cnt;
-        split_b_buf_next    = split_b_buf;
         next_mover_tile_en  = mover_tile_en;
 
         case (state)
@@ -368,9 +343,9 @@ module npu_data_mover (clk, rst_n,
                     word_cnt_next = 11'd0;
                     byte_idx_next = 2'd0;
                     mover_tile_w_done   = 1'b0;
-                    if (is_merge) begin
+                    if (is_merge ||is_indep) begin
                         next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << tile_idx) & cfg_tile_mask[TILE_COUNT-1:0];
-                    end
+                    end 
                 end else if (store_start) begin
                     tile_idx_next  = first_enabled_tile;
                     store_word_next= 6'd0;
@@ -378,7 +353,7 @@ module npu_data_mover (clk, rst_n,
             end
             S_LOAD_A: begin
                 mover_buf_rd_en = 1'b1;
-                if (is_merge)begin    
+                if (is_merge||is_indep)begin    
                     if (mover_tile_w_done) begin
                          next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << tile_idx+1) & cfg_tile_mask[TILE_COUNT-1:0];
                          word_cnt_next = 11'd0;
@@ -388,9 +363,9 @@ module npu_data_mover (clk, rst_n,
                             tile_idx_next = next_tile_idx;       
                         end 
                     end    
-                    mover_buf_rd_addr = `NPU_A_BUFFER_BASE + tile_offset_bytes + {5'd0, word_cnt, 2'b00};    
+                    mover_buf_rd_addr = `NPU_A_BUFFER_BASE + tile_offset_bytes_a + {5'd0, word_cnt, 2'b00};    
                 end else
-                    mover_buf_rd_addr = `NPU_A_BUFFER_BASE + tile_offset_bytes + {5'd0, word_cnt, 2'b00};
+                    mover_buf_rd_addr = `NPU_A_BUFFER_BASE + tile_offset_bytes_a + {5'd0, word_cnt, 2'b00};
             end
 
             S_LOAD_A_WAIT: begin
@@ -412,12 +387,12 @@ module npu_data_mover (clk, rst_n,
 
             S_UNPACK_A: begin
                 mover_tile_a_valid = 1'b1;
-                if (is_merge) begin
+                if (is_merge||is_indep) begin
                      mover_tile_a_data[tile_idx*8 +: 8] = wr_data_buf[byte_idx*8 +: 8];
-                end else begin  //对于其他工作模式，后面再修改
+                end else begin  
                     mover_tile_a_data[tile_idx*8 +: 8] = wr_data_buf[byte_idx*8 +: 8];
                 end
-                if (a_current_tile_ready && is_merge) begin
+                if (a_current_tile_ready && (is_merge||is_indep)) begin
                     if (byte_idx == 2'd3) begin
                         byte_idx_next = 2'd0;
                         if (word_cnt + 11'd1 >= tile_a_words) begin
@@ -434,26 +409,6 @@ module npu_data_mover (clk, rst_n,
                         byte_idx_next = byte_idx + 2'd1;
                     end  
                 end
-                //zhe部分应该属于另一种工作模式
-                if (a_current_tile_ready && is_split) begin  
-                    if (byte_idx == 2'd3) begin
-                        byte_idx_next = 2'd0;
-                        if (word_cnt + 11'd1 >= tile_a_words) begin
-                            word_cnt_next = 11'd0;
-                            if (is_split) begin
-                                if (is_last_enabled_tile) begin
-                                    split_group_cnt_next = 3'd0;
-                                end else begin
-                                    tile_idx_next = next_tile_idx;
-                                end
-                            end     
-                        end else begin
-                            word_cnt_next = word_cnt + 11'd1;
-                        end
-                    end else begin
-                        byte_idx_next = byte_idx + 2'd1;
-                    end
-                end
             end
 
             S_LOAD_B: begin
@@ -464,8 +419,25 @@ module npu_data_mover (clk, rst_n,
                     end
                     mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {5'd0, word_cnt, 2'b00};
                     next_mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0];  
-                end else
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {1'd0, tile_idx, 10'd0} + {5'd0, word_cnt, 2'b00};
+                end else if (is_indep) begin
+                    if (mover_tile_w_done) begin 
+                         word_cnt_next = 11'd0;
+                        if (is_last_enabled_tile) begin
+                            tile_idx_next = first_enabled_tile;
+                            //mover_buf_rd_addr = `NPU_B_BUFFER_BASE + tile_offset_bytes_b + {5'd0, word_cnt, 2'b00}; //偏移为0
+                            mover_buf_rd_addr = `NPU_B_BUFFER_BASE + 0 + {5'd0, word_cnt, 2'b00};
+                            next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << 0) & cfg_tile_mask[TILE_COUNT-1:0]; 
+                        end else begin
+                            tile_idx_next = next_tile_idx;   
+                            next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << tile_idx+1) & cfg_tile_mask[TILE_COUNT-1:0];  
+                            mover_buf_rd_addr = `NPU_B_BUFFER_BASE + tile_offset_bytes_b + {5'd0, word_cnt, 2'b00};   
+                        end 
+
+                    end else
+                         mover_buf_rd_addr = `NPU_B_BUFFER_BASE + tile_offset_bytes_b + {5'd0, word_cnt, 2'b00};
+                    
+                end
+
             end
 
             S_LOAD_B_WAIT: begin
@@ -477,39 +449,34 @@ module npu_data_mover (clk, rst_n,
                 if (buf_rd_valid) begin
                     wr_data_buf_next = buf_rd_data;
                 end
-                if (is_merge)
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {5'd0, word_cnt, 2'b00};
-                else
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {1'd0, tile_idx, 10'd0} + {5'd0, word_cnt, 2'b00};
+              
+              //  if (is_merge)
+              //      mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {5'd0, word_cnt, 2'b00};
+              //  else if (is_indep)
+              //      mover_buf_rd_addr = `NPU_B_BUFFER_BASE + tile_offset_bytes_b + {5'd0, word_cnt, 2'b00};
+                    
             end
 
             S_UNPACK_B: begin
                 mover_tile_b_valid = 1'b1;
-                if (is_merge) begin
+                if (is_merge||is_indep) begin
                     for (ti = 0; ti < TILE_COUNT; ti = ti + 1)
                         mover_tile_b_data[ti*8 +: 8] = wr_data_buf[byte_idx*8 +: 8];
                 end else begin
                         mover_tile_b_data[tile_idx*8 +: 8] = wr_data_buf[byte_idx*8 +: 8];
                 end               
-                
+               /* 
                 if (byte_idx == 2'd3) begin
                     byte_idx_next = 2'd0;
                     // 当前字的4个字节都处理完了
                     if (word_cnt + 11'd1 >= tile_b_words) begin
                         // 当前 Tile 的 B 矩阵全部加载完成
                         word_cnt_next = 11'd0;
-                        if (is_merge) begin
+                        if (is_merge||is_indep) begin
                             if (is_last_enabled_tile) begin
                                 tile_idx_next = first_enabled_tile;
                             end
-                        end else if (is_split) begin
-                            if (is_last_enabled_tile) begin
-                                split_group_cnt_next = 3'd0;
-                                tile_idx_next = first_enabled_tile;
-                            end else begin
-                                tile_idx_next = next_tile_idx;
-                            end
-                        end
+                        end 
                     end else begin
                         // 当前 Tile 还有更多字要加载
                         word_cnt_next = word_cnt + 11'd1;
@@ -517,36 +484,31 @@ module npu_data_mover (clk, rst_n,
                 end else begin
                     // 当前字还有字节未处理
                     byte_idx_next = byte_idx + 2'd1;
+                end*/
+                 if (b_current_tile_ready && (is_merge||is_indep)) begin
+                    if (byte_idx == 2'd3) begin
+                        byte_idx_next = 2'd0;
+                        if (word_cnt + 11'd1 >= tile_b_words) begin
+                            mover_tile_w_done = 1'b1; // 当前Tile的B数据已经全部发送完了
+                            if (is_last_enabled_tile) begin
+                                 word_cnt_next = 11'd0;
+                            end else begin
+                                word_cnt_next = word_cnt + 11'd1;       
+                            end 
+                        end else begin
+                            word_cnt_next = word_cnt + 11'd1;
+                        end
+                    end else begin
+                        byte_idx_next = byte_idx + 2'd1;
+                    end  
                 end
             end
 
-            S_SPLIT_LOAD_B: begin
-                mover_buf_rd_en = 1'b1;
-                if (split_group_cnt == 3'd0 && word_cnt == 11'd0)
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {2'd0, tile_idx} * {5'd0, cfg_k, 3'b000} + {5'd0, word_cnt, 2'b00};
-                else
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {2'd0, split_b_buf} + {5'd0, word_cnt, 2'b00};
-            end
 
-            S_SPLIT_LOAD_B_WAIT: begin
-                // ✅ 保持读请求和地址，直到数据返回
-                mover_buf_rd_en = 1'b1;
-                if (buf_rd_valid) begin
-                    wr_data_buf_next = buf_rd_data;
-                end
-                if (split_group_cnt == 3'd0 && word_cnt == 11'd0)
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {2'd0, tile_idx} * {5'd0, cfg_k, 3'b000} + {5'd0, word_cnt, 2'b00};
-                else
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {2'd0, split_b_buf} + {5'd0, word_cnt, 2'b00};
-            end
-
-            S_SPLIT_UNPACK_B: begin
-                mover_tile_b_valid = 1'b1;
-                mover_tile_b_data[tile_idx*8 +: 8] = wr_data_buf[byte_idx*8 +: 8];
-            end
 
             S_COMPUTE_WAIT: begin
-
+                next_mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0];
+                tile_idx_next = first_enabled_tile;
                 mover_load_done = 1'b1;
             end
             S_STORE: begin
@@ -587,7 +549,6 @@ module npu_data_mover (clk, rst_n,
                 word_cnt_next = 11'd0;
                 byte_idx_next = 2'd0;
                 store_word_next = 6'd0;
-                split_group_cnt_next = 3'd0;
                // if (is_load_op)
                   //  mover_load_done = 1'b1;
                 //else

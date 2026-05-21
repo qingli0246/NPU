@@ -70,7 +70,7 @@ module npu_tile #(
     assign debug_a_idx_00 =  0* cfg_k + k_cnt; // i=0
     assign debug_b_idx_00 = k_cnt * 8 + 0;     // j=0
     
-    assign debug_a_00 = a_local[63];
+    assign debug_a_00 = a_local[0];
     assign debug_b_00 = b_local[0];
     assign debug_prod_00 = debug_a_00 * debug_b_00;
 
@@ -358,7 +358,7 @@ module npu_tile #(
             */  
             end
             
-            /*  // [DEBUG] 加载完成后打印完整的A/B矩阵（仅在第一个使能的Tile中打印）
+              // [DEBUG] 加载完成后打印完整的A/B矩阵（仅在第一个使能的Tile中打印）
             if (tile_en && ((state == `TILE_IDLE || state == `TILE_COMPUTE) && a_loaded && !a_printed)) begin
                 integer ai, aj;
                 $display("\n[TILE 0] ===== A Matrix Loaded (8×8 INT8) =====");
@@ -391,7 +391,7 @@ module npu_tile #(
                 b_printed = 1'b1;
             end
             
-            */
+            
 
             // 初始化C矩阵：在LOAD_A状态的首个周期清零
             // 不能在IDLE清零，因为Data Mover此时可能还在读取上一轮的c_local结果
@@ -410,7 +410,7 @@ module npu_tile #(
                     end
                 end
             end 
-            /*
+            
             else if (state == `TILE_DONE) begin
                 // [DEBUG] 计算结果监控 - 输出完整的C矩阵（只打印一次，仅Tile 0）
                 if (tile_en && !c_result_printed) begin
@@ -428,7 +428,7 @@ module npu_tile #(
                     c_result_printed <= 1'b1;
                 end
             end
-            */
+            
         end
     end
 

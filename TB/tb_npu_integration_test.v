@@ -651,7 +651,7 @@ module tb_npu_integration_test;
     reg [31:0] read_val, expected;
     reg        test_passed;
     integer    i, j;
-
+    reg [ADDR_WIDTH-1:0] b_tile_base;
     // ============================================================
     //  主测试流程
     // ============================================================
@@ -754,158 +754,97 @@ module tb_npu_integration_test;
         axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
         wait_cycles(3);
         $display("[PASS] 状态清除脉冲已发送");
-
-        // ================================================================
-        //  阶段3: 完整执行流程测试 (INDEP 模式)
+*/
+/*  
+               // ================================================================
+        //  阶段3: 完整执行流程测试 (INDEP 模式, K=8, 32 Tiles)
         // ================================================================
         $display("\n============================================================");
-        $display("  阶段3: 完整执行流程测试 (INDEP 模式)");
-        $display("  目标: 验证 Load → Compute → Store 完整流程");
+        $display("  阶段3: 全量 Tile 压力测试 (INDEP, K=8, 32 Tiles)");
+        $display("  目标: 验证所有 32 个 Tile 的并行计算正确性");
+        $display("  策略: 随机数据 + 在线软件比对 (On-the-fly Verification)");
         $display("============================================================");
 
-        // TEST 7: 准备数据并启动 NPU
         test_num = test_num + 1;
-        $display("\n  测试 %d: 配置并启动 NPU (INDEP, K=4, Tile 0)", test_num);
+        $display("\n  测试 %d: 32-Tile 并行计算验证", test_num);
 
-        // 配置
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h00);      // INDEP
+        // 1. 清除状态 & 配置
+        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02); wait_cycles(3);
+        
+        $display("    [步骤1] 配置 NPU (Mode=INDEP, M=N=K=8, Mask=0xFFFFFFFF)...");
+        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h00);
         axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd8);
         axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd8);
         axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd8);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_0001);  // 只用 Tile 0
+        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'hFFFF_FFFF); // Enable All 32 Tiles
         axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);
 
-        // 写入 A 矩阵数据 (K=4, 但Tile按8×8架构存储,需填充后4列)
-        // 注意：Tile是8-bit MAC，每个32位word包含4个字节数据
-        // 8×8 Tile架构下，每行需要2个word(前4列+后4列)
-        // 为确保 C == A（当B=I时），A值必须每个字节独立有意义
-        $display("    写入 A 矩阵数据 (8×8布局,K=4有效)...");
+        // 3. 写入 A 矩阵数据 (为每个Tile写入不同的数据)
+        $display("    [步骤2] 写入 A 矩阵数据");
         
-       // Row 0: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
-        axi_write(`NPU_A_BUFFER_BASE + 0*4, 32'h04030201);  // Word 0: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 1*4, 32'h08070605);  // Word 1: k=4~7
+        // ===== Tile 0 数据 (offset 0x000 - 0x03C) =====
+  
+        for (i = 0; i < 512; i = i + 1) begin
+            axi_write(`NPU_A_BUFFER_BASE + i*4, i+1);
+        end
 
-        // Row 1: [0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10]
-        axi_write(`NPU_A_BUFFER_BASE + 2*4, 32'h0C0B0A09);  // Word 2: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 3*4, 32'h100F0E0D);  // Word 3: k=4~7
 
-        // Row 2: [0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18]
-        axi_write(`NPU_A_BUFFER_BASE + 4*4, 32'h14131211);   // Word 4: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 5*4, 32'h18171615);  // Word 5: k=4~7
-
-        // Row 3: [0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20]
-        axi_write(`NPU_A_BUFFER_BASE + 6*4, 32'h1C1B1A19);  // Word 6: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 7*4, 32'h201F1E1D);  // Word 7: k=4~7
-
-        // Row 4: [0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28]
-        axi_write(`NPU_A_BUFFER_BASE + 8*4, 32'h24232221);   // Word 8: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 9*4, 32'h28272625);   // Word 9: k=4~7
-
-        // Row 5: [0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30]
-        axi_write(`NPU_A_BUFFER_BASE + 10*4, 32'h2C2B2A29);  // Word 10: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 11*4, 32'h302F2E2D);  // Word 11: k=4~7
-
-        // Row 6: [0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38]
-        axi_write(`NPU_A_BUFFER_BASE + 12*4, 32'h34333231);  // Word 12: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 13*4, 32'h38373635);  // Word 13: k=4~7
-
-        // Row 7: [0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40]
-        axi_write(`NPU_A_BUFFER_BASE + 14*4, 32'h3C3B3A39);  // Word 14: k=0~3
-        axi_write(`NPU_A_BUFFER_BASE + 15*4, 32'h403F3E3D);  // Word 15: k=4~7
+        // 4. 写入 B 矩阵数据（8×8单位矩阵，所有Tile共享）
+        $display("    [步骤3] 写入 B 矩阵数据 (8×8单位矩阵)...");
         
-        // 【新增】打印 A 矩阵数值
-        print_matrix_a_8x8(`NPU_A_BUFFER_BASE, "A");
+       for (i = 0; i < 32; i = i + 1) begin
+            // 计算当前 Tile 的 B 矩阵基地址
+            // 假设 B Buffer 中 Tile 是连续排列的，每个 Tile 占 16 words (64 bytes)
+            b_tile_base = `NPU_B_BUFFER_BASE + (i * 16 * 4);
 
-        // 写入 B 矩阵数据（8×8单位矩阵）
-        // B[i][j] = 1 (当i==j), 否则为0
-        // 小端序：Byte0先发送给Tile
-        $display("    写入 B 矩阵数据 (8×8单位矩阵)...");
-        
-        // Row 0: [1, 0, 0, 0, 0, 0, 0, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 0*4, 32'h00000001);  // Byte0=1
-        axi_write(`NPU_B_BUFFER_BASE + 1*4, 32'h00000000);  // Byte4-7=0
-
-        // Row 1: [0, 1, 0, 0, 0, 0, 0, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 2*4, 32'h00000100);  // Byte1=1
-        axi_write(`NPU_B_BUFFER_BASE + 3*4, 32'h00000000);
-
-        // Row 2: [0, 0, 1, 0, 0, 0, 0, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 4*4, 32'h00010000);  // Byte2=1
-        axi_write(`NPU_B_BUFFER_BASE + 5*4, 32'h00000000);
-
-        // Row 3: [0, 0, 0, 1, 0, 0, 0, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 6*4, 32'h01000000);  // Byte3=1
-        axi_write(`NPU_B_BUFFER_BASE + 7*4, 32'h00000000);
-
-        // Row 4: [0, 0, 0, 0, 1, 0, 0, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 8*4, 32'h00000000);   // Byte0-3=0
-        axi_write(`NPU_B_BUFFER_BASE + 9*4, 32'h00000001);   // Byte4=1
-
-        // Row 5: [0, 0, 0, 0, 0, 1, 0, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 10*4, 32'h00000000);  // Byte0-3=0
-        axi_write(`NPU_B_BUFFER_BASE + 11*4, 32'h00000100);  // Byte5=1
-
-        // Row 6: [0, 0, 0, 0, 0, 0, 1, 0]
-        axi_write(`NPU_B_BUFFER_BASE + 12*4, 32'h00000000);  // Byte0-3=0
-        axi_write(`NPU_B_BUFFER_BASE + 13*4, 32'h00010000);  // Byte6=1
-
-        // Row 7: [0, 0, 0, 0, 0, 0, 0, 1]
-        axi_write(`NPU_B_BUFFER_BASE + 14*4, 32'h00000000);  // Byte0-3=0
-        axi_write(`NPU_B_BUFFER_BASE + 15*4, 32'h01000000);  // Byte7=1
-        
-        // 【新增】打印 B 矩阵数值
-        print_matrix_b_8x8(`NPU_B_BUFFER_BASE);
-
-        // 2. 写入 B 矩阵为单位矩阵 (4×8布局,K=4行有效)
-        $display("    写入 B 矩阵 (单位矩阵)...");
-        begin : write_identity_matrix_7b
-            integer i;
-            reg [31:0] b_data;
-           // Row 0: [1, 0, 0, 0, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 0*4, 32'h00000001);  // Byte0=1
-            axi_write(`NPU_B_BUFFER_BASE + 1*4, 32'h00000000);  // Byte4-7=0
+            // Row 0: [1, 0, 0, 0, 0, 0, 0, 0]
+            axi_write(b_tile_base + 0*4, 32'h00000001);
+            axi_write(b_tile_base + 1*4, 32'h00000000);
 
             // Row 1: [0, 1, 0, 0, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 2*4, 32'h00000100);  // Byte1=1
-            axi_write(`NPU_B_BUFFER_BASE + 3*4, 32'h00000000);
+            axi_write(b_tile_base + 2*4, 32'h00000100);
+            axi_write(b_tile_base + 3*4, 32'h00000000);
 
             // Row 2: [0, 0, 1, 0, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 4*4, 32'h00010000);  // Byte2=1
-            axi_write(`NPU_B_BUFFER_BASE + 5*4, 32'h00000000);
+            axi_write(b_tile_base + 4*4, 32'h00010000);
+            axi_write(b_tile_base + 5*4, 32'h00000000);
 
             // Row 3: [0, 0, 0, 1, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 6*4, 32'h01000000);  // Byte3=1
-            axi_write(`NPU_B_BUFFER_BASE + 7*4, 32'h00000000);
+            axi_write(b_tile_base + 6*4, 32'h01000000);
+            axi_write(b_tile_base + 7*4, 32'h00000000);
+            
+            // Row 0: [1, 0, 0, 0, 0, 0, 0, 0]
+            axi_write(b_tile_base + 8*4, 32'h00000000);
+            axi_write(b_tile_base + 9*4, 32'h00000001);
 
-            // Row 4: [0, 0, 0, 0, 1, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 8*4, 32'h00000000);   // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 9*4, 32'h00000001);   // Byte4=1
+            // Row 1: [0, 1, 0, 0, 0, 0, 0, 0]
+            axi_write(b_tile_base + 10*4, 32'h00000000);
+            axi_write(b_tile_base + 11*4, 32'h00000100);
 
-            // Row 5: [0, 0, 0, 0, 0, 1, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 10*4, 32'h00000000);  // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 11*4, 32'h00000100);  // Byte5=1
+            // Row 2: [0, 0, 1, 0, 0, 0, 0, 0]
+            axi_write(b_tile_base + 12*4, 32'h00000000);
+            axi_write(b_tile_base + 13*4, 32'h00010000);
 
-            // Row 6: [0, 0, 0, 0, 0, 0, 1, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 12*4, 32'h00000000);  // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 13*4, 32'h00010000);  // Byte6=1
 
-            // Row 7: [0, 0, 0, 0, 0, 0, 0, 1]
-            axi_write(`NPU_B_BUFFER_BASE + 14*4, 32'h00000000);  // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 15*4, 32'h01000000);  // Byte7=1
+            // Row 3: [0, 0, 0, 1, 0, 0, 0, 0]
+            axi_write(b_tile_base + 14*4, 32'h00000000);
+            axi_write(b_tile_base + 15*4, 32'h01000000);
+
+            
+            $display("      Tile %d B Matrix Written to Base 0x%08X", i, b_tile_base);
         end
-        
-        // 【新增】打印重新写入后的 B 矩阵数值
+        // 打印 B 矩阵数值
         print_matrix_b_8x8(`NPU_B_BUFFER_BASE);
         
         wait_cycles(2);
 
-        // 启动 NPU
-        $display("    启动 NPU...");
+        // 5. 启动 NPU
+        $display("    [步骤4] 启动 NPU...");
         axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);  // start
         wait_cycles(3);
 
         // 等待 computing 信号
-        $display("    等待 computing 信号...");
+        $display("    [步骤5] 等待 computing 信号...");
         wait_cycles(10);
 
         if (computing) begin
@@ -915,95 +854,8 @@ module tb_npu_integration_test;
         end
 
         // 等待完成（超时保护）
-        $display("    等待 NPU 完成...");
+        $display("    [步骤6] 等待 NPU 完成...");
         begin : wait_done_block
-            integer timeout_cnt;
-            timeout_cnt = 0;
-            while (!npu_done && timeout_cnt < 10000) begin
-                @(posedge clk);
-                timeout_cnt = timeout_cnt + 1;
-            end
-            if (npu_done) begin
-                $display("[PASS] npu_done 检测到! (timeout=%0d)", timeout_cnt);
-            end else begin
-                $display("[WARN] 等待超时, npu_done 未置位");
-            end
-        end
-
-        // 检查状态
-        wait_cycles(5);
-        axi_read(`NPU_AXI_LITE_BASE + `REG_STATUS, read_val);
-        $display("    STATUS 寄存器 = 0x%08X", read_val);
-        if (read_val[0]) begin
-            $display("[PASS] status_done = 1");
-        end else begin
-            $display("[INFO] status_done = 0");
-        end
-
-        // TEST 7b: 验证 C Buffer 数据完整性（使用单位矩阵验证）
-        $display("\n  测试 7b: 验证 C Buffer 计算结果正确性 (B=I, 期望C[i][j]=A_byte[i*K+j])");
-
-        // ===== 重新配置并启动 NPU 执行计算 =====
-        $display("    重新配置并启动 NPU (B=I, K=4)...");
-
-        // 1. 清除状态标志
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
-        wait_cycles(3);
-
-        // 2. 写入 B 矩阵为单位矩阵 (4×8布局,K=4行有效)
-        $display("    写入 B 矩阵 (单位矩阵)...");
-        begin : write_identity_matrix
-            integer i;
-            reg [31:0] b_data;
-           // Row 0: [1, 0, 0, 0, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 0*4, 32'h00000001);  // Byte0=1
-            axi_write(`NPU_B_BUFFER_BASE + 1*4, 32'h00000000);  // Byte4-7=0
-
-            // Row 1: [0, 1, 0, 0, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 2*4, 32'h00000100);  // Byte1=1
-            axi_write(`NPU_B_BUFFER_BASE + 3*4, 32'h00000000);
-
-            // Row 2: [0, 0, 1, 0, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 4*4, 32'h00010000);  // Byte2=1
-            axi_write(`NPU_B_BUFFER_BASE + 5*4, 32'h00000000);
-
-            // Row 3: [0, 0, 0, 1, 0, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 6*4, 32'h01000000);  // Byte3=1
-            axi_write(`NPU_B_BUFFER_BASE + 7*4, 32'h00000000);
-
-            // Row 4: [0, 0, 0, 0, 1, 0, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 8*4, 32'h00000000);   // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 9*4, 32'h00000001);   // Byte4=1
-
-            // Row 5: [0, 0, 0, 0, 0, 1, 0, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 10*4, 32'h00000000);  // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 11*4, 32'h00000100);  // Byte5=1
-
-            // Row 6: [0, 0, 0, 0, 0, 0, 1, 0]
-            axi_write(`NPU_B_BUFFER_BASE + 12*4, 32'h00000000);  // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 13*4, 32'h00010000);  // Byte6=1
-
-            // Row 7: [0, 0, 0, 0, 0, 0, 0, 1]
-            axi_write(`NPU_B_BUFFER_BASE + 14*4, 32'h00000000);  // Byte0-3=0
-            axi_write(`NPU_B_BUFFER_BASE + 15*4, 32'h01000000);  // Byte7=1
-        end
-
-        // 3. 配置 NPU 参数 (INDEP模式, M=8, N=8, K=4)
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h00);      // INDEP
-        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd8);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd8);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd8);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_0001);  // Tile 0
-        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);
-
-        // 4. 启动 NPU
-        $display("    启动 NPU...");
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);  // start
-        wait_cycles(3);
-
-        // 5. 等待完成
-        $display("    等待 NPU 完成...");
-        begin : wait_test8_done
             integer timeout_cnt;
             timeout_cnt = 0;
             while (!npu_done && timeout_cnt < 10000) begin
@@ -1018,113 +870,111 @@ module tb_npu_integration_test;
             end
         end
 
-        // 6. 检查状态
+        // 检查状态
         wait_cycles(5);
         axi_read(`NPU_AXI_LITE_BASE + `REG_STATUS, read_val);
         $display("    STATUS 寄存器 = 0x%08X", read_val);
         if (read_val[0]) begin
             $display("[PASS] status_done = 1");
         end else begin
-            $display("[INFO] status_done = 0");
+            $display("[FAIL] status_done = 0");
+            test_passed = 1'b0;
         end
 
-        // 【调试】打印 A、B 矩阵和 C 矩阵前几行数据
-        begin : debug_print_abc_matrices
-            integer i;
-            reg [31:0] a_val, b_val, c_val;
+        // 【调试】打印 C 矩阵数据（仅显示每个Tile的第0行）
+        begin : debug_print_c_matrices
+            integer tile_id;
+            reg [31:0] c_val;
 
-            $display("\n    ===== 调试信息：计算完成后 A/B/C 矩阵数据 =====");
-            $display("    --- A 矩阵 (8×8布局,地址 0x%08X - 0x%08X) ---",
-                     `NPU_A_BUFFER_BASE, `NPU_A_BUFFER_BASE + 15*4);
-            for (i = 0; i < 8; i = i + 1) begin
-                // 每行占用2个word,读取第一个word(前4列)
-                axi_read(`NPU_A_BUFFER_BASE + (i*2)*4, a_val);
-                $display("      Row %d [k=0-3] @0x%08X = 0x%08X (bytes: %02X %02X %02X %02X)",
-                         i, `NPU_A_BUFFER_BASE + (i*2)*4, a_val,
-                         a_val[7:0], a_val[15:8], a_val[23:16], a_val[31:24]);
-                // 读取第二个word(后4列,应为0)
-                axi_read(`NPU_A_BUFFER_BASE + (i*2+1)*4, a_val);
-                $display("      Row %d [k=4-7] @0x%08X = 0x%08X (应全0)",
-                         i, `NPU_A_BUFFER_BASE + (i*2+1)*4, a_val);
+            $display("\n    ===== 调试信息：计算完成后 C 矩阵数据 =====");
+            for (tile_id = 0; tile_id < 4; tile_id = tile_id + 1) begin
+                $display("    --- Tile %d C矩阵 (第0行) ---", tile_id);
+                axi_read(`NPU_C_BUFFER_BASE + (tile_id*64+0)*4, c_val);
+                $display("      C[%d][0][0..3] = 0x%08X", tile_id, c_val);
             end
-
-            $display("    --- B 矩阵 (地址 0x%08X - 0x%08X) ---",
-                     `NPU_B_BUFFER_BASE, `NPU_B_BUFFER_BASE + 7*4);
-            for (i = 0; i < 8; i = i + 1) begin
-                axi_read(`NPU_B_BUFFER_BASE + i*4, b_val);
-                $display("      B[%0d] @0x%08X = 0x%08X", i, `NPU_B_BUFFER_BASE + i*4, b_val);
-            end
-
-            $display("    --- C 矩阵 (8x8 INT32, 共64个word) ---");
-            for (i = 0; i < 8; i = i + 1) begin
-                axi_read(`NPU_C_BUFFER_BASE + (i*8+0)*4, c_val);
-                $display("      C[%0d][0..3] = 0x%08X", i, c_val);
-            end
-
             $display("    =================================================\n");
         end
 
-        // 验证：C[i][j] = sum_k(A_byte[i*K+k] * B_byte[k*8+j])
-        // B = 8×8单位矩阵 => C[i][j] = A_byte[i*K+j] (当 j < K)
-        // K=8 时所有8列都应该有值
-        // 注意：A Buffer 每行2个word(8字节)，C Buffer 每个word是1个INT32
-        begin : verify_c_with_identity
-            integer i, j, k;
-            reg [31:0] a_word;
-            reg [31:0] c_val;
-            reg [7:0]  a_byte, expected_byte;
+        // 验证：对每个Tile验证 C[i][j] = A[i][j] (当 B=I 且 j<K=4)
+        // Tile 0: A[0][j] = j+1
+        // Tile 1: A[0][j] = j+11
+        // Tile 2: A[0][j] = j+21
+        // Tile 3: A[0][j] = j+31
+                    begin : verify_all_tiles_correct
+            integer tile_id;
+            integer row, col; // 使用行列索引更清晰
+            reg [31:0] word_a; // A 的一个打包 Word
+            reg [31:0] word_c; // C 的一个单值 Word
+            reg signed [7:0] byte_a; // A 的单个字节
+            reg signed [31:0] expected_c; // 期望的 C 值 (符号扩展后)
             integer errors;
-            errors = 0;
+            integer total_errors;
+            reg [ADDR_WIDTH-1:0] addr_a_word, addr_c_word;
 
-            $display("    验证 Tile 0 的计算结果 (B=I, K=%0d, 期望 C[i][j]=A_byte[i*K+j])...", 8);
+            total_errors = 0;
+            $display("    [步骤7] 验证 Tile 0-31 的计算结果 (C == A, 考虑位宽转换)...");
 
-            for (i = 0; i < 8; i = i + 1) begin
-                for (j = 0; j < 8; j = j + 1) begin
-                    // 读取对应的 A word 并提取 byte
-                    // 8×8 Tile架构下，每行占用2个word:
-                    //   Word 2*i+0: A[i][0-3]
-                    //   Word 2*i+1: A[i][4-7]
-                    if (j < 4) begin
-                        axi_read(`NPU_A_BUFFER_BASE + (i*2)*4, a_word);
-                        a_byte = a_word[j*8 +: 8];  // 从第一个word提取
-                    end else begin
-                        axi_read(`NPU_A_BUFFER_BASE + (i*2+1)*4, a_word);
-                        a_byte = a_word[(j-4)*8 +: 8];  // 从第二个word提取
-                    end
+            for (tile_id = 0; tile_id < 32; tile_id = tile_id + 1) begin
+                errors = 0;
+                
+                // 遍历 8x8 矩阵的每一个元素
+                for (row = 0; row < 8; row = row + 1) begin
+                    for (col = 0; col < 8; col = col + 1) begin
+                        
+                        // 1. 计算 A 的地址 (按 Word 访问)
+                        // A 的布局: 每行 2 个 Word. 
+                        // Word Index in Tile = row * 2 + (col / 4)
+                        // Byte Index in Word = col % 4
+                        addr_a_word = `NPU_A_BUFFER_BASE + 
+                                      (tile_id * TILE_A_OFFSET_WORDS + row * 2 + (col / 4)) * 4;
+                        
+                        // 2. 计算 C 的地址 (按 Word 访问)
+                        // C 的布局: 每行 8 个 Word (每个元素一个 Word)
+                        // Word Index in Tile = row * 8 + col
+                        addr_c_word = `NPU_C_BUFFER_BASE + 
+                                      (tile_id * TILE_C_OFFSET_WORDS + row * 8 + col) * 4;
 
-                    // K=8, B=I, 所有8列都有值: C[i][j] = A[i][j]
-                    expected_byte = a_byte;
+                        // 3. 读取数据
+                        axi_read(addr_a_word, word_a);
+                        axi_read(addr_c_word, word_c);
 
-                    // 读取 C[i][j] (每个元素32bit, 在 C Buffer 中连续存放)
-                    axi_read(`NPU_C_BUFFER_BASE + (i*8+j)*4, c_val);
+                        // 4. 从 A 的 Word 中提取对应的 8-bit 字节
+                        // Little-Endian: Byte 0 is LSB
+                        byte_a = word_a[(col % 4) * 8 +: 8];
 
-                    // 比较低8位（MAC结果是INT32，但用B=I时值应在0~255范围）
-                    if (c_val[7:0] !== expected_byte || c_val[31:8] !== 24'd0) begin
-                        if (errors < 16) begin  // 最多打印16个错误
-                            $display("      [FAIL] C[%0d][%0d]: 期望=0x%08X, 实际=0x%08X",
-                                     i, j, {24'd0, expected_byte}, c_val);
+                        // 5. 将 A 的 8-bit 数据符号扩展为 32-bit 作为期望值
+                        // $signed 会自动处理符号扩展
+                        expected_c = $signed(byte_a);
+
+                        // 6. 比对
+                        if (word_c !== expected_c) begin
+                            if (errors < 5) begin 
+                                $display("        [FAIL] Tile %0d C[%d][%d]: Exp(A_ext)=%0d (0x%08X), Act(C)=%0d (0x%08X)", 
+                                         tile_id, row, col, expected_c, expected_c, word_c, word_c);
+                            end
+                            errors = errors + 1;
                         end
-                        errors = errors + 1;
                     end
+                end
+
+                if (errors == 0) begin
+                    $display("        [PASS] Tile %0d Verified", tile_id);
+                end else begin
+                    $display("        [FAIL] Tile %0d has %0d errors", tile_id, errors);
+                    total_errors = total_errors + errors;
                 end
             end
 
-            if (errors == 0) begin
-                $display("    验证通过！\n");
+            if (total_errors == 0) begin
+                $display("    [PASS] Test %d: All 32 Tiles Passed!", test_num);
             end else begin
-                $display("    验证失败！共 %0d 个错误\n", errors);
-            end
-
-            if (errors == 0) begin
-                $display("    [PASS] 测试 7b: Tile 0 计算结果正确，共验证 64 个元素");
-            end else begin
-                $display("    [FAIL] 测试 7b: Tile 0 有 %0d / 64 个错误", errors);
+                $display("    [FAIL] Test %d: Total %0d Errors", test_num, total_errors);
                 test_passed = 1'b0;
             end
         end
 
 */
-/*
+
         // ================================================================
         //  阶段4: MERGE 模式严格验证测试
         // ================================================================
@@ -1420,281 +1270,11 @@ module tb_npu_integration_test;
             end
         end
 
-     ***********************************************************************/ 
 
-       
 
-        // ================================================================
-        //  阶段5: SPLIT 模式完整测试
-        // ================================================================
-        $display("\n============================================================");
-        $display("  阶段5: SPLIT 模式测试");
-        $display("  目标: 验证大 K 值拆分模式");
-        $display("============================================================");
+ 
 
-        // TEST 9: SPLIT 模式完整执行流程
-        test_num = test_num + 1;
-        $display("\n  测试 %d: SPLIT 模式完整执行 (K=16", test_num);
-
-        // 清除状态
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
-        wait_cycles(3);
-
-       // 2. 配置 SPLIT 模式
-        $display("    [步骤1] 配置寄存器 (SPLIT Mode, K=16)...");
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h02);      // SPLIT Mode
-        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd8);          // M=8
-        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd8);          // N=8
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd16);         // K=16 (关键：大于8)
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_0001);  // 仅用 Tile 0 验证逻辑
-        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd2); // 暗示需要2次迭代/K切片
-
-        // 写入 A 矩阵数据（SPLIT 模式下每个 Tile 处理部分 K）
-        $display("    写入 A 矩阵数据...");
-        for (i = 0; i < 16; i = i + 1) begin  // 2*K = 16 words
-            axi_write(`NPU_A_BUFFER_BASE + i*4, 32'h0000_5000 + i);
-        end
-
-        // 写入 B 矩阵数据
-        $display("    写入 B 矩阵数据...");
-        for (i = 0; i < 16; i = i + 1) begin
-            axi_write(`NPU_B_BUFFER_BASE + i*4, 32'h0000_6000 + i);
-        end
-
-        wait_cycles(2);
-
-        // 启动 NPU
-        $display("    启动 NPU (SPLIT 模式)...");
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);  // start
-        wait_cycles(3);
-
-        // 等待完成
-        $display("    等待 NPU 完成...");
-        begin : wait_split_done
-            integer timeout_cnt;
-            timeout_cnt = 0;
-            while (!npu_done && timeout_cnt < 10000) begin
-                @(posedge clk);
-                timeout_cnt = timeout_cnt + 1;
-            end
-            if (npu_done) begin
-                $display("[PASS] SPLIT 模式完成! (timeout=%0d)", timeout_cnt);
-            end else begin
-                $display("[FAIL] SPLIT 模式超时"); test_passed = 1'b0;
-            end
-        end
-
-        // 验证状态
-        wait_cycles(5);
-        axi_read(`NPU_AXI_LITE_BASE + `REG_STATUS, read_val);
-        if (read_val[0]) begin
-            $display("[PASS] status_done = 1");
-        end else begin
-            $display("[FAIL] status_done = 0"); test_passed = 1'b0;
-        end
-/*
-        // ================================================================
-        //  阶段6: 多次迭代测试
-        // ================================================================
-        $display("\n============================================================");
-        $display("  阶段6: 多次迭代测试");
-        $display("  目标: 验证 cfg_iterations > 1 的情况");
-        $display("============================================================");
-
-        // TEST 10: 多次迭代执行
-        test_num = test_num + 1;
-        $display("\n  测试 %d: 多次迭代执行 (iterations=2)", test_num);
-
-        // 清除状态
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
-        wait_cycles(3);
-
-        // 配置多次迭代
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h00);      // INDEP
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_0001);  // Tile 0
-        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd2);  // 2次迭代
-
-        // 写入数据
-        $display("    写入数据...");
-        for (i = 0; i < 8; i = i + 1) begin
-            axi_write(`NPU_A_BUFFER_BASE + i*4, 32'h0000_7000 + i);
-            axi_write(`NPU_B_BUFFER_BASE + i*4, 32'h0000_8000 + i);
-        end
-
-        wait_cycles(2);
-
-        // 启动 NPU
-        $display("    启动 NPU (2次迭代)...");
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);  // start
-        wait_cycles(3);
-
-        // 等待完成
-        $display("    等待 NPU 完成...");
-        begin : wait_iter_done
-            integer timeout_cnt;
-            timeout_cnt = 0;
-            while (!npu_done && timeout_cnt < 20000) begin  // 更长的超时
-                @(posedge clk);
-                timeout_cnt = timeout_cnt + 1;
-            end
-            if (npu_done) begin
-                $display("[PASS] 多次迭代完成! (timeout=%0d)", timeout_cnt);
-            end else begin
-                $display("[FAIL] 多次迭代超时"); test_passed = 1'b0;
-            end
-        end
-
-        // ================================================================
-        //  阶段7: 边界条件测试
-        // ================================================================
-        $display("\n============================================================");
-        $display("  阶段7: 边界条件测试");
-        $display("  目标: 验证极端配置下的行为");
-        $display("============================================================");
-
-        // TEST 11: 最大 K 值 (6位最大值为63)
-        test_num = test_num + 1;
-        $display("\n  测试 %d: 最大 K 值 (K=63)", test_num);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd63);
-        wait_cycles(1);
-        if (cfg_k !== 6'd63) begin
-            $display("[FAIL] cfg_k = %d, 期望 63", cfg_k); test_passed = 1'b0;
-        end else $display("[PASS] cfg_k = 63");
-
-        // TEST 12: 最大 Tile Mask
-        test_num = test_num + 1;
-        $display("\n  测试 %d: 最大 Tile Mask (0xFFFFFFFF)", test_num);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'hFFFF_FFFF);
-        wait_cycles(1);
-        if (cfg_tile_mask !== 32'hFFFF_FFFF) begin
-            $display("[FAIL] cfg_tile_mask = 0x%08X", cfg_tile_mask); test_passed = 1'b0;
-        end else $display("[PASS] cfg_tile_mask = 0xFFFFFFFF");
-
-        // ================================================================
-        //  阶段8: 中断验证
-        // ================================================================
-        $display("\n============================================================");
-        $display("  阶段8: 中断验证");
-        $display("  目标: 验证 npu_irq 信号");
-        $display("============================================================");
-
-        // TEST 13: 检查中断状态
-        test_num = test_num + 1;
-        $display("\n  测试 %d: 中断信号检查", test_num);
-        $display("    npu_irq = %b", npu_irq);
-        $display("    irq_en_done = %b, irq_en_error = %b", irq_en_done, irq_en_error);
-        $display("    status_done = %b, status_error = %b", status_done, status_error);
-        $display("[PASS] 中断信号检查完成");
-
-        // ================================================================
-        //  阶段9: 多 Tile 并行测试
-        // ================================================================
-        $display("\n============================================================");
-        $display("  阶段9: 多 Tile 并行测试");
-        $display("  目标: 验证多个 Tile 并行计算");
-        $display("============================================================");
-
-        // TEST 14: 4 个 Tile 并行计算
-        test_num = test_num + 1;
-        $display("\n  测试 %d: 4 Tile 并行计算 (INDEP, K=4)", test_num);
-
-        // 清除状态
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h02);  // status_clr
-        wait_cycles(3);
-
-        // 配置 4 个 Tile
-        axi_write(`NPU_AXI_LITE_BASE + `REG_MODE, 32'h00);      // INDEP
-        axi_write(`NPU_AXI_LITE_BASE + `REG_M, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_N, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_K, 32'd4);
-        axi_write(`NPU_AXI_LITE_BASE + `REG_TILE_MASK, 32'h0000_000F);  // Tile 0-3
-        axi_write(`NPU_AXI_LITE_BASE + `REG_ITERATIONS, 32'd1);
-
-        // 写入数据（每个 Tile 独立数据）
-        $display("    写入数据...");
-        for (i = 0; i < 4; i = i + 1) begin  // 4 个 Tile
-            for (j = 0; j < 8; j = j + 1) begin  // 每个 Tile 8 words
-                axi_write(`NPU_A_BUFFER_BASE + i*256 + j*4, 32'h0000_9000 + i*256 + j);
-                axi_write(`NPU_B_BUFFER_BASE + i*256 + j*4, 32'h0000_A000 + i*256 + j);
-            end
-        end
-
-        wait_cycles(2);
-
-        // 启动 NPU
-        $display("    启动 NPU (4 Tile 并行)...");
-        axi_write(`NPU_AXI_LITE_BASE + `REG_CTRL, 32'h01);  // start
-        wait_cycles(3);
-
-        // 等待完成
-        $display("    等待 NPU 完成...");
-        begin : wait_parallel_done
-            integer timeout_cnt;
-            timeout_cnt = 0;
-            while (!npu_done && timeout_cnt < 15000) begin
-                @(posedge clk);
-                timeout_cnt = timeout_cnt + 1;
-            end
-            if (npu_done) begin
-                $display("[PASS] 4 Tile 并行计算完成! (timeout=%0d)", timeout_cnt);
-            end else begin
-                $display("[FAIL] 4 Tile 并行计算超时"); test_passed = 1'b0;
-            end
-        end
-
-        // 验证所有 Tile 的结果
-        $display("    验证 C Buffer...");
-        begin : verify_parallel_c
-            integer tile_idx, word_idx;
-            reg [31:0] c_val;
-            integer total_zeros, total_x;
-            total_zeros = 0;
-            total_x = 0;
-            
-            // 检查每个Tile的C Buffer是否有有效数据
-            for (tile_idx = 0; tile_idx < 4; tile_idx = tile_idx + 1) begin
-                integer tile_zeros, tile_x;
-                tile_zeros = 0;
-                tile_x = 0;
-                
-                // 读取每个Tile的前8个word
-                for (word_idx = 0; word_idx < 8; word_idx = word_idx + 1) begin
-                    axi_read(`NPU_C_BUFFER_BASE + tile_idx*256 + word_idx*4, c_val);
-                    
-                    if (word_idx == 0) begin
-                        $display("      Tile %0d C[0] = 0x%08X", tile_idx, c_val);
-                    end
-                    
-                    if (c_val === 32'h0) begin
-                        tile_zeros = tile_zeros + 1;
-                    end else if (c_val === 32'hx) begin
-                        tile_x = tile_x + 1;
-                    end
-                end
-                
-                total_zeros = total_zeros + tile_zeros;
-                total_x = total_x + tile_x;
-                
-                if (tile_x > 0) begin
-                    $display("        [FAIL] Tile %0d 有 %0d 个X态值", tile_idx, tile_x);
-                end else if (tile_zeros == 8) begin
-                    $display("        [WARN] Tile %0d 全为零", tile_idx);
-                end else begin
-                    $display("        [PASS] Tile %0d 包含有效数据", tile_idx);
-                end
-            end
-            
-            if (total_x > 0) begin
-                $display("    [FAIL] 4 Tile并行: 总共有 %0d 个X态값", total_x);
-            end else begin
-                $display("    [INFO] 4 Tile并行: 所有Tile无X态값 (零值总数=%0d)", total_zeros);
-            end
-        end
-*/
-        // ================================================================
-        //  测试总结
-        // ================================================================
+   
 
         $display("  结束时间: %t", $time);
         $display("============================================================");

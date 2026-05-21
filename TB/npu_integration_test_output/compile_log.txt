@@ -507,3 +507,13 @@ F:\complication-6\NPU\TB\tb_npu_integration_test.v:1358: syntax error
 F:\complication-6\NPU\TB\tb_npu_integration_test.v:1358: error: malformed statement
 F:\complication-6\NPU\TB\tb_npu_integration_test.v:1358: syntax error
 F:\complication-6\NPU\TB\tb_npu_integration_test.v:1358: error: malformed statement
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1495: error: Possible nested comment.
+F:\complication-6\NPU\rtl\npu_data_mover.v:447: error: Unable to bind wire/reg/memory `is_mergep' in `tb_npu_integration_test.u_data_mover'
+F:\complication-6\NPU\rtl\npu_data_mover.v:447: error: Unable to elaborate condition expression.
+2 error(s) during elaboration.
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1270: syntax error
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1270: error: invalid module item.
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1272: syntax error
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1278: error: invalid module item.
+F:\complication-6\NPU\TB\tb_npu_integration_test.v:1281: syntax error
+F:\complication-6\NPU\rtl\npu_axi_slave.v:65: error: invalid module item.
