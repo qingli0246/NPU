@@ -297,14 +297,13 @@ module npu_data_mover (clk, rst_n,
             S_DISTRIBUTE_A: begin
                 
                 if (byte_idx == 2'd3 && word_cnt + 11'd1 >= tile_a_words && a_current_tile_ready) begin
-                    if (is_merge )begin
+                    // MERGE模式和INDEP模式都需要遍历所有Tile读取A矩阵
+                    if (is_last_enabled_tile) begin
+                        // 所有Tile的A数据都已读取，进入B矩阵加载阶段
                         next_state = S_DMA_LOAD_B;
-                    end else if (is_indep) begin
-                        if (is_last_enabled_tile) begin
-                             next_state = S_DMA_LOAD_B;
-                        end else begin
-                             next_state = S_DMA_LOAD_A;
-                        end
+                    end else begin
+                        // 继续读取下一个Tile的A数据
+                        next_state = S_DMA_LOAD_A;
                     end
                 end 
                 
@@ -473,15 +472,15 @@ module npu_data_mover (clk, rst_n,
                         
                         if (word_cnt + 11'd1 >= tile_a_words) begin
                             // 当前 Tile 的 A 数据全部分发完成
-                            if (is_indep) begin
-                                if (is_last_enabled_tile) begin
-                                    tile_idx_next = first_enabled_tile;
-                                end else begin
-                                    tile_idx_next = next_tile_idx;
-                                end
-
-                                next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << next_tile_idx) & cfg_tile_mask;
+                            // MERGE和INDEP模式都需要遍历所有Tile
+                            if (is_last_enabled_tile) begin
+                                tile_idx_next = first_enabled_tile;
+                            end else begin
+                                tile_idx_next = next_tile_idx;
                             end
+
+                            next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << next_tile_idx) & cfg_tile_mask;
+                            
                             word_cnt_next = 11'd0;
 
                         end else begin
@@ -502,13 +501,26 @@ module npu_data_mover (clk, rst_n,
             // ------------------------------------------------
             S_DMA_LOAD_B: begin
                 dma_rd_req      = 1'b1;
-                dma_rd_addr     = cfg_b_base_addr + {16'd0, tile_b_ext_bytes};
+                if (is_merge) begin
+                    // MERGE 模式：B 矩阵只需加载一次，写入 Buffer 起始位置
+                    dma_rd_addr     = cfg_b_base_addr;
+                    dma_buf_wr_addr = `NPU_B_BUFFER_BASE;
+                end else begin
+                    // INDEP 模式：每个 Tile 独立加载 B 数据
+                    dma_rd_addr     = cfg_b_base_addr + {16'd0, tile_b_ext_bytes};
+                    dma_buf_wr_addr = `NPU_B_BUFFER_BASE + tile_idx * tile_b_words * 4;
+                end
                 dma_rd_len      = dma_burst_len_ab;
-                dma_buf_wr_addr = `NPU_B_BUFFER_BASE + tile_idx * tile_b_words * 4;
             end
 
             S_DMA_LOAD_B_WAIT: begin
-                // 等待 dma_rd_done
+                //  merge模式全部使能，独立模式使能第一个
+                if (is_merge) begin
+                    next_mover_tile_en = cfg_tile_mask[TILE_COUNT-1:0];
+                end else begin
+                    next_mover_tile_en = ({{(TILE_COUNT-1){1'b0}}, 1'b1} << first_enabled_tile) & cfg_tile_mask;
+                end                         
+                            
             end
 
             S_DISTRIBUTE_B_PRE:begin
@@ -527,14 +539,9 @@ module npu_data_mover (clk, rst_n,
                 // 1. 发起 Buffer 读取请求
                 mover_buf_rd_en   = 1'b1;
 
-                // 2. 计算读取地址（在PRE状态已设置，这里保持以确保持续读取或重新确认地址）
-                if (is_merge) begin
-                    // MERGE 模式：B 数据在 Buffer 起始位置（共享）
-                    mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {5'd0, word_cnt, 2'b00};
-                end 
-                    
+    
                    
-                
+                                 
 
                 // 3. 准备发送给 Tile 的数据
                 // 直接使用 mover_buf_rd_data，避免 wr_data_buf 的延迟问题
@@ -566,8 +573,10 @@ module npu_data_mover (clk, rst_n,
                         if (word_cnt + 11'd1 >= tile_b_words) begin
                             // 所有数据发送完毕，保持 word_cnt 不变，等待状态机跳转
                             word_cnt_next = word_cnt;
+
                         end else begin
                             word_cnt_next = word_cnt + 11'd1;
+                            mover_buf_rd_addr = `NPU_B_BUFFER_BASE + {5'd0, word_cnt+11'd1, 2'b00};
                         end
                     end else if (mover_buf_rd_valid) begin
                         byte_idx_next = byte_idx + 2'd1;
